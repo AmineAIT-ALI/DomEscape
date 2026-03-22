@@ -109,6 +109,7 @@ $statutLabel = [
     .db-card { background: #0f0f18; border: 1px solid #1a1a2e; border-radius: 6px; padding: 24px; transition: border-color .2s; }
     .db-card:hover { border-color: #2a2a3e; }
     .db-card-icon { font-size: 1.6rem; margin-bottom: 14px; }
+    .db-card-icon svg { width: 28px; height: 28px; stroke: currentColor; }
     .db-card-title { font-size: .9rem; font-weight: 600; color: #e0e0e0; margin-bottom: 6px; }
     .db-card-text  { font-size: .78rem; color: #555; line-height: 1.6; margin-bottom: 0; }
 
@@ -236,21 +237,21 @@ $statutLabel = [
     <div class="row g-3 mb-5">
       <div class="col-md-4">
         <div class="db-card">
-          <div class="db-card-icon">⚙️</div>
+          <div class="db-card-icon" style="color:#a78bfa;"><i data-lucide="settings"></i></div>
           <div class="db-card-title"><a href="/domescape/admin/dashboard.php" style="color:#a78bfa;">Dashboard admin</a></div>
           <p class="db-card-text">Scénarios configurés, historique des sessions, état global de la plateforme.</p>
         </div>
       </div>
       <div class="col-md-4">
         <div class="db-card">
-          <div class="db-card-icon">👥</div>
+          <div class="db-card-icon" style="color:#a78bfa;"><i data-lucide="users"></i></div>
           <div class="db-card-title"><a href="/domescape/admin/utilisateurs.php" style="color:#a78bfa;">Utilisateurs</a></div>
           <p class="db-card-text">Gérer les comptes, modifier les rôles, activer ou désactiver des accès.</p>
         </div>
       </div>
       <div class="col-md-4">
         <div class="db-card">
-          <div class="db-card-icon">🖥️</div>
+          <div class="db-card-icon" style="color:#60a5fa;"><i data-lucide="monitor"></i></div>
           <div class="db-card-title"><a href="/domescape/public/gamemaster.php" style="color:#60a5fa;">Supervision</a></div>
           <p class="db-card-text">Centre de contrôle temps réel des sessions en cours.</p>
         </div>
@@ -335,7 +336,7 @@ $statutLabel = [
       </div>
       <div class="col-md-4">
         <div class="db-card h-100">
-          <div class="db-card-icon">🎮</div>
+          <div class="db-card-icon" style="color:#60a5fa;"><i data-lucide="play"></i></div>
           <div class="db-card-title"><a href="/domescape/public/index.php">Lancer une partie</a></div>
           <p class="db-card-text">Démarrez une nouvelle session depuis la sélection de scénario.</p>
         </div>
@@ -399,7 +400,7 @@ $statutLabel = [
     <div class="row g-3 mb-5">
       <div class="col-md-4">
         <div class="db-card" style="border-color:rgba(0,255,136,.15);">
-          <div class="db-card-icon">🎮</div>
+          <div class="db-card-icon" style="color:#00ff88;"><i data-lucide="play"></i></div>
           <div class="db-card-title" style="margin-bottom:12px;">Lancer une session</div>
           <p class="db-card-text" style="margin-bottom:20px;">Choisissez un scénario disponible et commencez une nouvelle partie.</p>
           <a href="/domescape/public/index.php" class="db-btn-primary">Voir les scénarios →</a>
@@ -407,7 +408,7 @@ $statutLabel = [
       </div>
       <div class="col-md-4">
         <div class="db-card">
-          <div class="db-card-icon">📋</div>
+          <div class="db-card-icon" style="color:#888;"><i data-lucide="clipboard-list"></i></div>
           <div class="db-card-title" style="margin-bottom:12px;">Mes sessions</div>
           <p class="db-card-text" style="margin-bottom:20px;">Consultez l'historique complet de vos parties passées.</p>
           <a href="/domescape/public/mes-sessions.php" class="db-btn-outline">Voir l'historique</a>
@@ -415,7 +416,7 @@ $statutLabel = [
       </div>
       <div class="col-md-4">
         <div class="db-card">
-          <div class="db-card-icon">👤</div>
+          <div class="db-card-icon" style="color:#888;"><i data-lucide="user"></i></div>
           <div class="db-card-title" style="margin-bottom:12px;">Mon profil</div>
           <p class="db-card-text" style="margin-bottom:20px;">Vos informations, vos rôles et vos accès.</p>
           <a href="/domescape/public/profil.php" class="db-btn-outline">Voir le profil</a>
@@ -462,5 +463,7 @@ $statutLabel = [
   <?php endif; ?>
 
 </div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>
