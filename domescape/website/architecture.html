@@ -57,9 +57,7 @@
           <span class="tag tag-green" style="font-size: 0.72rem;">Capteur porte (FGDW-002)</span>
           <span class="tag tag-green" style="font-size: 0.72rem;">Bouton (FGPB-101)</span>
           <span class="tag tag-green" style="font-size: 0.72rem;">Multisensor (ZW100-C)</span>
-          <span class="tag tag-green" style="font-size: 0.72rem;">KeyFob (FGKF-601)</span>
-          <span class="tag" style="font-size: 0.72rem;">Lampe</span>
-          <span class="tag" style="font-size: 0.72rem;">Prise murale</span>
+          <span class="tag" style="font-size: 0.72rem;">Prise murale (FGWPEF-102)</span>
           <span class="tag" style="font-size: 0.72rem;">LCD PiFace</span>
         </div>
       </div>
@@ -156,25 +154,13 @@
             <td>Bouton</td>
             <td><span class="mono">Fibaro FGPB-101</span></td>
             <td><span class="badge badge-green">✓</span></td>
-            <td>Entrée par simple clic</td>
+            <td>Entrée par simple clic, double clic ou maintien</td>
           </tr>
           <tr>
-            <td>KeyFob</td>
-            <td><span class="mono">Fibaro FGKF-601</span></td>
+            <td>Prise murale (Wall Plug)</td>
+            <td><span class="mono">Fibaro FGWPEF-102</span></td>
             <td><span class="badge badge-green">✓</span></td>
-            <td>Télécommande 6 boutons (scènes 1-6)</td>
-          </tr>
-          <tr>
-            <td>Lampe connectée</td>
-            <td><span class="mono">Ampoule Z-Wave</span></td>
-            <td><span class="badge badge-green">✓</span></td>
-            <td>Actionneur de feedback visuel</td>
-          </tr>
-          <tr>
-            <td>Prise murale</td>
-            <td><span class="mono">Fibaro FGWPE-102</span></td>
-            <td><span class="badge badge-green">✓</span></td>
-            <td>Active le périphérique connecté</td>
+            <td>Actionneur de feedback — active le périphérique connecté</td>
           </tr>
           <tr>
             <td>Écran LCD</td>
@@ -205,7 +191,7 @@
     <div class="timeline-item">
       <div class="timeline-label">PHYSIQUE</div>
       <div class="timeline-title">Le joueur réalise une action physique</div>
-      <p class="timeline-desc">Appuie sur un bouton, ouvre une porte, traverse une zone, ou presse un bouton KeyFob.</p>
+      <p class="timeline-desc">Appuie sur un bouton, ouvre une porte, traverse une zone.</p>
     </div>
     <div class="timeline-item">
       <div class="timeline-label">Z-WAVE</div>
@@ -332,7 +318,7 @@
             </li>
             <li style="font-size: 0.825rem; color: var(--text-muted); padding-left: 14px; position: relative;">
               <span style="position: absolute; left: 0; color: var(--blue);">·</span>
-              Dispatche par code_action : LCD_MESSAGE, LAMP_ON, PLUG_ON...
+              Dispatche par code_action : LCD_MESSAGE, PLUG_ON...
             </li>
             <li style="font-size: 0.825rem; color: var(--text-muted); padding-left: 14px; position: relative;">
               <span style="position: absolute; left: 0; color: var(--blue);">·</span>
@@ -340,7 +326,7 @@
             </li>
             <li style="font-size: 0.825rem; color: var(--text-muted); padding-left: 14px; position: relative;">
               <span style="position: absolute; left: 0; color: var(--blue);">·</span>
-              Appelle DomoticzClient::turnOn/Off pour lampes/prises
+              Appelle DomoticzClient::turnOn/Off pour prises
             </li>
           </ul>
         </div>
@@ -373,7 +359,7 @@
     <div class="card glow-card animate-fade-up delay-3">
       <div class="card-icon orange">🚫</div>
       <div class="card-title">Pas de boucle actionneur</div>
-      <p class="card-text">Les actionneurs (lampes, prises) sont exclus du listener dzVents. Seuls les capteurs déclenchent des webhooks. Cela évite les boucles d'événements.</p>
+      <p class="card-text">Les actionneurs (prise, LCD) sont exclus du listener dzVents. Seuls les capteurs déclenchent des webhooks. Cela évite les boucles d'événements.</p>
     </div>
     <div class="card glow-card animate-fade-up delay-4">
       <div class="card-icon purple">🖥️</div>

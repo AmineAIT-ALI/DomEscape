@@ -48,7 +48,7 @@
     <div class="animate-fade-up delay-1" style="background: var(--card); border: 1px solid var(--border); border-right: none; border-radius: var(--radius-lg) 0 0 var(--radius-lg); padding: 36px 32px;">
       <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--green); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px;">Étape 1</div>
       <div style="font-family: var(--font-head); font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 16px;">Espace physique</div>
-      <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.7; margin-bottom: 20px;">Un capteur détecte une action réelle. Porte ouverte. Bouton pressé. Mouvement détecté. KeyFob activé.</p>
+      <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.7; margin-bottom: 20px;">Un capteur détecte une action réelle. Porte ouverte. Bouton pressé (simple ou double). Mouvement détecté.</p>
       <span class="tag tag-green">ÉVÉNEMENT CAPTEUR</span>
     </div>
     <div class="animate-fade-up delay-2" style="background: var(--surface); border: 1px solid var(--border); padding: 36px 32px; position: relative;">
@@ -60,7 +60,7 @@
     <div class="animate-fade-up delay-3" style="background: var(--card); border: 1px solid var(--border); border-left: none; border-radius: 0 var(--radius-lg) var(--radius-lg) 0; padding: 36px 32px;">
       <div style="font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; color: #60a5fa;">Étape 3</div>
       <div style="font-family: var(--font-head); font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 16px;">Réaction physique</div>
-      <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.7; margin-bottom: 20px;">En cas de succès : score mis à jour, étape suivante chargée, actionneurs déclenchés (LCD, lampe, prise). En cas d'échec : compteur d'erreurs incrémenté.</p>
+      <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.7; margin-bottom: 20px;">En cas de succès : score mis à jour, étape suivante chargée, actionneurs déclenchés (LCD, prise). En cas d'échec : compteur d'erreurs incrémenté.</p>
       <span class="tag" style="background: var(--blue-dim); border-color: rgba(59,130,246,0.3); color: #60a5fa;">SORTIE ACTIONNEUR</span>
     </div>
   </div>
@@ -151,7 +151,7 @@
         </tr>
         <tr>
           <td><span class="mono">actionneur</span></td>
-          <td>Périphérique de sortie (lampe, prise, LCD)</td>
+          <td>Périphérique de sortie (prise murale, LCD)</td>
         </tr>
       </tbody>
     </table>
@@ -170,7 +170,7 @@
       <div class="card glow-card animate-fade-up delay-1">
         <div class="card-icon green">👤</div>
         <div class="card-title">Joueur</div>
-        <p class="card-text">Interagit avec l'espace physique. N'a pas accès à l'interface. Reçoit le feedback via les actionneurs : lumières, messages LCD, sons. Immersion totale.</p>
+        <p class="card-text">Interagit avec l'espace physique. N'a pas accès à l'interface. Reçoit le feedback via les actionneurs : prise murale, messages LCD. Immersion totale.</p>
       </div>
       <div class="card glow-card animate-fade-up delay-2">
         <div class="card-icon purple">🎮</div>

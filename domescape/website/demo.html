@@ -82,7 +82,7 @@
             <div class="card-title" style="font-size: 1.15rem; margin-bottom: 0;">Démarrage système</div>
             <span class="tag tag-green">BUTTON_PRESS</span>
           </div>
-          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">Appuyer sur le bouton du bureau pour initialiser le système. L'action correcte allume la lampe principale et passe à l'étape 2.</p>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">Appuyer une fois sur le bouton du bureau pour initialiser le système. L'action correcte active la prise murale et passe à l'étape 2.</p>
           <div style="display: flex; gap: 24px; flex-wrap: wrap;">
             <div>
               <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; font-family: var(--font-mono);">Périphérique</div>
@@ -94,7 +94,7 @@
             </div>
             <div>
               <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; font-family: var(--font-mono);">Actions déclenchées</div>
-              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--green);">LAMP_ON + LCD "Système en ligne."</div>
+              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--green);">PLUG_ON + LCD "Système en ligne."</div>
             </div>
           </div>
         </div>
@@ -167,21 +167,21 @@
         <div>
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
             <div class="card-title" style="font-size: 1.15rem; margin-bottom: 0;">Code final</div>
-            <span class="tag" style="background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.3); color: var(--orange);">KEYFOB_BUTTON_3</span>
+            <span class="tag" style="background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.3); color: var(--orange);">BUTTON_DOUBLE_PRESS</span>
           </div>
-          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">Saisir le bon code sur la télécommande KeyFob — bouton 3. Un mauvais bouton incrémente le compteur d'erreurs sans avancer.</p>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">Appuyer deux fois sur le bouton Fibaro pour sceller le laboratoire. Un simple clic ou un triple clic incrémente le compteur d'erreurs sans avancer.</p>
           <div style="display: flex; gap: 24px; flex-wrap: wrap;">
             <div>
               <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; font-family: var(--font-mono);">Périphérique</div>
-              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">Fibaro KeyFob FGKF-601</div>
+              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">Fibaro Button FGPB-101</div>
             </div>
             <div>
               <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; font-family: var(--font-mono);">Type capteur</div>
-              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">keyfob</div>
+              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">button</div>
             </div>
             <div>
               <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; font-family: var(--font-mono);">Actions déclenchées</div>
-              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--green);">LAMP_ON + LCD "ESCAPE SUCCESSFUL !"</div>
+              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--green);">PLUG_ON + LCD "ESCAPE SUCCESSFUL !"</div>
             </div>
           </div>
         </div>
@@ -248,12 +248,12 @@
       <div class="card glow-card animate-fade-up delay-1">
         <div class="card-icon green">🖐️</div>
         <div class="card-title">Interface physique avant tout</div>
-        <p class="card-text">Pas d'écran tactile. Pas de clavier. Les joueurs interagissent avec de vrais objets : boutons, portes, capteurs de mouvement, télécommandes.</p>
+        <p class="card-text">Pas d'écran tactile. Pas de clavier. Les joueurs interagissent avec de vrais objets : boutons, portes, capteurs de mouvement.</p>
       </div>
       <div class="card glow-card animate-fade-up delay-2">
         <div class="card-icon blue">⚡</div>
         <div class="card-title">Feedback en moins d'une seconde</div>
-        <p class="card-text">Du déclenchement capteur au message LCD et à la réaction de la lampe : moins d'une seconde. Événement → Moteur → Actionneur.</p>
+        <p class="card-text">Du déclenchement capteur au message LCD et à la réaction de la prise : moins d'une seconde. Événement → Moteur → Actionneur.</p>
       </div>
       <div class="card glow-card animate-fade-up delay-3">
         <div class="card-icon purple">🔄</div>

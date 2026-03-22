@@ -141,7 +141,9 @@
         <tr><td>motion_sensor</td><td class="mono">1</td><td class="mono">Motion</td><td><span class="badge badge-green">MOTION_DETECTED</span></td></tr>
         <tr><td>motion_sensor</td><td class="mono">0</td><td class="mono">No Motion</td><td><span class="badge badge-blue">NO_MOTION</span></td></tr>
         <tr><td>button</td><td class="mono">1</td><td class="mono">—</td><td><span class="badge badge-green">BUTTON_PRESS</span></td></tr>
-        <tr><td>keyfob</td><td class="mono">1–6</td><td class="mono">—</td><td><span class="badge badge-purple">KEYFOB_BUTTON_N</span></td></tr>
+        <tr><td>button</td><td class="mono">2</td><td class="mono">—</td><td><span class="badge badge-green">BUTTON_DOUBLE_PRESS</span></td></tr>
+        <tr><td>button</td><td class="mono">3</td><td class="mono">—</td><td><span class="badge badge-green">BUTTON_TRIPLE_PRESS</span></td></tr>
+        <tr><td>button</td><td class="mono">10</td><td class="mono">—</td><td><span class="badge badge-purple">BUTTON_HOLD</span></td></tr>
         <tr><td>plug</td><td class="mono">1</td><td class="mono">On</td><td><span class="badge badge-green">PLUG_ON</span></td></tr>
       </tbody>
     </table>
@@ -199,7 +201,7 @@
     <div class="card" style="border-top:2px solid var(--blue);">
       <div style="font-family:var(--font-mono); font-size:0.7rem; color:#60a5fa; margin-bottom:12px;">on_success</div>
       <div class="card-title">Puzzle Solved</div>
-      <div class="card-text">Triggered on correct event. Can light a lamp, activate a plug, and display a congratulatory message.</div>
+      <div class="card-text">Triggered on correct event. Can activate a plug and display a congratulatory message.</div>
     </div>
     <div class="card" style="border-top:2px solid var(--red);">
       <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--red); margin-bottom:12px;">on_failure</div>
@@ -221,8 +223,6 @@
       </thead>
       <tbody>
         <tr><td><span class="mono">lcd_message</span></td><td>Display text on LCD screen</td><td class="text-muted" style="font-size:0.8rem;">HTTP → Flask lcd_service.py → PiFace LCD</td></tr>
-        <tr><td><span class="mono">lamp_on</span></td><td>Switch on a smart lamp</td><td class="text-muted" style="font-size:0.8rem;">DomoticzClient::turnOn(idx)</td></tr>
-        <tr><td><span class="mono">lamp_off</span></td><td>Switch off a smart lamp</td><td class="text-muted" style="font-size:0.8rem;">DomoticzClient::turnOff(idx)</td></tr>
         <tr><td><span class="mono">plug_on</span></td><td>Activate a wall plug</td><td class="text-muted" style="font-size:0.8rem;">DomoticzClient::turnOn(idx)</td></tr>
         <tr><td><span class="mono">plug_off</span></td><td>Deactivate a wall plug</td><td class="text-muted" style="font-size:0.8rem;">DomoticzClient::turnOff(idx)</td></tr>
         <tr><td><span class="mono">log_only</span></td><td>Record action with no physical effect</td><td class="text-muted" style="font-size:0.8rem;">PHP error_log()</td></tr>

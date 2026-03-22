@@ -62,9 +62,9 @@
       <div class="card-text">Deploying a new game scenario requires only database operations. The PHP engine doesn't change. The dzVents script doesn't change.</div>
     </div>
     <div class="card" style="text-align:center;">
-      <div style="font-size:2.5rem; margin-bottom:12px; font-family:var(--font-head); font-weight:700; color:var(--blue);">7</div>
-      <div class="card-title">Sensor Types</div>
-      <div class="card-text">Door, motion, button, keyfob, plug, lamp, LCD — every physical device can play a role as input or output in any scenario.</div>
+      <div style="font-size:2.5rem; margin-bottom:12px; font-family:var(--font-head); font-weight:700; color:var(--blue);">5</div>
+      <div class="card-title">Device Types</div>
+      <div class="card-text">Door sensor, motion sensor, button (multi-press), wall plug, LCD — every physical device can play a role as input or output in any scenario.</div>
     </div>
   </div>
 
@@ -89,7 +89,7 @@
           <td><strong>Boot Sequence</strong></td>
           <td>Fibaro Button</td>
           <td><span class="badge badge-green">BUTTON_PRESS</span></td>
-          <td class="text-muted" style="font-size:0.82rem;">LCD "System online" · Lamp ON</td>
+          <td class="text-muted" style="font-size:0.82rem;">LCD "System online" · Plug ON</td>
           <td>100</td>
           <td style="color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem;">—</td>
         </tr>
@@ -114,9 +114,9 @@
         <tr>
           <td class="mono">04</td>
           <td><strong>Final Code</strong></td>
-          <td>KeyFob Joueur</td>
-          <td><span class="badge badge-purple">KEYFOB_BUTTON_3</span></td>
-          <td class="text-muted" style="font-size:0.82rem;">LCD "ESCAPE SUCCESSFUL!" · Lamp ON</td>
+          <td>Fibaro Button</td>
+          <td><span class="badge badge-purple">BUTTON_DOUBLE_PRESS</span></td>
+          <td class="text-muted" style="font-size:0.82rem;">LCD "ESCAPE SUCCESSFUL!" · Plug ON</td>
           <td>300</td>
           <td><span class="badge badge-green">✓ WIN</span></td>
         </tr>
@@ -144,16 +144,16 @@
         </div>
         <div>
           <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Description (shown to player)</div>
-          <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:0.875rem; color:var(--text); min-height:60px;">Enter the final unlock code using the remote keyfob.</div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:0.875rem; color:var(--text); min-height:60px;">Press the Fibaro Button twice to seal the laboratory.</div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
           <div>
             <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Expected Sensor</div>
-            <div style="background:var(--surface); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:10px 14px; font-family:var(--font-mono); font-size:0.8rem; color:var(--green);">Keyfob Joueur (idx=7)</div>
+            <div style="background:var(--surface); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:10px 14px; font-family:var(--font-mono); font-size:0.8rem; color:var(--green);">Fibaro Button (idx=5)</div>
           </div>
           <div>
             <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Expected Event</div>
-            <div style="background:var(--surface); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:10px 14px; font-family:var(--font-mono); font-size:0.8rem; color:var(--green);">KEYFOB_BUTTON_3</div>
+            <div style="background:var(--surface); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:10px 14px; font-family:var(--font-mono); font-size:0.8rem; color:var(--green);">BUTTON_DOUBLE_PRESS</div>
           </div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
@@ -168,7 +168,7 @@
         </div>
         <div>
           <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Hint Message</div>
-          <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:0.875rem; color:var(--text-dim);">The code is a single button between 1 and 6.</div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:0.875rem; color:var(--text-dim);">Press the button exactly twice in quick succession.</div>
         </div>
         <div style="padding-top:8px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;">
           <button class="btn btn-outline btn-sm">Cancel</button>
@@ -203,9 +203,9 @@
         <div style="background:var(--card); border:1px solid rgba(59,130,246,0.2); border-radius:var(--radius); padding:16px;">
           <div style="font-family:var(--font-mono); font-size:0.68rem; color:#60a5fa; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;">on_success (order 2)</div>
           <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
-            <span class="tag">lamp_on</span>
+            <span class="tag">plug_on</span>
             <span style="color:var(--text-muted);">→</span>
-            <span style="color:var(--text);">Lampe principale (idx=1)</span>
+            <span style="color:var(--text);">Wall Plug (idx=6)</span>
           </div>
         </div>
 

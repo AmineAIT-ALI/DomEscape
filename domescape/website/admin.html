@@ -98,9 +98,9 @@
         <div style="background:rgba(0,255,136,0.04); border:1px solid rgba(0,255,136,0.2); border-radius:var(--radius); padding:24px; margin-bottom:24px;">
           <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--green); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:12px;">Current Puzzle — 04 of 04</div>
           <div style="font-family:var(--font-head); font-size:1.2rem; font-weight:600; color:var(--text); margin-bottom:8px;">Final Code</div>
-          <div style="font-size:0.875rem; color:var(--text-muted); margin-bottom:16px;">Enter the final unlock code using the keyfob remote. Button 3 is the correct key.</div>
+          <div style="font-size:0.875rem; color:var(--text-muted); margin-bottom:16px;">Enter the final unlock code by pressing the Fibaro Button twice. A double press seals the laboratory.</div>
           <div style="background:var(--surface); border-radius:8px; padding:14px; font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);">
-            Expected: <span style="color:var(--green);">KEYFOB_BUTTON_3</span> on <span style="color:var(--text-dim);">Keyfob Joueur (idx=7)</span>
+            Expected: <span style="color:var(--green);">BUTTON_DOUBLE_PRESS</span> on <span style="color:var(--text-dim);">Fibaro Button (idx=5)</span>
           </div>
           <div class="progress-bar-track"><div class="progress-bar-fill" style="width:75%;"></div></div>
           <div style="font-size:0.72rem; color:var(--text-muted); margin-top:6px; font-family:var(--font-mono);">3 / 4 puzzles completed</div>
@@ -115,7 +115,7 @@
             <span class="log-title">Event Log — last 6 events</span>
           </div>
           <div class="log-body">
-            <div class="log-entry"><span class="log-time">14:27:03</span><span class="log-ok">[ENGINE] KEYFOB_BUTTON_2 received — not expected — mistake_count=1</span></div>
+            <div class="log-entry"><span class="log-time">14:27:03</span><span class="log-ok">[ENGINE] BUTTON_PRESS received — not expected (expected BUTTON_DOUBLE_PRESS) — mistake_count=1</span></div>
             <div class="log-entry"><span class="log-time">14:22:15</span><span class="log-ok">[ENGINE] MOTION_DETECTED → puzzle 03 validated → transition to puzzle 04</span></div>
             <div class="log-entry"><span class="log-time">14:22:14</span><span class="log-info">[ACTION] lcd_message: "Scan validated."</span></div>
             <div class="log-entry"><span class="log-time">14:22:14</span><span class="log-info">[ACTION] plug_on idx=6</span></div>
