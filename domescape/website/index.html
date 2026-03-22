@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DomEscape — Plateforme d'interaction physique programmable</title>
+  <meta name="description" content="DomEscape est une plateforme qui utilise des capteurs Z-Wave, un moteur de scénarios stateless et une logique de déclenchement configurable pour transformer tout espace équipé de capteurs en environnement interactif et programmable." />
+  <link rel="stylesheet" href="assets/css/domescape.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="dot"></span>DomEscape</a>
+    <div class="nav-links">
+      <a href="demo.html">Démonstration</a>
+      <a href="platform.html">Plateforme</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="control-center.html">Centre de contrôle</a>
+      <a href="data-observability.html">Données</a>
+      <a href="docs.html">Documentation</a>
+      <a href="vision.html">Vision</a>
+    </div>
+    <div class="nav-cta">
+      <a href="demo.html" class="btn btn-primary btn-sm">Voir la démo →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero grid-bg">
+  <div class="hero-glow hero-glow-1"></div>
+  <div class="hero-glow hero-glow-2"></div>
+
+  <div class="hero-badge animate-fade-up">Plateforme d'interaction physique programmable</div>
+
+  <h1 class="hero-title animate-fade-up delay-1">
+    Transformez n'importe quelle pièce en<br>
+    <span class="accent" data-typewriter='["scénario","programme","expérience","plateforme"]'>scénario</span><span class="cursor">_</span>
+  </h1>
+
+  <p class="hero-subtitle animate-fade-up delay-2">
+    DomEscape transforme un espace physique en système interactif programmable — grâce à des capteurs Z-Wave, un moteur de scénarios stateless et une logique de déclenchement entièrement configurable. L'escape game est le proof of concept.
+  </p>
+
+  <div class="hero-actions animate-fade-up delay-3">
+    <a href="demo.html" class="btn btn-primary btn-lg">Voir en action →</a>
+    <a href="../public/inscription.php" class="btn btn-outline btn-lg">Créer un compte</a>
+    <a href="../public/connexion.php" class="btn btn-ghost btn-lg">Connexion</a>
+  </div>
+
+  <div class="arch-flow animate-fade-up delay-4">
+    <div class="arch-node">Capteurs Z-Wave</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">Domoticz</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">dzVents</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node highlight">Moteur de scénarios</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">MariaDB</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">Interfaces</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">Actionneurs</div>
+  </div>
+</section>
+
+<!-- SECTION 1 : Le problème -->
+<section class="section grid-bg">
+  <div class="section-header center animate-fade-up">
+    <div class="section-label">POURQUOI DOMESCAPE</div>
+    <h2 class="section-title">Deux secteurs. Les mêmes capteurs.<br>Zéro programmabilité.</h2>
+    <p class="section-sub">La domotique réagit automatiquement. Les escape rooms sont programmées manuellement. Aucun système ne permet de définir la logique sous forme de scénarios configurables.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="card glow-card animate-fade-up delay-1">
+      <div class="card-icon green">🏠</div>
+      <div class="card-title">Maisons connectées limitées</div>
+      <p class="card-text">La domotique réagit aux événements avec des règles fixes et codées en dur. Aucune logique narrative, aucune progression, aucun état.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-2">
+      <div class="card-icon purple">🔒</div>
+      <div class="card-title">Escape rooms figées</div>
+      <p class="card-text">Les escape rooms traditionnelles nécessitent un recâblage physique pour chaque scénario. Changer une énigme implique de modifier l'installation.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-3">
+      <div class="card-icon orange">⚡</div>
+      <div class="card-title">Pas de plateforme d'interaction</div>
+      <p class="card-text">Aucun système ne traite les événements capteurs comme des primitives d'interaction programmables capables de piloter des narrations configurables.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2 : La plateforme -->
+<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;">
+      <div class="animate-fade-up">
+        <div class="section-label">LA PLATEFORME</div>
+        <h2 class="section-title">Événements en entrée. Réactions en sortie.<br>Logique au milieu.</h2>
+        <p style="color: var(--text-muted); line-height: 1.8; margin-bottom: 20px;">
+          Les capteurs détectent les actions physiques. Le moteur les interprète en fonction d'un scénario chargé depuis la base de données. Si valide, l'étape avance et les actionneurs réagissent.
+        </p>
+        <p style="color: var(--text-muted); line-height: 1.8; margin-bottom: 20px;">
+          Le scénario est une donnée — interchangeable sans toucher au code. Un nouveau jeu, c'est un nouvel ensemble d'enregistrements en base, pas un nouveau déploiement.
+        </p>
+        <p style="color: var(--text-muted); line-height: 1.8;">
+          Chaque événement est enregistré. Chaque transition est persistée. Chaque action est traçable. Le moteur est constant ; l'expérience est variable.
+        </p>
+      </div>
+      <div class="animate-fade-up delay-2">
+        <div style="display: flex; flex-direction: column; gap: 4px; align-items: stretch;">
+          <div class="arch-node" style="text-align: center; padding: 20px; border-color: var(--green); color: var(--green); background: var(--green-dim); font-size: 0.9rem;">
+            Événement physique
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono);">Porte ouverte · Bouton pressé · Mouvement détecté</div>
+          </div>
+          <div style="color: var(--green); font-size: 1.2rem; text-align: center; padding: 6px;">↓</div>
+          <div class="arch-node" style="text-align: center; padding: 20px; border-color: var(--purple); color: #a78bfa; background: var(--purple-dim); font-size: 0.9rem;">
+            Moteur de scénarios
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono);">Valider · Avancer · Scorer</div>
+          </div>
+          <div style="color: var(--green); font-size: 1.2rem; text-align: center; padding: 6px;">↓</div>
+          <div class="arch-node" style="text-align: center; padding: 20px; border-color: var(--blue); color: #60a5fa; background: var(--blue-dim); font-size: 0.9rem;">
+            Réaction physique
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono);">Lampe allumée · Message LCD · Prise activée</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3 : Cas d'usage -->
+<section class="section">
+  <div class="section-header center animate-fade-up">
+    <div class="section-label">CAS D'USAGE</div>
+    <h2 class="section-title">Un moteur. Des contextes infinis.</h2>
+    <p class="section-sub">La même infrastructure. La même logique. Des expériences radicalement différentes selon la configuration du scénario.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="card glow-card animate-fade-up delay-1" style="border-color: rgba(0,255,136,0.2);">
+      <div class="card-icon green">🔐</div>
+      <div class="card-title">Escape game</div>
+      <p class="card-text">Des capteurs Z-Wave valident une séquence d'énigmes physiques. Chaque action déclenche une réaction en temps réel. Le scénario est entièrement configurable en base de données.</p>
+      <div style="margin-top: 16px;"><span class="tag tag-green" style="font-size: 0.72rem;">Démonstration disponible</span></div>
+    </div>
+    <div class="card glow-card animate-fade-up delay-2">
+      <div class="card-icon blue">🎓</div>
+      <div class="card-title">Formation</div>
+      <p class="card-text">Des séquences d'actions physiques validées par capteurs. Progression tracée par session. Certification automatisée sans papier ni superviseur manuel.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-3">
+      <div class="card-icon purple">✨</div>
+      <div class="card-title">Expériences interactives</div>
+      <p class="card-text">Musées, théâtre, installations artistiques. Tout espace équipé de capteurs peut devenir un environnement narratif programmable et reconfigurable.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4 : Concepts clés (anciennement 3) -->
+<section class="section grid-bg">
+  <div class="section-header center animate-fade-up">
+    <div class="section-label">CONCEPTS CLÉS</div>
+    <h2 class="section-title">Six idées qui définissent la plateforme.</h2>
+  </div>
+
+  <div class="grid-3">
+    <div class="card glow-card animate-fade-up delay-1">
+      <div class="card-icon green">⚡</div>
+      <div class="card-title">Architecture événementielle</div>
+      <p class="card-text">Chaque interaction commence par un événement physique. Les capteurs émettent, le moteur interprète, les actionneurs répondent.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-2">
+      <div class="card-icon purple">🗄️</div>
+      <div class="card-title">Logique pilotée par la base de données</div>
+      <p class="card-text">Scénarios, étapes, capteurs et événements attendus sont tous stockés dans MariaDB. Aucun changement de code pour créer un nouveau jeu.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-3">
+      <div class="card-icon blue">🔄</div>
+      <div class="card-title">Boucle de feedback physique</div>
+      <p class="card-text">Les actions correctes déclenchent de vraies réactions physiques : lampes allumées, messages LCD, prises activées.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-1">
+      <div class="card-icon green">📡</div>
+      <div class="card-title">Supervision en temps réel</div>
+      <p class="card-text">Une boucle de polling à 1 seconde maintient l'interface web synchronisée avec l'état de session en permanence.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-2">
+      <div class="card-icon purple">🧩</div>
+      <div class="card-title">Séparation des responsabilités</div>
+      <p class="card-text">EventManager, GameEngine et ActionManager sont des modules entièrement découplés à responsabilité unique.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-3">
+      <div class="card-icon orange">∞</div>
+      <div class="card-title">Scénarios configurables</div>
+      <p class="card-text">Chaque étape, déclencheur, action et séquence est configurable via la base de données. Un moteur, une infinité de scénarios.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4 : Ingénierie -->
+<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section">
+    <div class="section-header center animate-fade-up">
+      <div class="section-label">INGÉNIERIE</div>
+      <h2 class="section-title">Construit sur des principes solides.</h2>
+    </div>
+
+    <div class="grid-4">
+      <div class="stat-widget animate-fade-up delay-1" style="border-color: rgba(0,255,136,0.15);">
+        <div class="stat-label">Backend stateless</div>
+        <div style="font-family: var(--font-head); font-size: 1rem; font-weight: 600; color: var(--green); margin-bottom: 12px;">PHP + MariaDB</div>
+        <p class="card-text">PHP lit l'état depuis MariaDB à chaque requête. Aucune session en mémoire. Résistant aux pannes et horizontalement scalable.</p>
+      </div>
+      <div class="stat-widget animate-fade-up delay-2" style="border-color: rgba(124,58,237,0.15);">
+        <div class="stat-label">Middleware IoT</div>
+        <div style="font-family: var(--font-head); font-size: 1rem; font-weight: 600; color: #a78bfa; margin-bottom: 12px;">Domoticz + dzVents</div>
+        <p class="card-text">Domoticz abstrait toute la complexité Z-Wave. dzVents relie la couche IoT à la couche applicative via webhooks.</p>
+      </div>
+      <div class="stat-widget animate-fade-up delay-3" style="border-color: rgba(59,130,246,0.15);">
+        <div class="stat-label">Observabilité totale</div>
+        <div style="font-family: var(--font-head); font-size: 1rem; font-weight: 600; color: #60a5fa; margin-bottom: 12px;">100% tracé</div>
+        <p class="card-text">Chaque événement, validation, action et transition de session est enregistré dans la base pour le debug et la rejouabilité.</p>
+      </div>
+      <div class="stat-widget animate-fade-up delay-4" style="border-color: rgba(245,158,11,0.15);">
+        <div class="stat-label">Modèle plateforme</div>
+        <div style="font-family: var(--font-head); font-size: 1rem; font-weight: 600; color: var(--orange); margin-bottom: 12px;">∞ Scénarios</div>
+        <p class="card-text">L'escape game de démonstration est un scénario parmi d'autres. Le moteur peut exécuter n'importe quelle narration pilotée par capteurs sans modification.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5 : Accéder à la plateforme -->
+<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section">
+    <div class="section-header center animate-fade-up">
+      <div class="section-label">ACCÉDER À LA PLATEFORME</div>
+      <h2 class="section-title">Choisissez votre espace.</h2>
+      <p class="section-sub">DomEscape est une plateforme multi-rôles. Votre espace change selon votre profil.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card glow-card animate-fade-up delay-1" style="border-color:rgba(0,255,136,0.2); text-align:center;">
+        <div class="card-icon green" style="font-size:2rem; margin-bottom:16px;">🎮</div>
+        <div class="card-title" style="font-size:1.1rem; margin-bottom:8px;">Joueur</div>
+        <p class="card-text" style="margin-bottom:24px;">Choisissez un scénario, lancez une session, progressez dans les étapes et consultez votre historique.</p>
+        <a href="../public/inscription.php" style="display:inline-block; background:#00ff88; color:#0d0d0d; font-weight:700; font-size:.85rem; padding:10px 20px; border-radius:4px; text-decoration:none;">Créer un compte joueur →</a>
+      </div>
+      <div class="card glow-card animate-fade-up delay-2" style="border-color:rgba(96,165,250,0.2); text-align:center;">
+        <div class="card-icon blue" style="font-size:2rem; margin-bottom:16px;">🖥️</div>
+        <div class="card-title" style="font-size:1.1rem; margin-bottom:8px;">Superviseur</div>
+        <p class="card-text" style="margin-bottom:24px;">Accédez au centre de supervision temps réel, suivez la progression des équipes et contrôlez les sessions.</p>
+        <a href="../public/connexion.php" style="display:inline-block; background:transparent; color:#60a5fa; font-weight:700; font-size:.85rem; padding:9px 20px; border-radius:4px; text-decoration:none; border:1px solid rgba(96,165,250,0.4);">Se connecter →</a>
+      </div>
+      <div class="card glow-card animate-fade-up delay-3" style="border-color:rgba(167,139,250,0.2); text-align:center;">
+        <div class="card-icon purple" style="font-size:2rem; margin-bottom:16px;">⚙️</div>
+        <div class="card-title" style="font-size:1.1rem; margin-bottom:8px;">Administrateur</div>
+        <p class="card-text" style="margin-bottom:24px;">Gérez les scénarios, consultez les sessions, administrez les comptes et configurez la plateforme.</p>
+        <a href="../public/connexion.php" style="display:inline-block; background:transparent; color:#a78bfa; font-weight:700; font-size:.85rem; padding:9px 20px; border-radius:4px; text-decoration:none; border:1px solid rgba(167,139,250,0.4);">Accéder à l'admin →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6 : CTA final -->
+<section class="section">
+  <div class="animate-fade-up" style="border: 1px solid var(--border-glow); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; background: var(--card); position: relative; overflow: hidden;">
+    <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 600px; height: 200px; background: radial-gradient(ellipse, rgba(0,255,136,0.06) 0%, transparent 70%); pointer-events: none;"></div>
+    <div class="section-label" style="display: inline-block; margin-bottom: 20px;">PRÊT</div>
+    <h2 class="section-title" style="margin-bottom: 16px;">Prêt à voir la démo ?</h2>
+    <p style="color: var(--text-muted); max-width: 520px; margin: 0 auto 40px; line-height: 1.7;">
+      DomEscape Lab 01 tourne sur Raspberry Pi avec quatre vrais capteurs Z-Wave et trois actionneurs. Tout est réel.
+    </p>
+    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+      <a href="demo.html" class="btn btn-primary btn-lg">Explorer la démo →</a>
+      <a href="../public/inscription.php" class="btn btn-outline btn-lg">Créer un compte</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-logo">● DomEscape</div>
+  <p class="footer-text">Une plateforme d'interaction physique programmable — Z-Wave + PHP + MariaDB</p>
+  <div class="footer-links">
+    <a href="demo.html">Démonstration</a>
+    <a href="platform.html">Plateforme</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="control-center.html">Centre de contrôle</a>
+    <a href="data-observability.html">Données</a>
+    <a href="docs.html">Documentation</a>
+    <a href="vision.html">Vision</a>
+  </div>
+  <div class="footer-bottom">Raspberry Pi · Z-Stick Gen5 · Domoticz · PHP 8 · MariaDB · Python Flask</div>
+</footer>
+
+<script src="assets/js/domescape.js"></script>
+</body>
+</html>

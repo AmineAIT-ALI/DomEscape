@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scenario Builder — DomEscape</title>
+  <link rel="stylesheet" href="assets/css/domescape.css">
+</head>
+<body class="grid-bg">
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" style="text-decoration:none;"><span class="dot"></span> DomEscape</a>
+    <div class="nav-links">
+      <a href="architecture.html">Architecture</a>
+      <a href="game-engine.html">Game Engine</a>
+      <a href="gameplay.html">Gameplay</a>
+      <a href="admin.html">Admin</a>
+      <a href="scenario.html" class="active">Scenarios</a>
+      <a href="observability.html">Observability</a>
+      <a href="database.html">Database</a>
+      <a href="docs.html">Docs</a>
+      <a href="about.html">About</a>
+    </div>
+    <div class="nav-cta"><a href="gameplay.html" class="btn btn-primary btn-sm">Explore Demo</a></div>
+  </div>
+</nav>
+
+<div style="position:relative; overflow:hidden;">
+  <div class="hero-glow hero-glow-1" style="opacity:0.5;"></div>
+  <div class="page-hero">
+    <div class="section-label">Scenario Builder</div>
+    <h1 class="page-hero-title">A platform, not<br>a single game.</h1>
+    <p class="page-hero-sub">DomEscape decouples the game engine from game content. Scenarios live in the database. New escape games are created through configuration — never through code changes.</p>
+    <div style="display:flex; gap:12px; margin-top:32px; flex-wrap:wrap;">
+      <span class="tag tag-green">DB-Driven</span>
+      <span class="tag tag-purple">No Redeployment</span>
+      <span class="tag">Sensor-Agnostic</span>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- PLATFORM VALUE -->
+<section class="section">
+  <div class="section-header center">
+    <div class="section-label">Platform Thinking</div>
+    <h2 class="section-title">One engine. Infinite scenarios.</h2>
+    <p class="section-sub">The game engine interprets configuration — it doesn't encode game rules. Swap the database rows, and you have a completely different escape game.</p>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:48px;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2.5rem; margin-bottom:12px; font-family:var(--font-head); font-weight:700; color:var(--green);">∞</div>
+      <div class="card-title">Infinite Scenarios</div>
+      <div class="card-text">Any sequence of Z-Wave sensor events can be a puzzle sequence. The engine doesn't know or care what the story is.</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2.5rem; margin-bottom:12px; font-family:var(--font-head); font-weight:700; color:var(--purple);">0</div>
+      <div class="card-title">Zero Code Changes</div>
+      <div class="card-text">Deploying a new game scenario requires only database operations. The PHP engine doesn't change. The dzVents script doesn't change.</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2.5rem; margin-bottom:12px; font-family:var(--font-head); font-weight:700; color:var(--blue);">7</div>
+      <div class="card-title">Sensor Types</div>
+      <div class="card-text">Door, motion, button, keyfob, plug, lamp, LCD — every physical device can play a role as input or output in any scenario.</div>
+    </div>
+  </div>
+
+  <!-- Sample scenario table -->
+  <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:16px;">Demo Scenario — DomEscape Lab 01</div>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:48px;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Puzzle</th>
+          <th>Sensor</th>
+          <th>Expected Event</th>
+          <th>On Success — Output</th>
+          <th>Points</th>
+          <th>Final?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">01</td>
+          <td><strong>Boot Sequence</strong></td>
+          <td>Fibaro Button</td>
+          <td><span class="badge badge-green">BUTTON_PRESS</span></td>
+          <td class="text-muted" style="font-size:0.82rem;">LCD "System online" · Lamp ON</td>
+          <td>100</td>
+          <td style="color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem;">—</td>
+        </tr>
+        <tr>
+          <td class="mono">02</td>
+          <td><strong>Secret Door</strong></td>
+          <td>Door Sensor</td>
+          <td><span class="badge badge-green">DOOR_OPEN</span></td>
+          <td class="text-muted" style="font-size:0.82rem;">LCD "Access Granted"</td>
+          <td>150</td>
+          <td style="color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem;">—</td>
+        </tr>
+        <tr>
+          <td class="mono">03</td>
+          <td><strong>Motion Scan</strong></td>
+          <td>Multisensor</td>
+          <td><span class="badge badge-green">MOTION_DETECTED</span></td>
+          <td class="text-muted" style="font-size:0.82rem;">LCD "Scan validated" · Plug ON</td>
+          <td>200</td>
+          <td style="color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem;">—</td>
+        </tr>
+        <tr>
+          <td class="mono">04</td>
+          <td><strong>Final Code</strong></td>
+          <td>KeyFob Joueur</td>
+          <td><span class="badge badge-purple">KEYFOB_BUTTON_3</span></td>
+          <td class="text-muted" style="font-size:0.82rem;">LCD "ESCAPE SUCCESSFUL!" · Lamp ON</td>
+          <td>300</td>
+          <td><span class="badge badge-green">✓ WIN</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PUZZLE EDITOR MOCKUP -->
+<section class="section">
+  <div class="section-label">Puzzle Configuration</div>
+  <h2 class="section-title" style="margin-bottom:40px;">Every puzzle is a record in the database.</h2>
+
+  <div class="grid-2" style="gap:32px; align-items:start;">
+    <!-- Puzzle form mockup -->
+    <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px;">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:24px;">Edit Puzzle — #04 Final Code</div>
+
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Puzzle Title</div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:0.875rem; color:var(--text);">Final Code</div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Description (shown to player)</div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:0.875rem; color:var(--text); min-height:60px;">Enter the final unlock code using the remote keyfob.</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Expected Sensor</div>
+            <div style="background:var(--surface); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:10px 14px; font-family:var(--font-mono); font-size:0.8rem; color:var(--green);">Keyfob Joueur (idx=7)</div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Expected Event</div>
+            <div style="background:var(--surface); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:10px 14px; font-family:var(--font-mono); font-size:0.8rem; color:var(--green);">KEYFOB_BUTTON_3</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Points Reward</div>
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:0.875rem; color:var(--text);">300</div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Is Final Puzzle</div>
+            <div style="background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.3); border-radius:8px; padding:10px 14px; font-family:var(--font-mono); font-size:0.8rem; color:var(--green);">✓ YES</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">Hint Message</div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:0.875rem; color:var(--text-dim);">The code is a single button between 1 and 6.</div>
+        </div>
+        <div style="padding-top:8px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn btn-outline btn-sm">Cancel</button>
+          <button class="btn btn-primary btn-sm">Save Puzzle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions editor -->
+    <div>
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:16px;">Puzzle Actions — puzzle #04</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+
+        <div style="background:var(--card); border:1px solid rgba(0,255,136,0.2); border-radius:var(--radius); padding:16px;">
+          <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--green); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;">on_enter</div>
+          <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
+            <span class="tag">lcd_message</span>
+            <span style="color:var(--text-muted);">→</span>
+            <span style="color:var(--text);">"Enter the final code"</span>
+          </div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid rgba(59,130,246,0.2); border-radius:var(--radius); padding:16px;">
+          <div style="font-family:var(--font-mono); font-size:0.68rem; color:#60a5fa; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;">on_success (order 1)</div>
+          <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
+            <span class="tag">lcd_message</span>
+            <span style="color:var(--text-muted);">→</span>
+            <span style="color:var(--text);">"ESCAPE SUCCESSFUL!"</span>
+          </div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid rgba(59,130,246,0.2); border-radius:var(--radius); padding:16px;">
+          <div style="font-family:var(--font-mono); font-size:0.68rem; color:#60a5fa; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;">on_success (order 2)</div>
+          <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
+            <span class="tag">lamp_on</span>
+            <span style="color:var(--text-muted);">→</span>
+            <span style="color:var(--text);">Lampe principale (idx=1)</span>
+          </div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid rgba(239,68,68,0.2); border-radius:var(--radius); padding:16px;">
+          <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--red); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;">on_failure</div>
+          <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
+            <span class="tag">lcd_message</span>
+            <span style="color:var(--text-muted);">→</span>
+            <span style="color:var(--text);">"Wrong code. Try again."</span>
+          </div>
+        </div>
+
+        <button class="btn btn-outline w-full" style="border-style:dashed; color:var(--text-muted); margin-top:4px;">+ Add action</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- FUTURE VISION -->
+<section class="section">
+  <div class="section-label">Future Vision</div>
+  <h2 class="section-title" style="margin-bottom:32px;">The platform grows. The engine stays.</h2>
+
+  <div class="grid-3">
+    <div class="card" style="opacity:0.75;">
+      <div class="card-icon purple">⧉</div>
+      <div class="card-title">Branching Scenarios</div>
+      <div class="card-text">puzzle_transitions table enables success and failure paths to fork — different outcomes based on player choices and performance.</div>
+    </div>
+    <div class="card" style="opacity:0.75;">
+      <div class="card-icon blue">⊞</div>
+      <div class="card-title">Puzzle Templates</div>
+      <div class="card-text">Reusable puzzle blueprints that can be instantiated across multiple games. Define once, configure for each scenario.</div>
+    </div>
+    <div class="card" style="opacity:0.75;">
+      <div class="card-icon orange">⤓</div>
+      <div class="card-title">Scenario Import/Export</div>
+      <div class="card-text">JSON export of complete game configurations. Share scenarios between rooms, teams, or organizations as portable packages.</div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-logo">▣ DomEscape</div>
+  <p class="footer-text">Smart Escape Game Platform · Powered by Z-Wave, Domoticz &amp; PHP</p>
+  <div class="footer-links">
+    <a href="index.html">Home</a><a href="architecture.html">Architecture</a>
+    <a href="gameplay.html">Gameplay</a><a href="database.html">Database</a><a href="docs.html">Docs</a>
+  </div>
+  <div class="footer-bottom">// DomEscape · scenario builder page</div>
+</footer>
+<script src="assets/js/domescape.js"></script>
+</body>
+</html>

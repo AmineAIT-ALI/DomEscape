@@ -1,0 +1,13 @@
+# Secrets — ne jamais committer
+domescape/config/secrets.php
+
+# Fichiers temporaires debounce et logs
+domescape/logs/*.tmp
+domescape/logs/*.log
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Repo imbriqué
+SmartCare

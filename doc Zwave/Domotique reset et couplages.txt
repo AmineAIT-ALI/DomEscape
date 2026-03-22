@@ -1,0 +1,141 @@
+Domotique: Reset et couplages
+
+PENSER AU WAKE UP
+
+Aeotec Z-Stick Gen5
+https://aeotec.freshdesk.com/support/solutions/articles/6000242202-z-stick-gen5-user-guide
+
+Factory reset
+Unplug the Z-Stick Gen5 (if it isn't already)
+Press and hold the RESET Button for 22 seconds (with a paperclip for instance).
+The LED on Z-Stick Gen5 will blink a red color faster and faster over the course of 20 seconds.
+At 20 seconds, the LED will have a solid blue color for 2 seconds to confirm a successful factory reset.
+When the blue colored LED turns off, release the RESET button
+
+Couplage
+1. Unplug the Z-Stick Gen5 from any USB connection, this will enable Network management mode.
+2. Tap the button once on Z-Stick Gen5+. Its LED will blink blue slowly to indicate it is in pair mode.
+3. Follow the instruction of the Z-Wave device that you want to pair. Typically the button press on the Z-Wave device is a single tap, but some have special button presses (ie. hold for 2 seconds and release, triple tap, double tap, etc).
+    Z-Stick Gen5+ LED will confirm if it paired something successfully by showing a solid blue LED for 2 seconds before returning to a slow blinking blue LED.
+4. Repeat step 3 for any device you want to pair if you have multiple devices that you need to include.
+5. When done, tap the button once on Z-Stick Gen5+ to bring it out of pair/include mode. The LED will de-activate.
+
+---------------------------------------------------------------------------------------------------------------------------
+Fibaro Wall Plug FGWPE-102 ZW5 v3.2
+
+Resetting the device to factory defaults:
+1. Make sure the device is powered.
+2. Press and hold the B-button.
+3. Wait for the LED ring to glow yellow (3rd menu position).
+4. Release the B-button.
+5. Click the B-button once to confirm selection.
+6. After few seconds the device will restart with factory settings,
+which is signalled with the red ring colour.
+
+Couplage
+To add the device to the Z-Wave network:
+1. Plug the device into a socket nearby the main Z-Wave controller.
+2. The LED ring will glow red signalling not being added (reset or
+remove the device otherwise).
+3. Set the main controller in (security/non-security) add mode (see
+the controller’s manual).
+4. Quickly, triple click the B-button located on the casing.
+5. Wait for the adding process to end.
+6. Successful adding will be confirmed by the Z-Wave controller’s
+message.
+
+---------------------------------------------------------------------------------------------------------------------------
+Fibaro KeyFob FGKF-601 ZW5 v3.2
+
+Resetting the device to factory defaults:
+There are two ways of resetting the device:
+Resetting the device using the menu:
+1. Click ROND and MOINS simultaneously.
+2. Click TRIANGLE or CROIX until LED glows yellow.
+3. Click PLUS.
+Emergency resetting the device on start-up:
+1. Remove the battery.
+2. hold CARRE and PLUS, while inserting the battery.
+Successful resetting will be confirmed by smoothly brightening and dimming of the yellow LED colour.
+
+
+Adding (Inclusion) - Z-Wave device learning mode, allowing to add
+the device to existing Z-Wave network.
+To add the device:
+1. Set the main Z-Wave controller in (Security/non-Security Mode) add mode (see the controller’s manual).
+2. Power the device (insert the battery).
+3. Click any button three times.
+4. LED will pulse white during the adding process.
+5. Wait for the adding process to end.
+6. Successful adding will be confirmed by the Z-Wave controller’s message and green LED colour.
+
+
+
+---------------------------------------------------------------------------------------------------------------------------
+Aetoec Multisensor 6 ZW100-C (868.42MHz)
+
+Manually Factory Reset MultiSensor 6.
+This method is not fully advised unless your gateway has failed, and you do not yet have another gateway to perform a general unpair on MultiSensor 6.
+1. Press and hold MultiSensor 6 Action button
+2. Wait until the RGB LED turns from:
+- Yellow
+- Purple
+- Red - blinks faster and faster
+- Green - You can let go here, it will continue to the next (Rainbow Cycle)
+- Rainbow Cycle
+3. If your MultiSensor has been successfully factory reset from its previous network, the RGB LED will be active with a colourful gradient for 3 seconds. When you press the Action Button on MultiSensor, its green LED will blink. If the removal was unsuccessful, the green LED will stay solid for a few seconds when you press the Action Button.
+
+Couplage
+1. Put your primary Z-Wave gateway into pair mode, your Z-Wave gateway should confirm that it is waiting to add a new device
+2. Press the Action Button on your MultiSensor.
+3. The LED on MultiSensor will blink Green rapidly, followed by a solid Green LED for 1 second for successful inclusion, or a solid red LED for 1 second for a failed inclusion.
+
+
+---------------------------------------------------------------------------------------------------------------------------
+Fibaro Door/Window Sensor 2 FGDW-002 (1) ZW5 v3.2
+
+Resetting the Door/Window Sensor 2:
+In order to reset the device:
+1. Open the cover.
+2. Remove the battery.
+3. Install the battery while holding both TMP buttons.
+4. Visual LED indicator will be flashing slowly for 5 seconds - keep holding the buttons.
+5. Release one button when the LED indicator starts flashing quickly.
+6. Click released button once to confirm launching of reset procedure.
+7. Wait a few seconds until a long blink of the LED indicator. Do not remove the battery.
+8. Visual LED indicator will blink 5 times quickly to confirm the reset
+OU
+https://www.youtube.com/watch?v=CmlDhW4WeEw
+
+Couplage
+To add the device to the Z-Wave network:
+1. Place the Door/Window Sensor 2 within the direct range of your Z-Wave controller.
+2. Set the main controller in (Security/non-Security Mode) add mode (see the controller’s manual).
+3. Quickly, three times press one of the TMP buttons (while the other button is pressed).
+4. Wait for the adding process to end.
+5. Successful adding will be confirmed by the Z-Wave controller’s message.
+---------------------------------------------------------------------------------------------------------------------------
+Fibaro The Button FGPB-101-8 ZW5 v3.2
+
+Reset procedure of the Button:
+In order to reset the device:
+1. Click the Button exactly five times.
+2. Press and hold the Button for at least 5 seconds.
+
+Adding (Inclusion)
+To add the device to the Z-Wave network:
+1. Place the Button within the direct range of your Z-Wave controller.
+2. Set the main controller in (Security/non-Security) add mode (see the controller’s manual).
+3. Click the Button at least six times.
+4. Wait for the adding process to end.
+5. Successful adding will be confirmed by the Z-Wave controller’s message.
+
+Operating the Button:
+1 click: send action to associated devices (switch on/off by default) and/or trigger a scene
+2 clicks: send action to associated devices (switch on maximum level by default) and/or trigger a scene
+3 clicks: send action to associated devices (no action by default) and/or trigger a scene
+4 clicks: wake the device up and/or trigger a scene
+5 clicks: start reset procedure (press and hold for 5s to confirm) and/or trigger a scene
+6 or more clicks: learning mode (adding/removing)
+Hold: send action to associated devices (start level change up/down) and/or trigger a scene
+Release: send action to associated devices (stop level change) and/or trigger a scene

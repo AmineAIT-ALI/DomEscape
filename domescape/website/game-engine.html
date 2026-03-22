@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Game Engine — DomEscape</title>
+  <link rel="stylesheet" href="assets/css/domescape.css">
+</head>
+<body class="grid-bg">
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" style="text-decoration:none;"><span class="dot"></span> DomEscape</a>
+    <div class="nav-links">
+      <a href="architecture.html">Architecture</a>
+      <a href="game-engine.html" class="active">Game Engine</a>
+      <a href="gameplay.html">Gameplay</a>
+      <a href="admin.html">Admin</a>
+      <a href="scenario.html">Scenarios</a>
+      <a href="observability.html">Observability</a>
+      <a href="database.html">Database</a>
+      <a href="docs.html">Docs</a>
+      <a href="about.html">About</a>
+    </div>
+    <div class="nav-cta"><a href="gameplay.html" class="btn btn-primary btn-sm">Explore Demo</a></div>
+  </div>
+</nav>
+
+<div style="position:relative; overflow:hidden;">
+  <div class="hero-glow hero-glow-1" style="opacity:0.5;"></div>
+  <div class="page-hero">
+    <div class="section-label">Game Engine</div>
+    <h1 class="page-hero-title">The intelligence<br>at the center.</h1>
+    <p class="page-hero-sub">A stateless, database-driven PHP engine that interprets physical sensor events as gameplay actions, validates puzzle completion and orchestrates real-time physical feedback.</p>
+    <div style="display:flex; gap:12px; margin-top:32px; flex-wrap:wrap;">
+      <span class="tag tag-green">Stateless PHP</span>
+      <span class="tag tag-purple">DB-Driven State</span>
+      <span class="tag">Event Matching</span>
+      <span class="tag">Puzzle Transitions</span>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- STATE MACHINE -->
+<section class="section">
+  <div class="section-label">State Machine</div>
+  <h2 class="section-title" style="margin-bottom:40px;">A session is a deterministic state machine.</h2>
+
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:40px; margin-bottom:40px;">
+    <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:24px;">Session State Transitions</div>
+    <div class="state-machine" style="justify-content:center; gap:16px; flex-wrap:wrap;">
+      <div class="state-node" style="background:rgba(255,255,255,0.04);">IDLE / no_session</div>
+      <div class="state-arrow">──start()──▶</div>
+      <div class="state-node active">RUNNING / puzzle_N</div>
+      <div class="state-arrow">──success──▶</div>
+      <div class="state-node active">RUNNING / puzzle_N+1</div>
+      <div class="state-arrow">──final──▶</div>
+      <div class="state-node win">WON</div>
+    </div>
+    <div class="state-machine" style="justify-content:center; gap:16px; margin-top:16px; flex-wrap:wrap;">
+      <div style="width:200px;"></div>
+      <div class="state-arrow" style="transform:rotate(90deg); margin:0 120px;">▼</div>
+    </div>
+    <div style="display:flex; justify-content:center; margin-top:4px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="state-node" style="background:rgba(255,255,255,0.04);">any wrong event</div>
+        <div class="state-arrow">──▶</div>
+        <div class="state-node fail">MISTAKE (mistake_count++)</div>
+        <div class="state-arrow">──▶</div>
+        <div class="state-node active">RUNNING (same puzzle)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <h3 style="font-family:var(--font-head); font-weight:600; font-size:1.1rem; color:var(--text); margin-bottom:16px;">Why stateless?</h3>
+      <p style="color:var(--text-muted); margin-bottom:16px; line-height:1.7;">PHP is stateless by design — each HTTP request spawns a fresh process. Rather than fighting this constraint with session files or shared memory, DomEscape embraces it.</p>
+      <p style="color:var(--text-muted); line-height:1.7;">Every call to <code style="font-family:var(--font-mono); font-size:0.82rem; color:var(--green);">GameEngine::process()</code> starts by reading the complete game state from MariaDB. This makes every call idempotent, debuggable, and resilient to crashes.</p>
+    </div>
+    <div>
+      <h3 style="font-family:var(--font-head); font-weight:600; font-size:1.1rem; color:var(--text); margin-bottom:16px;">What the engine holds in memory</h3>
+      <div class="code-block">
+        <span class="code-comment">// GameEngine::process() — per-request scope</span><br><br>
+        <span class="code-var">$session</span> = <span class="code-fn">getActiveSession</span>();   <span class="code-comment">// DB read</span><br>
+        <span class="code-var">$puzzle</span>  = <span class="code-fn">getPuzzle</span>(<span class="code-var">$session</span>[<span class="code-string">'current_puzzle_id'</span>]);<br>
+        <span class="code-var">$expected</span>= <span class="code-fn">getExpectedEvent</span>(<span class="code-var">$puzzle</span>[<span class="code-string">'id_puzzle'</span>]);<br><br>
+        <span class="code-keyword">if</span> (<span class="code-fn">matchesExpected</span>(<span class="code-var">$event</span>, <span class="code-var">$expected</span>)) &#123;<br>
+        &nbsp; <span class="code-fn">onSuccess</span>(<span class="code-var">$session</span>, <span class="code-var">$puzzle</span>);  <span class="code-comment">// DB write</span><br>
+        &#125; <span class="code-keyword">else</span> &#123;<br>
+        &nbsp; <span class="code-fn">onFailure</span>(<span class="code-var">$session</span>, <span class="code-var">$puzzle</span>); <span class="code-comment">// DB write</span><br>
+        &#125;
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- EVENT PROCESSING -->
+<section class="section">
+  <div class="section-label">Event Processing</div>
+  <h2 class="section-title" style="margin-bottom:40px;">From raw bytes to game logic.</h2>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:48px;">
+    <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; text-align:center;">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); margin-bottom:16px; text-transform:uppercase; letter-spacing:0.1em;">Input — Domoticz Raw</div>
+      <div class="code-block" style="text-align:left; font-size:0.78rem;">
+        idx    = <span class="code-string">8</span><br>
+        nvalue = <span class="code-string">1</span><br>
+        svalue = <span class="code-string">"Open"</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:var(--text-muted);">→</div>
+    <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; text-align:center;">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--green); margin-bottom:16px; text-transform:uppercase; letter-spacing:0.1em;">Output — Normalized Event</div>
+      <div class="code-block" style="text-align:left; font-size:0.78rem;">
+        sensor     = <span class="code-fn">"Door Sensor"</span><br>
+        event_code = <span class="code-fn">"DOOR_OPEN"</span><br>
+        event_type = &#123; id: 2, ... &#125;
+      </div>
+    </div>
+  </div>
+
+  <h3 style="font-family:var(--font-head); font-weight:600; font-size:1.1rem; color:var(--text); margin-bottom:20px;">Mapping rules by device type</h3>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:40px;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>device_type</th>
+          <th>nvalue</th>
+          <th>svalue</th>
+          <th>event_code</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>door_sensor</td><td class="mono">1</td><td class="mono">Open</td><td><span class="badge badge-green">DOOR_OPEN</span></td></tr>
+        <tr><td>door_sensor</td><td class="mono">0</td><td class="mono">Closed</td><td><span class="badge badge-blue">DOOR_CLOSE</span></td></tr>
+        <tr><td>motion_sensor</td><td class="mono">1</td><td class="mono">Motion</td><td><span class="badge badge-green">MOTION_DETECTED</span></td></tr>
+        <tr><td>motion_sensor</td><td class="mono">0</td><td class="mono">No Motion</td><td><span class="badge badge-blue">NO_MOTION</span></td></tr>
+        <tr><td>button</td><td class="mono">1</td><td class="mono">—</td><td><span class="badge badge-green">BUTTON_PRESS</span></td></tr>
+        <tr><td>keyfob</td><td class="mono">1–6</td><td class="mono">—</td><td><span class="badge badge-purple">KEYFOB_BUTTON_N</span></td></tr>
+        <tr><td>plug</td><td class="mono">1</td><td class="mono">On</td><td><span class="badge badge-green">PLUG_ON</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Matching logic -->
+  <div class="grid-2" style="gap:32px;">
+    <div>
+      <h3 style="font-family:var(--font-head); font-weight:600; font-size:1.1rem; color:var(--text); margin-bottom:16px;">matchesExpected() — V1 logic</h3>
+      <p style="color:var(--text-muted); margin-bottom:16px; font-size:0.9rem; line-height:1.7;">A match is valid when both the <strong style="color:var(--text);">sensor</strong> and the <strong style="color:var(--text);">event type</strong> match what is defined in <code style="font-family:var(--font-mono); font-size:0.8rem; color:var(--green);">puzzle_expected_events</code> for the current puzzle.</p>
+      <div class="code-block" style="font-size:0.78rem;">
+        <span class="code-comment">// Matching algorithm</span><br>
+        <span class="code-keyword">if</span> (<span class="code-var">$expected</span>[<span class="code-string">'id_sensor'</span>] !== <span class="code-var">$event</span>[<span class="code-string">'sensor'</span>][<span class="code-string">'id_sensor'</span>])<br>
+        &nbsp; <span class="code-keyword">return</span> <span class="code-fn">false</span>; <span class="code-comment">// wrong sensor</span><br><br>
+        <span class="code-keyword">if</span> (<span class="code-var">$expected</span>[<span class="code-string">'id_event_type'</span>] !== <span class="code-var">$event</span>[<span class="code-string">'event_type'</span>][<span class="code-string">'id_event_type'</span>])<br>
+        &nbsp; <span class="code-keyword">return</span> <span class="code-fn">false</span>; <span class="code-comment">// wrong event type</span><br><br>
+        <span class="code-keyword">return</span> <span class="code-fn">true</span>; <span class="code-comment">// ✓ puzzle validated</span>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-family:var(--font-head); font-weight:600; font-size:1.1rem; color:var(--text); margin-bottom:16px;">On success — transition</h3>
+      <div class="code-block" style="font-size:0.78rem;">
+        <span class="code-comment">// GameEngine::onSuccess()</span><br><br>
+        <span class="code-fn">ActionManager</span>::<span class="code-fn">executeForPuzzle</span>(<br>
+        &nbsp; <span class="code-var">$puzzle</span>[<span class="code-string">'id_puzzle'</span>], <span class="code-string">'on_success'</span><br>
+        );<br><br>
+        <span class="code-keyword">if</span> (<span class="code-var">$puzzle</span>[<span class="code-string">'is_final'</span>]) &#123;<br>
+        &nbsp; <span class="code-comment">// mark session as 'won'</span><br>
+        &#125; <span class="code-keyword">else</span> &#123;<br>
+        &nbsp; <span class="code-var">$next</span> = <span class="code-fn">getNextPuzzle</span>(<span class="code-var">$game</span>, <span class="code-var">$order</span>);<br>
+        &nbsp; <span class="code-comment">// UPDATE game_sessions</span><br>
+        &nbsp; <span class="code-comment">// SET current_puzzle_id = $next</span><br>
+        &nbsp; <span class="code-fn">ActionManager</span>::<span class="code-fn">executeForPuzzle</span>(<br>
+        &nbsp;&nbsp;&nbsp; <span class="code-var">$next</span>[<span class="code-string">'id_puzzle'</span>], <span class="code-string">'on_enter'</span><br>
+        &nbsp; );<br>
+        &#125;
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ACTION TRIGGERS -->
+<section class="section">
+  <div class="section-label">Action System</div>
+  <h2 class="section-title" style="margin-bottom:32px;">Four trigger moments. Unlimited actions.</h2>
+
+  <div class="grid-4" style="margin-bottom:48px;">
+    <div class="card" style="border-top:2px solid var(--green);">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--green); margin-bottom:12px;">on_enter</div>
+      <div class="card-title">Puzzle Start</div>
+      <div class="card-text">Triggered when the session transitions to this puzzle. Typically shows a clue on the LCD display.</div>
+    </div>
+    <div class="card" style="border-top:2px solid var(--blue);">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:#60a5fa; margin-bottom:12px;">on_success</div>
+      <div class="card-title">Puzzle Solved</div>
+      <div class="card-text">Triggered on correct event. Can light a lamp, activate a plug, and display a congratulatory message.</div>
+    </div>
+    <div class="card" style="border-top:2px solid var(--red);">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--red); margin-bottom:12px;">on_failure</div>
+      <div class="card-title">Wrong Action</div>
+      <div class="card-text">Triggered on unmatched event. Increments mistake_count and can display an error message on LCD.</div>
+    </div>
+    <div class="card" style="border-top:2px solid var(--orange);">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--orange); margin-bottom:12px;">on_hint</div>
+      <div class="card-title">Hint Requested</div>
+      <div class="card-text">Triggered by Game Master intervention. Displays a pre-configured hint without advancing the game state.</div>
+    </div>
+  </div>
+
+  <h3 style="font-family:var(--font-head); font-weight:600; color:var(--text); margin-bottom:20px;">Available action types</h3>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+    <table class="data-table">
+      <thead>
+        <tr><th>action_type</th><th>Description</th><th>Execution path</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="mono">lcd_message</span></td><td>Display text on LCD screen</td><td class="text-muted" style="font-size:0.8rem;">HTTP → Flask lcd_service.py → PiFace LCD</td></tr>
+        <tr><td><span class="mono">lamp_on</span></td><td>Switch on a smart lamp</td><td class="text-muted" style="font-size:0.8rem;">DomoticzClient::turnOn(idx)</td></tr>
+        <tr><td><span class="mono">lamp_off</span></td><td>Switch off a smart lamp</td><td class="text-muted" style="font-size:0.8rem;">DomoticzClient::turnOff(idx)</td></tr>
+        <tr><td><span class="mono">plug_on</span></td><td>Activate a wall plug</td><td class="text-muted" style="font-size:0.8rem;">DomoticzClient::turnOn(idx)</td></tr>
+        <tr><td><span class="mono">plug_off</span></td><td>Deactivate a wall plug</td><td class="text-muted" style="font-size:0.8rem;">DomoticzClient::turnOff(idx)</td></tr>
+        <tr><td><span class="mono">log_only</span></td><td>Record action with no physical effect</td><td class="text-muted" style="font-size:0.8rem;">PHP error_log()</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- FUTURE -->
+<section class="section">
+  <div class="section-label">Roadmap</div>
+  <h2 class="section-title" style="margin-bottom:32px;">The engine is designed to grow.</h2>
+  <p style="color:var(--text-muted); max-width:600px; margin-bottom:40px; line-height:1.7;">V1 implements linear sequential puzzles — one event, one outcome. The architecture anticipates more complex interactions without breaking the existing engine contract.</p>
+
+  <div class="grid-3">
+    <div class="card" style="opacity:0.7;">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); margin-bottom:10px;">V2 — Timed Puzzles</div>
+      <div class="card-title">Time-limited enigmas</div>
+      <div class="card-text">Puzzles with a countdown — wrong answer or timeout triggers an alternate path or score penalty.</div>
+    </div>
+    <div class="card" style="opacity:0.7;">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); margin-bottom:10px;">V2 — Branching</div>
+      <div class="card-title">Non-linear scenarios</div>
+      <div class="card-text">puzzle_transitions table enables success/failure paths to diverge, creating unique narrative branches.</div>
+    </div>
+    <div class="card" style="opacity:0.7;">
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); margin-bottom:10px;">V3 — Compound Events</div>
+      <div class="card-title">Multi-sensor puzzles</div>
+      <div class="card-text">Require simultaneous conditions across multiple sensors — e.g. door open AND motion detected within 5 seconds.</div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-logo">▣ DomEscape</div>
+  <p class="footer-text">Smart Escape Game Platform · Powered by Z-Wave, Domoticz &amp; PHP</p>
+  <div class="footer-links">
+    <a href="index.html">Home</a><a href="architecture.html">Architecture</a>
+    <a href="gameplay.html">Gameplay</a><a href="database.html">Database</a><a href="docs.html">Docs</a>
+  </div>
+  <div class="footer-bottom">// DomEscape · game engine page</div>
+</footer>
+<script src="assets/js/domescape.js"></script>
+</body>
+</html>
