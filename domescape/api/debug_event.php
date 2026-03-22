@@ -33,6 +33,7 @@ $mapping = [
     'BUTTON_PRESS'        => ['idx' => 5,  'nvalue' => 1, 'svalue' => ''],
     'BUTTON_DOUBLE_PRESS' => ['idx' => 5,  'nvalue' => 2, 'svalue' => ''],
     'BUTTON_TRIPLE_PRESS' => ['idx' => 5,  'nvalue' => 3, 'svalue' => ''],
+    'BUTTON_HOLD'         => ['idx' => 5,  'nvalue' => 10, 'svalue' => ''], // nvalue placeholder
     'DOOR_OPEN'           => ['idx' => 8,  'nvalue' => 1, 'svalue' => ''],
     'DOOR_CLOSE'          => ['idx' => 8,  'nvalue' => 0, 'svalue' => ''],
     'MOTION_DETECTED'     => ['idx' => 10, 'nvalue' => 1, 'svalue' => ''],

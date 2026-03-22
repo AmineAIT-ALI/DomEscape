@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 'BUTTON_PRESS', 'DOOR_OPEN', 'MOTION_DETECTED' => 1,
                 'BUTTON_DOUBLE_PRESS' => 2,
                 'BUTTON_TRIPLE_PRESS' => 3,
+                'BUTTON_HOLD'         => 10, // placeholder — ajuster après test hardware
                 default => 0,
             };
 

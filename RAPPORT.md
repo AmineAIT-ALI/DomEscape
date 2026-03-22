@@ -700,10 +700,11 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 1 | BUTTON_PRESS | Bouton — appui simple | button |
 | 2 | BUTTON_DOUBLE_PRESS | Bouton — double appui | button |
 | 3 | BUTTON_TRIPLE_PRESS | Bouton — triple appui | button |
-| 4 | DOOR_OPEN | Porte ouverte | door_sensor |
-| 5 | DOOR_CLOSE | Porte fermée | door_sensor |
-| 6 | MOTION_DETECTED | Mouvement détecté | motion_sensor |
-| 7 | NO_MOTION | Aucun mouvement | motion_sensor |
+| 4 | BUTTON_HOLD | Bouton — maintenu | button |
+| 5 | DOOR_OPEN | Porte ouverte | door_sensor |
+| 6 | DOOR_CLOSE | Porte fermée | door_sensor |
+| 7 | MOTION_DETECTED | Mouvement détecté | motion_sensor |
+| 8 | NO_MOTION | Aucun mouvement | motion_sensor |
 
 ### action_type
 
@@ -737,8 +738,8 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | id_etape | id_capteur | id_type_evenement | obligatoire |
 |---|---|---|---|
 | 1 | 1 | 1 | 1 |
-| 2 | 2 | 4 | 1 |
-| 3 | 3 | 6 | 1 |
+| 2 | 2 | 5 | 1 |
+| 3 | 3 | 7 | 1 |
 | 4 | 1 | 2 | 1 |
 | 5 | 1 | 1 | 1 |
 
@@ -777,9 +778,9 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | id_evenement_session | id_session | id_capteur | id_type_evenement | id_etape | evenement_attendu | valide |
 |---|---|---|---|---|---|---|
 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
-| 2 | 1 | 3 | 6 | 2 | 0 | 1 |
-| 3 | 1 | 2 | 4 | 2 | 1 | 1 |
-| 4 | 1 | 3 | 6 | 3 | 1 | 1 |
+| 2 | 1 | 3 | 7 | 2 | 0 | 1 |
+| 3 | 1 | 2 | 5 | 2 | 1 | 1 |
+| 4 | 1 | 3 | 7 | 3 | 1 | 1 |
 | 5 | 1 | 1 | 2 | 4 | 1 | 1 |
 | 6 | 2 | 1 | 1 | 1 | 1 | 1 |
 | 7 | 2 | 1 | 1 | 2 | 0 | 1 |

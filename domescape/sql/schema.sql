@@ -234,6 +234,7 @@ INSERT INTO evenement_type (code_evenement, libelle_evenement, type_capteur, des
 ('BUTTON_PRESS',         'Bouton — appui simple',  'button', 'Fibaro Button : 1 appui (nvalue=1)'),
 ('BUTTON_DOUBLE_PRESS',  'Bouton — double appui',  'button', 'Fibaro Button : 2 appuis consécutifs (nvalue=2)'),
 ('BUTTON_TRIPLE_PRESS',  'Bouton — triple appui',  'button', 'Fibaro Button : 3 appuis consécutifs (nvalue=3)'),
+('BUTTON_HOLD',         'Bouton — maintenu',      'button', 'Fibaro Button : appui long maintenu (nvalue à vérifier sur hardware)'),
 ('DOOR_OPEN',       'Porte ouverte',        'door_sensor',  'Capteur porte : état ouvert'),
 ('DOOR_CLOSE',      'Porte fermée',         'door_sensor',  'Capteur porte : état fermé'),
 ('MOTION_DETECTED', 'Mouvement détecté',    'motion_sensor','Multisensor : mouvement présent'),
@@ -292,8 +293,8 @@ INSERT INTO etape (id_scenario, numero_etape, titre_etape, description_etape, me
 -- ETAPE_ATTEND(id_etape, id_capteur, id_type_evenement)
 INSERT INTO etape_attend (id_etape, id_capteur, id_type_evenement) VALUES
 (1, 1, 1),   -- étape 1 → BUTTON_PRESS (id=1) sur Fibaro Button
-(2, 2, 4),   -- étape 2 → DOOR_OPEN (id=4) sur Door Sensor
-(3, 3, 6),   -- étape 3 → MOTION_DETECTED (id=6) sur Multisensor
+(2, 2, 5),   -- étape 2 → DOOR_OPEN (id=5) sur Door Sensor
+(3, 3, 7),   -- étape 3 → MOTION_DETECTED (id=7) sur Multisensor
 (4, 1, 2);   -- étape 4 → BUTTON_DOUBLE_PRESS (id=2) sur Fibaro Button
 
 -- Actions déclenchées par étape
