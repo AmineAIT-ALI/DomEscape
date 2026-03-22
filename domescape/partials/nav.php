@@ -167,6 +167,8 @@ function nav_active(string $path): string {
         <?php if ($_nav_isAdmin): ?>
           <a href="/domescape/admin/dashboard.php"
              class="<?= nav_active('admin/dashboard') ?>">Administration</a>
+          <a href="/domescape/admin/scenarios.php"
+             class="<?= nav_active('scenarios') ?>">Scénarios</a>
           <a href="/domescape/admin/utilisateurs.php"
              class="<?= nav_active('utilisateurs') ?>">Utilisateurs</a>
         <?php endif; ?>

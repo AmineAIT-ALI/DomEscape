@@ -244,14 +244,17 @@ $sessions = $pdo->query("
     <!-- Quick actions -->
     <div class="section-label">Actions rapides</div>
     <div class="quick-actions">
+        <a href="/domescape/admin/scenarios.php" class="qa-btn">
+            <i data-lucide="layers" style="width:13px;height:13px;opacity:.6;"></i> Gérer les scénarios
+        </a>
         <a href="/domescape/admin/utilisateurs.php" class="qa-btn">
-            <span class="qa-btn-icon">&#9632;</span> Gérer les utilisateurs
+            <i data-lucide="users" style="width:13px;height:13px;opacity:.6;"></i> Gérer les utilisateurs
         </a>
         <a href="/domescape/public/gamemaster.php" class="qa-btn">
-            <span class="qa-btn-icon">&#9632;</span> Supervision en direct
+            <i data-lucide="monitor" style="width:13px;height:13px;opacity:.6;"></i> Supervision en direct
         </a>
         <a href="/domescape/api/debug_event.php" class="qa-btn" target="_blank">
-            <span class="qa-btn-icon">&#9632;</span> Événements Z-Wave
+            <i data-lucide="radio" style="width:13px;height:13px;opacity:.6;"></i> Événements Z-Wave
         </a>
     </div>
 
@@ -275,6 +278,7 @@ $sessions = $pdo->query("
                     <th>Étapes</th>
                     <th>Statut</th>
                     <th>Créé le</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -305,7 +309,8 @@ $sessions = $pdo->query("
                             </span>
                         <?php endif; ?>
                     </td>
-                    <td style="color:#444;font-size:.72rem;"><?= htmlspecialchars($s['cree_le'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#444;font-size:.72rem;"><?= htmlspecialchars(substr($s['cree_le'],0,10), ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><a href="/domescape/admin/scenario_edit.php?id=<?= (int)$s['id_scenario'] ?>" style="font-size:.7rem;color:#60a5fa;text-decoration:none;">Éditer →</a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
@@ -392,5 +397,7 @@ $sessions = $pdo->query("
     50% { opacity: .3; }
 }
 </style>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>
