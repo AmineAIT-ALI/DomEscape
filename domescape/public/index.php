@@ -1,20 +1,14 @@
 <?php
 require_once __DIR__ . '/../core/RoleGuard.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../core/ScenarioRepository.php';
 
 RoleGuard::requireLogin();
 
 $pdo = getDB();
 
 // Scénarios actifs avec compte d'étapes
-$scenarios = $pdo->query("
-    SELECT s.*, COUNT(e.id_etape) AS nb_etapes
-    FROM scenario s
-    LEFT JOIN etape e ON s.id_scenario = e.id_scenario
-    WHERE s.actif = 1
-    GROUP BY s.id_scenario
-    ORDER BY s.nom_scenario
-")->fetchAll();
+$scenarios = ScenarioRepository::getActive();
 
 // Session active de ce joueur (via utilisateur)
 $authUser   = Auth::user();
@@ -283,7 +277,7 @@ if ($authUser) {
 
         <?php if (empty($scenarios)): ?>
             <div class="empty-state">
-                <div style="font-size:2.5rem;opacity:.2;">&#9632;</div>
+                <div style="opacity:.2;"><i data-lucide="inbox" style="width:2.5rem;height:2.5rem;"></i></div>
                 <p>Aucun scénario disponible pour le moment.</p>
                 <?php if (in_array(ROLE_ADMINISTRATEUR, $authRoles, true)): ?>
                     <a href="/domescape/admin/dashboard.php" style="color:#00ff88;font-size:.8rem;">Configurer un scénario →</a>
@@ -309,10 +303,10 @@ if ($authUser) {
 
                     <div class="scenario-meta">
                         <div class="meta-item">
-                            &#9632; <span><?= (int)$s['nb_etapes'] ?> énigme<?= $s['nb_etapes'] > 1 ? 's' : '' ?></span>
+                            <i data-lucide="layers" style="width:12px;height:12px;"></i> <span><?= (int)$s['nb_etapes'] ?> énigme<?= $s['nb_etapes'] > 1 ? 's' : '' ?></span>
                         </div>
                         <div class="meta-item">
-                            &#9675; <span>Z-Wave</span>
+                            <i data-lucide="radio" style="width:12px;height:12px;"></i> <span>Z-Wave</span>
                         </div>
                     </div>
 
@@ -351,6 +345,8 @@ if ($authUser) {
     </div>
 </div>
 
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 let startModal;

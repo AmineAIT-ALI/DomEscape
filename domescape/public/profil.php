@@ -253,7 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
 
   <!-- Profile header -->
   <div class="profile-head">
-    <div class="profile-avatar">&#9632;</div>
+    <div class="profile-avatar"><i data-lucide="user" style="width:28px;height:28px;"></i></div>
     <div class="profile-head-info">
       <div class="profile-head-name"><?= htmlspecialchars($userInfo['nom'], ENT_QUOTES, 'UTF-8') ?></div>
       <div class="profile-head-email"><?= htmlspecialchars($userInfo['email'], ENT_QUOTES, 'UTF-8') ?></div>
@@ -370,5 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

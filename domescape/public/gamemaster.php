@@ -10,7 +10,7 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
     <title>DomEscape — Game Master</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #0d0d0d; color: #e0e0e0; font-family: 'Courier New', monospace; }
+        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; }
         .panel { background: #1a1a2e; border: 1px solid #0f3460; border-radius: 8px; padding: 24px; }
         .label  { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
         .value  { color: #00ff88; font-size: 1.4rem; font-weight: bold; }
@@ -86,14 +86,17 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
             <div class="panel">
                 <h5 class="mb-4" style="color:#00ff88;">Contrôles</h5>
                 <div class="d-grid gap-2">
+                    <button class="btn btn-outline-warning" onclick="sendHint()">
+                        <i data-lucide="lightbulb" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i>Envoyer un indice
+                    </button>
                     <button class="btn btn-outline-danger" onclick="resetSession()">
-                        &#8635; Réinitialiser la session
+                        <i data-lucide="rotate-ccw" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i>Réinitialiser la session
                     </button>
                     <a href="/domescape/public/player.php" class="btn btn-outline-light" target="_blank">
-                        &#128065; Vue joueur
+                        <i data-lucide="eye" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i>Vue joueur
                     </a>
                     <a href="/domescape/admin/dashboard.php" class="btn btn-outline-secondary">
-                        &#9881; Administration
+                        <i data-lucide="settings" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i>Administration
                     </a>
                 </div>
             </div>
@@ -110,6 +113,8 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
     </div>
 </div>
 
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 <script>
 let lastSessionId = null;
 let startTime     = null;
@@ -195,6 +200,21 @@ function addLog(msg, type = 'ok') {
     if (logEl.children.length > 50) logEl.lastChild.remove();
 }
 
+function sendHint() {
+    fetch('/domescape/api/send_hint.php', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                addLog(`Indice #${data.nb_indices} envoyé : ${data.indice}`, 'ok');
+            } else if (data.status === 'no_hint') {
+                addLog('Aucun indice défini pour cette étape.', 'ignore');
+            } else {
+                addLog(data.message || 'Erreur lors de l\'envoi de l\'indice.', 'err');
+            }
+        })
+        .catch(() => addLog('Impossible de joindre le serveur.', 'err'));
+}
+
 function resetSession() {
     if (!confirm('Réinitialiser la session en cours ?')) return;
     fetch('/domescape/api/reset_game.php')
@@ -208,7 +228,7 @@ function resetSession() {
 }
 
 poll();
-setInterval(poll, 1000);
+setInterval(poll, 2000);
 </script>
 </body>
 </html>

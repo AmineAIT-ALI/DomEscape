@@ -10,7 +10,7 @@ RoleGuard::requireLogin();
     <title>DomEscape — Joueur</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #0d0d0d; color: #e0e0e0; font-family: 'Courier New', monospace; }
+        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; }
         .status-bar { background: #111; border-bottom: 1px solid #0f3460; padding: 10px 0; }
         .timer { font-size: 2rem; color: #00ff88; letter-spacing: 4px; }
         .puzzle-card { background: #1a1a2e; border: 1px solid #0f3460; border-radius: 8px; padding: 30px; }
@@ -28,7 +28,8 @@ RoleGuard::requireLogin();
 
 <div class="status-bar">
     <div class="container d-flex justify-content-between align-items-center">
-        <span style="color:#00ff88; font-weight:bold;">&#9632; DomEscape</span>
+        <a href="/domescape/public/tableau-de-bord.php"
+           style="color:#00ff88; font-weight:bold; text-decoration:none;">&#9632; DomEscape</a>
         <span id="teamDisplay" class="text-muted small"></span>
         <button id="abandonBtn" onclick="abandonGame()"
                 style="display:none; background:transparent; border:1px solid #333; color:#666;
@@ -45,7 +46,7 @@ RoleGuard::requireLogin();
 
     <!-- Bannière victoire -->
     <div id="winBanner">
-        <h1>&#127942; ESCAPE SUCCESSFUL !</h1>
+        <h1><i data-lucide="trophy" style="width:2rem;height:2rem;vertical-align:middle;margin-right:10px;"></i>ESCAPE SUCCESSFUL !</h1>
         <p id="winDetails" class="mt-3"></p>
         <a href="/domescape/public/index.php" class="btn btn-dark mt-3">Rejouer</a>
     </div>
@@ -57,7 +58,7 @@ RoleGuard::requireLogin();
             <div class="timer" id="timer">00:00</div>
             <div class="text-muted small mt-1">
                 Score : <span id="score">0</span> pts &nbsp;|&nbsp;
-                <span class="mistake-badge">&#10007; <span id="mistakes">0</span> erreur(s)</span>
+                <span class="mistake-badge"><i data-lucide="x" style="width:14px;height:14px;vertical-align:middle;"></i> <span id="mistakes">0</span> erreur(s)</span>
             </div>
         </div>
 
@@ -69,6 +70,14 @@ RoleGuard::requireLogin();
             <div class="text-muted small mb-2">ÉNIGME <span id="puzzleOrder">-</span></div>
             <div class="puzzle-title" id="puzzleTitle">Chargement...</div>
             <div class="puzzle-desc" id="puzzleDesc"></div>
+            <!-- Indice envoyé par le Game Master -->
+            <div id="hintBox" class="mt-3 p-3 rounded d-none"
+                 style="background:#0d0d18; border:1px solid rgba(255,200,0,.3);">
+                <div class="text-muted small mb-1" style="color:#f0c040!important;">
+                    <i data-lucide="lightbulb" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>INDICE
+                </div>
+                <div id="hintText" style="color:#f0c040; font-size:.85rem;"></div>
+            </div>
         </div>
 
         <!-- Pas de session -->
@@ -79,6 +88,8 @@ RoleGuard::requireLogin();
     </div>
 </div>
 
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 <script>
 let totalPuzzles = 0;
 let startTime    = null;
@@ -155,6 +166,17 @@ function poll() {
                 document.getElementById('puzzleDesc').textContent  = data.etape.description;
                 renderDots(data.etape.numero, totalPuzzles);
             }
+
+            // Indice
+            const hintBox  = document.getElementById('hintBox');
+            const hintText = document.getElementById('hintText');
+            if (data.nb_indices > 0 && data.etape && data.etape.indice) {
+                hintText.textContent = data.etape.indice;
+                hintBox.classList.remove('d-none');
+                lucide.createIcons();
+            } else {
+                hintBox.classList.add('d-none');
+            }
         })
         .catch(() => {});
 }
@@ -166,9 +188,9 @@ function abandonGame() {
         .then(() => { window.location.href = '/domescape/public/index.php'; });
 }
 
-// Polling toutes les secondes
+// Polling toutes les 2 secondes
 poll();
-setInterval(poll, 1000);
+setInterval(poll, 2000);
 </script>
 </body>
 </html>

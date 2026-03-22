@@ -150,7 +150,7 @@ $sessions = $repo->getSessionsForUser($user['id']);
   <?php if (empty($sessions)): ?>
 
     <div class="empty-state">
-      <div class="empty-icon">&#9632;</div>
+      <div class="empty-icon"><i data-lucide="inbox" style="width:2.5rem;height:2.5rem;"></i></div>
       <p>Vous n'avez pas encore joué.<br>Lancez votre première session dès maintenant.</p>
       <a href="/domescape/public/index.php" class="btn-play">Démarrer une partie →</a>
     </div>
@@ -244,5 +244,7 @@ $sessions = $repo->getSessionsForUser($user['id']);
 
 </div>
 
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>
