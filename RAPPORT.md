@@ -15,7 +15,7 @@
 1. Introduction
 2. Description du sujet
 3. Description générale du système
-4. Description du site Web et intérêt de la base de données
+4. Description du site web et intérêt de la base de données
 5. Dictionnaire des Données (DD)
 6. Modélisation Entité-Association (MCD)
 7. Schéma Relationnel (MLD)
@@ -110,7 +110,7 @@ Les objectifs fonctionnels de DomEscape sont les suivants :
                                    │
                             Interfaces Web
                     ┌──────────────┼──────────────┐
-                 Joueur      Game Master        Admin
+                 Joueur      Superviseur        Admin
 ```
 
 ### 3.2. Stack technique
@@ -163,7 +163,11 @@ Le moteur traite les événements dans une transaction SQL avec verrouillage (`S
 **f) Couche de simulation**
 Afin de permettre le test et la démonstration indépendamment du matériel réel, une couche de simulation a été mise en place (`/dev/simulate.php`, `/api/debug_event.php`). Elle permet de reproduire le comportement des capteurs et de valider la logique de jeu sans dépendre du réseau Z-Wave.
 
-### 3.5. Rôles utilisateurs
+### 3.5. Authentification et gestion des rôles
+
+En complément du moteur de jeu, DomEscape intègre une couche applicative d'authentification et de gestion des rôles. Celle-ci permet de distinguer les accès joueur, supervision et administration à travers un modèle RBAC (Role-Based Access Control) stocké en base, sans configuration statique dans le code.
+
+### 3.6. Rôles utilisateurs
 
 | Rôle | Accès |
 |---|---|
@@ -173,7 +177,7 @@ Afin de permettre le test et la démonstration indépendamment du matériel rée
 
 ---
 
-## 4. Description du site Web et intérêt de la base de données
+## 4. Description du site web et intérêt de la base de données
 
 ### 4.1. Deux composantes complémentaires
 
@@ -193,7 +197,7 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 | `/public/inscription.php` | Création de compte joueur |
 | `/public/tableau-de-bord.php` | Hub central adapté au rôle de l'utilisateur |
 | `/public/player.php` | Interface joueur : étape courante, progression, bouton abandon |
-| `/public/gamemaster.php` | Interface animateur : démarrage, reset, suivi temps réel |
+| `/public/gamemaster.php` | Interface superviseur : démarrage, reset, suivi temps réel |
 | `/public/mes-sessions.php` | Historique personnel des parties |
 | `/admin/dashboard.php` | Tableau de bord administrateur |
 | `/admin/utilisateurs.php` | Gestion des comptes et des rôles |
@@ -206,16 +210,19 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 | `/api/handle_event.php` | POST | Réception des webhooks Domoticz |
 | `/api/start_game.php` | POST | Démarrage d'une session |
 | `/api/session_status.php` | GET | Polling de l'état de la session (toutes les secondes) |
-| `/api/reset_game.php` | POST | Réinitialisation (Game Master) |
+| `/api/reset_game.php` | POST | Réinitialisation (superviseur) |
 | `/api/abandon_game.php` | POST | Abandon de partie |
+| `/api/debug_event.php` | POST / GET | Simulation d'un événement capteur sans matériel réel |
 | `/api/healthcheck.php` | GET | État du système (BDD, Domoticz, LCD) |
+
+L'interface `/dev/simulate.php` s'appuie sur l'endpoint `/api/debug_event.php` pour injecter des événements capteurs simulés directement dans le moteur de jeu, sans dépendre du réseau Z-Wave.
 
 ### 4.4. Intérêt de la base de données
 
 La base de données constitue le **point de vérité unique** du système. Elle sert à :
 
 **1. Stocker l'état courant de la partie**
-La table `session` contient l'étape courante, le score, le nombre d'erreurs et le statut. Le frontend poll `/api/session_status.php` toutes les secondes pour rafraîchir l'affichage sans rechargement de page.
+La table `session` contient l'étape courante, le score, le nombre d'erreurs et le statut. Le frontend interroge périodiquement `/api/session_status.php` (polling toutes les secondes) afin de rafraîchir l'affichage sans rechargement de page.
 
 **2. Configurer les scénarios sans toucher au code**
 Les tables `scenario`, `etape`, `etape_attend` et `etape_declenche` permettent de créer et modifier n'importe quel scénario directement en base. Le moteur de jeu lit dynamiquement cette configuration à chaque appel.
@@ -372,8 +379,8 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 | id_etape | INT | FK → etape, NULL | Étape active au moment de la réception |
 | date_evenement | DATETIME | NOT NULL | Horodatage précis |
 | valeur_brute | TEXT | — | Payload JSON brut reçu de Domoticz |
-| evenement_attendu | BOOLEAN | — | L'événement correspondait-il à l'attendu de l'étape courante ? |
-| valide | BOOLEAN | — | Une session était-elle active au moment de la réception ? |
+| evenement_attendu | BOOLEAN | — | Indique si l'événement reçu correspondait à l'attendu défini pour l'étape courante. |
+| valide | BOOLEAN | — | Indique si l'événement a été retenu comme exploitable par le moteur dans le contexte de la session courante. |
 
 #### Table : action_executee
 
@@ -439,9 +446,9 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 ┌───────────────────┐    ┌───────────────────┐
 │  EVENEMENT_TYPE   │    │   ACTION_TYPE      │
 │───────────────────│    │───────────────────│
-│ # id_type_evt     │    │ # id_type_action  │
+│ # id_type_evenement │   │ # id_type_action  │
 │   code_evenement  │    │   code_action     │
-│   libelle         │    │   libelle_action  │
+│   libelle_evenement │  │   libelle_action  │
 │   type_capteur    │    │   description     │
 └───────────────────┘    └───────────────────┘
 
@@ -451,7 +458,7 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 │ # id_scenario     │    │ # id_etape        │
 │   nom_scenario    │    │   numero_etape    │
 │   description     │    │   titre_etape     │
-│   theme           │    │   description     │
+│   theme           │    │   description_etape │
 │   actif           │    │   points          │
 └───────────────────┘    │   finale          │
                          └───────────────────┘
@@ -488,10 +495,10 @@ SCENARIO ──(1,n)────── contient ──────(1,1)── ET
     │                                  │                        │
   SESSION                           ATTEND               DECLENCHE
     │                           (ternaire)             (ternaire)
-   / \                          /          \           /          \
-(1,n)(1,n)               CAPTEUR   EVENEMENT    ACTIONNEUR  ACTION
-    │    │                TYPE                    TYPE
- JOUEUR  ETAPE
+  /   \                         /          \           /          \
+(1,n)(1,n)               CAPTEUR   EVENEMENT_TYPE   ACTIONNEUR  ACTION_TYPE
+  │     │
+JOUEUR  ETAPE
     │
    (0,1)
     │
@@ -671,6 +678,8 @@ utilisateur_role (
 
 ## 8. Exemples de données dans les tables
 
+Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des principales tables. Il ne s'agit pas d'un export exhaustif, mais d'un jeu de données représentatif du fonctionnement de la plateforme.
+
 ### capteur
 
 | id_capteur | nom_capteur | type_capteur | domoticz_idx | emplacement | actif |
@@ -804,8 +813,8 @@ utilisateur_role (
 | 1 | Administrateur | admin@domescape.local | 1 | 2026-03-21 09:00:00 |
 | 2 | Marie Dupont | marie@domescape.local | 1 | 2026-03-21 10:00:00 |
 | 3 | Thomas Martin | thomas@domescape.local | 1 | 2026-03-21 10:15:00 |
-| 4 | Game Master 1 | gm1@domescape.local | 1 | 2026-03-21 12:00:00 |
-| 5 | Game Master 2 | gm2@domescape.local | 1 | 2026-03-21 12:05:00 |
+| 4 | Superviseur 1 | gm1@domescape.local | 1 | 2026-03-21 12:00:00 |
+| 5 | Superviseur 2 | gm2@domescape.local | 1 | 2026-03-21 12:05:00 |
 
 ### role
 
@@ -832,7 +841,7 @@ utilisateur_role (
 
 DomEscape est une plateforme applicative complète illustrant l'intégration d'un système logiciel avec un environnement physique instrumenté. À travers ce projet, nous avons conçu une architecture capable de recevoir des événements matériels, de les interpréter en temps réel, puis de piloter des réactions physiques cohérentes avec un scénario de jeu.
 
-La base de données joue un rôle central dans cette architecture. Elle ne sert pas uniquement à stocker des informations de manière passive : elle constitue à la fois le support de configuration des scénarios, le registre d'état des sessions en cours et l'archive exhaustive des événements et actions.
+La base de données joue un rôle central dans cette architecture. Elle ne constitue pas un simple espace de stockage, mais un véritable support de configuration, d'exécution et de traçabilité des scénarios, des sessions et des interactions physiques.
 
 Plusieurs choix de conception structurants ressortent du projet :
 - un **moteur de jeu stateless**, sans état applicatif conservé en mémoire ;
@@ -845,3 +854,5 @@ Plusieurs choix de conception structurants ressortent du projet :
 La modélisation retenue permet d'obtenir un système à la fois robuste, extensible et analysable. Elle ouvre également la voie à des évolutions futures, telles que les étapes chronométrées, les embranchements de scénario, les événements composites ou le support multi-salles.
 
 À ce stade, le projet est techniquement prêt à être validé en environnement matériel réel sur Raspberry Pi avec les équipements Z-Wave. Les prochaines étapes consistent principalement à finaliser l'intégration physique, à valider les flux en conditions réelles et à consolider l'expérience de démonstration.
+
+DomEscape illustre ainsi comment une modélisation rigoureuse des données permet de construire un système interactif physique cohérent, configurable et robuste, à l'interface entre logiciel, base de données et environnement réel.
