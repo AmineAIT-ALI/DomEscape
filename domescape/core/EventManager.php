@@ -88,7 +88,6 @@ class EventManager
     //   door_sensor   nvalue=1 → DOOR_OPEN   | nvalue=0 → DOOR_CLOSE
     //   motion_sensor nvalue=1 → MOTION_DETECTED | nvalue=0 → NO_MOTION
     //   button        nvalue=1 → BUTTON_PRESS
-    //   keyfob        nvalue 1..6 → KEYFOB_BUTTON_N
     // ----------------------------------------------------------
     private static function mapToCodeEvenement(string $typeCapteur, int $nvalue, string $svalue): ?string
     {
@@ -101,13 +100,6 @@ class EventManager
 
             case 'button':
                 return $nvalue === 1 ? 'BUTTON_PRESS' : null;
-
-            case 'keyfob':
-                // Le Fibaro Keyfob expose chaque touche comme une scène (nvalue = 1..6)
-                if ($nvalue >= 1 && $nvalue <= 6) {
-                    return "KEYFOB_BUTTON_$nvalue";
-                }
-                return null;
 
             default:
                 return null;

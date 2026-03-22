@@ -6,8 +6,8 @@
 // Usage (GET ou POST) :
 //   ?event=BUTTON_PRESS
 //   ?event=DOOR_OPEN
+//   ?event=DOOR_CLOSE
 //   ?event=MOTION_DETECTED
-//   ?event=KEYFOB_BUTTON_3
 //
 // Pas de token requis — endpoint réservé au développement.
 // Mappe le code événement aux vrais idx du seed data.
@@ -28,19 +28,13 @@ if (!Auth::check() || !Auth::hasRole(ROLE_ADMINISTRATEUR)) {
 }
 
 // Mapping code → payload Domoticz (idx = seed data réels)
-// Fibaro Button idx=5 | Door Sensor idx=8 | Multisensor idx=10 | Keyfob idx=7
+// Fibaro Button idx=5 | Door Sensor idx=8 | Multisensor idx=10
 $mapping = [
     'BUTTON_PRESS'    => ['idx' => 5,  'nvalue' => 1, 'svalue' => ''],
     'DOOR_OPEN'       => ['idx' => 8,  'nvalue' => 1, 'svalue' => ''],
     'DOOR_CLOSE'      => ['idx' => 8,  'nvalue' => 0, 'svalue' => ''],
     'MOTION_DETECTED' => ['idx' => 10, 'nvalue' => 1, 'svalue' => ''],
     'NO_MOTION'       => ['idx' => 10, 'nvalue' => 0, 'svalue' => ''],
-    'KEYFOB_BUTTON_1' => ['idx' => 7,  'nvalue' => 1, 'svalue' => ''],
-    'KEYFOB_BUTTON_2' => ['idx' => 7,  'nvalue' => 2, 'svalue' => ''],
-    'KEYFOB_BUTTON_3' => ['idx' => 7,  'nvalue' => 3, 'svalue' => ''],
-    'KEYFOB_BUTTON_4' => ['idx' => 7,  'nvalue' => 4, 'svalue' => ''],
-    'KEYFOB_BUTTON_5' => ['idx' => 7,  'nvalue' => 5, 'svalue' => ''],
-    'KEYFOB_BUTTON_6' => ['idx' => 7,  'nvalue' => 6, 'svalue' => ''],
 ];
 
 $eventCode = strtoupper(trim($_GET['event'] ?? $_POST['event'] ?? ''));

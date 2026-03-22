@@ -47,7 +47,7 @@ Le document couvre ainsi la description fonctionnelle du projet, l'architecture 
 
 Un escape game est un jeu physique dans lequel des participants doivent résoudre une série d'énigmes dans un ordre donné afin de progresser dans un scénario, généralement dans un temps limité. DomEscape transpose ce principe dans un environnement domotique réel : les énigmes ne reposent plus uniquement sur des mécanismes statiques, mais sur des interactions avec des équipements connectés.
 
-Dans notre cas, les joueurs interagissent avec des dispositifs physiques tels qu'un bouton, un capteur de porte, un détecteur de mouvement ou une télécommande Z-Wave. Ces interactions sont captées, centralisées, puis interprétées par un moteur logiciel.
+Dans notre cas, les joueurs interagissent avec des dispositifs physiques tels qu'un bouton, un capteur de porte ou un détecteur de mouvement Z-Wave. Ces interactions sont captées, centralisées, puis interprétées par un moteur logiciel.
 
 ### 2.2. Problématique
 
@@ -81,8 +81,6 @@ Les objectifs fonctionnels de DomEscape sont les suivants :
 | Button FGPB-101 | Fibaro | Capteur bouton poussoir |
 | Door Sensor 2 FGDW-002 | Fibaro | Capteur d'ouverture de porte |
 | Multisensor 6 | Aeotec | Capteur de mouvement |
-| Keyfob FGKF-601 | Fibaro | Télécommande 6 boutons |
-| LED Bulb Gen5 | Aeotec | Actionneur lampe |
 | Wall Plug FGWPEF-102 | Fibaro | Actionneur prise connectée |
 | Écran LCD PiFace | — | Affichage des messages de jeu |
 
@@ -253,7 +251,7 @@ La base de données de DomEscape est composée de **12 tables métier** dédiée
 |---|---|---|---|
 | id_capteur | INT | PK, AUTO_INCREMENT | Identifiant unique du capteur |
 | nom_capteur | VARCHAR(100) | NOT NULL | Nom descriptif du capteur |
-| type_capteur | VARCHAR(50) | NOT NULL | Famille : `door_sensor`, `button`, `motion_sensor`, `keyfob` |
+| type_capteur | VARCHAR(50) | NOT NULL | Famille : `door_sensor`, `button`, `motion_sensor` |
 | domoticz_idx | INT | NOT NULL, UNIQUE | Identifiant Domoticz du device |
 | emplacement | VARCHAR(100) | — | Localisation physique dans la pièce |
 | actif | BOOLEAN | DEFAULT TRUE | Indique si le capteur est en service |
@@ -687,18 +685,13 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 1 | Fibaro Button | button | 5 | Bureau | 1 |
 | 2 | Door Sensor | door_sensor | 8 | Porte principale | 1 |
 | 3 | Multisensor | motion_sensor | 10 | Centre pièce | 1 |
-| 4 | Keyfob Joueur | keyfob | 7 | Joueur | 1 |
-| 5 | Bouton Coffre | button | 12 | Coffre-fort | 1 |
 
 ### actionneur
 
 | id_actionneur | nom_actionneur | type_actionneur | domoticz_idx | emplacement | actif |
 |---|---|---|---|---|---|
-| 1 | Lampe principale | lamp | 1 | Plafond | 1 |
-| 2 | Wall Plug | plug | 4 | Bureau | 1 |
-| 3 | LCD PiFace | lcd | NULL | Bureau | 1 |
-| 4 | Lampe Ambiance | lamp | 6 | Coin lecture | 1 |
-| 5 | Prise Coffre | plug | 9 | Coffre-fort | 1 |
+| 1 | Wall Plug | plug | 4 | Bureau | 1 |
+| 2 | LCD PiFace | lcd | NULL | Bureau | 1 |
 
 ### evenement_type
 
@@ -709,20 +702,15 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 3 | DOOR_CLOSE | Porte fermée | door_sensor |
 | 4 | MOTION_DETECTED | Mouvement détecté | motion_sensor |
 | 5 | NO_MOTION | Aucun mouvement | motion_sensor |
-| 6 | KEYFOB_BUTTON_1 | Keyfob — Touche 1 | keyfob |
-| 7 | KEYFOB_BUTTON_2 | Keyfob — Touche 2 | keyfob |
-| 8 | KEYFOB_BUTTON_3 | Keyfob — Touche 3 | keyfob |
 
 ### action_type
 
 | id_type_action | code_action | libelle_action | description |
 |---|---|---|---|
-| 1 | LAMP_ON | Allumer lampe | Active une lampe via Domoticz |
-| 2 | LAMP_OFF | Éteindre lampe | Désactive une lampe via Domoticz |
-| 3 | PLUG_ON | Activer prise | Active un Wall Plug via Domoticz |
-| 4 | PLUG_OFF | Désactiver prise | Désactive un Wall Plug via Domoticz |
-| 5 | LCD_MESSAGE | Message LCD | Affiche un message sur l'écran LCD |
-| 6 | LOG_ONLY | Log uniquement | Enregistre sans effet physique |
+| 1 | PLUG_ON | Activer prise | Active un Wall Plug via Domoticz |
+| 2 | PLUG_OFF | Désactiver prise | Désactive un Wall Plug via Domoticz |
+| 3 | LCD_MESSAGE | Message LCD | Affiche un message sur l'écran LCD |
+| 4 | LOG_ONLY | Log uniquement | Enregistre sans effet physique |
 
 ### scenario
 
@@ -749,18 +737,18 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 1 | 1 | 1 | 1 |
 | 2 | 2 | 2 | 1 |
 | 3 | 3 | 4 | 1 |
-| 4 | 4 | 8 | 1 |
+| 4 | 2 | 3 | 1 |
 | 5 | 1 | 1 | 1 |
 
 ### etape_declenche
 
 | id_etape | id_actionneur | id_type_action | ordre_action | valeur_action | moment_declenchement |
 |---|---|---|---|---|---|
-| 1 | 3 | 5 | 1 | Appuyez sur le bouton | on_enter |
-| 1 | 3 | 5 | 1 | Système en ligne. | on_success |
+| 1 | 2 | 3 | 1 | Appuyez sur le bouton | on_enter |
+| 1 | 2 | 3 | 1 | Système en ligne. | on_success |
 | 1 | 1 | 1 | 2 | NULL | on_success |
-| 1 | 3 | 5 | 1 | Action incorrecte. | on_failure |
-| 2 | 3 | 5 | 1 | Ouvrez la porte sécurisée | on_enter |
+| 1 | 2 | 3 | 1 | Action incorrecte. | on_failure |
+| 2 | 2 | 3 | 1 | Ouvrez la porte sécurisée | on_enter |
 
 ### joueur
 
@@ -790,7 +778,7 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 2 | 1 | 3 | 4 | 2 | 0 | 1 |
 | 3 | 1 | 2 | 2 | 2 | 1 | 1 |
 | 4 | 1 | 3 | 4 | 3 | 1 | 1 |
-| 5 | 1 | 4 | 8 | 4 | 1 | 1 |
+| 5 | 1 | 2 | 3 | 4 | 1 | 1 |
 | 6 | 2 | 1 | 1 | 1 | 1 | 1 |
 | 7 | 2 | 1 | 1 | 2 | 0 | 1 |
 | 8 | 3 | 1 | 1 | 1 | 1 | 1 |
@@ -799,12 +787,12 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 | id_action_executee | id_session | id_actionneur | id_type_action | id_etape | valeur_action | statut_execution |
 |---|---|---|---|---|---|---|
-| 1 | 1 | 3 | 5 | 1 | Appuyez sur le bouton | ok |
-| 2 | 1 | 3 | 5 | 1 | Système en ligne. | ok |
+| 1 | 1 | 2 | 3 | 1 | Appuyez sur le bouton | ok |
+| 2 | 1 | 2 | 3 | 1 | Système en ligne. | ok |
 | 3 | 1 | 1 | 1 | 1 | NULL | ok |
-| 4 | 1 | 3 | 5 | 2 | Accès autorisé. | ok |
-| 5 | 1 | 3 | 5 | 4 | ESCAPE SUCCESSFUL ! | ok |
-| 6 | 2 | 3 | 5 | 1 | Action incorrecte. | ok |
+| 4 | 1 | 2 | 3 | 2 | Accès autorisé. | ok |
+| 5 | 1 | 2 | 3 | 4 | ESCAPE SUCCESSFUL ! | ok |
+| 6 | 2 | 2 | 3 | 1 | Action incorrecte. | ok |
 
 ### utilisateur
 

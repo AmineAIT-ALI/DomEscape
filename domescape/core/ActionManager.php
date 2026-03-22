@@ -13,8 +13,6 @@ require_once __DIR__ . '/../domoticz/DomoticzClient.php';
 //
 // Codes d'actions supportés (action_type.code_action) :
 //   LCD_MESSAGE  → envoie un message au service LCD Python
-//   LAMP_ON      → allume une lampe via Domoticz
-//   LAMP_OFF     → éteint une lampe via Domoticz
 //   PLUG_ON      → active une prise via Domoticz
 //   PLUG_OFF     → désactive une prise via Domoticz
 //   LOG_ONLY     → journalise sans action physique
@@ -85,14 +83,6 @@ class ActionManager
         switch ($code) {
             case 'LCD_MESSAGE':
                 self::sendLcdMessage($value);
-                break;
-
-            case 'LAMP_ON':
-                self::getDomoticz()->turnOn($idx);
-                break;
-
-            case 'LAMP_OFF':
-                self::getDomoticz()->turnOff($idx);
                 break;
 
             case 'PLUG_ON':

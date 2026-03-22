@@ -9,12 +9,12 @@ USE domescape;
 
 -- -------------------------------------------------------------
 -- CAPTEUR
--- Équipements physiques en entrée (door, button, motion, keyfob)
+-- Équipements physiques en entrée (door, button, motion)
 -- -------------------------------------------------------------
 CREATE TABLE capteur (
     id_capteur    INT AUTO_INCREMENT PRIMARY KEY,
     nom_capteur   VARCHAR(100) NOT NULL,
-    type_capteur  VARCHAR(50)  NOT NULL,   -- door_sensor | motion_sensor | button | keyfob
+    type_capteur  VARCHAR(50)  NOT NULL,   -- door_sensor | motion_sensor | button
     domoticz_idx  INT          NOT NULL UNIQUE,
     emplacement   VARCHAR(100),
     actif         BOOLEAN      DEFAULT TRUE
@@ -22,12 +22,12 @@ CREATE TABLE capteur (
 
 -- -------------------------------------------------------------
 -- ACTIONNEUR
--- Équipements physiques en sortie (lamp, plug, lcd)
+-- Équipements physiques en sortie (plug, lcd)
 -- -------------------------------------------------------------
 CREATE TABLE actionneur (
     id_actionneur   INT AUTO_INCREMENT PRIMARY KEY,
     nom_actionneur  VARCHAR(100) NOT NULL,
-    type_actionneur VARCHAR(50)  NOT NULL,   -- lamp | plug | lcd
+    type_actionneur VARCHAR(50)  NOT NULL,   -- plug | lcd
     domoticz_idx    INT          UNIQUE,      -- NULL pour LCD (hors Domoticz)
     emplacement     VARCHAR(100),
     actif           BOOLEAN      DEFAULT TRUE
@@ -235,18 +235,10 @@ INSERT INTO evenement_type (code_evenement, libelle_evenement, type_capteur, des
 ('DOOR_OPEN',       'Porte ouverte',        'door_sensor',  'Capteur porte : état ouvert'),
 ('DOOR_CLOSE',      'Porte fermée',         'door_sensor',  'Capteur porte : état fermé'),
 ('MOTION_DETECTED', 'Mouvement détecté',    'motion_sensor','Multisensor : mouvement présent'),
-('NO_MOTION',       'Aucun mouvement',      'motion_sensor','Multisensor : pas de mouvement'),
-('KEYFOB_BUTTON_1', 'Keyfob — Touche 1',   'keyfob',       'Fibaro FGKF-601 bouton 1'),
-('KEYFOB_BUTTON_2', 'Keyfob — Touche 2',   'keyfob',       'Fibaro FGKF-601 bouton 2'),
-('KEYFOB_BUTTON_3', 'Keyfob — Touche 3',   'keyfob',       'Fibaro FGKF-601 bouton 3'),
-('KEYFOB_BUTTON_4', 'Keyfob — Touche 4',   'keyfob',       'Fibaro FGKF-601 bouton 4'),
-('KEYFOB_BUTTON_5', 'Keyfob — Touche 5',   'keyfob',       'Fibaro FGKF-601 bouton 5'),
-('KEYFOB_BUTTON_6', 'Keyfob — Touche 6',   'keyfob',       'Fibaro FGKF-601 bouton 6');
+('NO_MOTION',       'Aucun mouvement',      'motion_sensor','Multisensor : pas de mouvement');
 
 -- Catalogue des actions
 INSERT INTO action_type (code_action, libelle_action, description) VALUES
-('LAMP_ON',     'Allumer lampe',    'Active une lampe via Domoticz'),
-('LAMP_OFF',    'Éteindre lampe',   'Désactive une lampe via Domoticz'),
 ('PLUG_ON',     'Activer prise',    'Active un Wall Plug via Domoticz'),
 ('PLUG_OFF',    'Désactiver prise', 'Désactive un Wall Plug via Domoticz'),
 ('LCD_MESSAGE', 'Message LCD',      'Affiche un message sur l\'écran LCD PiFace'),
@@ -256,12 +248,10 @@ INSERT INTO action_type (code_action, libelle_action, description) VALUES
 INSERT INTO capteur (nom_capteur, type_capteur, domoticz_idx, emplacement) VALUES
 ('Fibaro Button',  'button',       5,  'Bureau'),
 ('Door Sensor',    'door_sensor',  8,  'Porte principale'),
-('Multisensor',    'motion_sensor',10, 'Centre pièce'),
-('Keyfob Joueur',  'keyfob',       7,  'Joueur');
+('Multisensor',    'motion_sensor',10, 'Centre pièce');
 
 -- Actionneurs
 INSERT INTO actionneur (nom_actionneur, type_actionneur, domoticz_idx, emplacement) VALUES
-('Lampe principale', 'lamp', 1,    'Plafond'),
 ('Wall Plug',        'plug', 4,    'Bureau'),
 ('LCD PiFace',       'lcd',  NULL, 'Bureau');
 
@@ -290,10 +280,10 @@ INSERT INTO etape (id_scenario, numero_etape, titre_etape, description_etape, me
     'Passez devant le capteur central.',
     200, FALSE),
 (1, 4, 'Final Code',
-    'Entrez le code final sur la télécommande : touche 3.',
+    'Refermez la porte pour sceller le laboratoire.',
     'Félicitations ! Escape réussi.',
-    'Code incorrect.',
-    'Le code est une touche entre 1 et 6.',
+    'Action incorrecte.',
+    'La porte doit être fermée pour compléter la séquence.',
     300, TRUE);
 
 -- Événements attendus par étape
@@ -302,27 +292,27 @@ INSERT INTO etape_attend (id_etape, id_capteur, id_type_evenement) VALUES
 (1, 1, 1),   -- étape 1 → BUTTON_PRESS sur Fibaro Button
 (2, 2, 2),   -- étape 2 → DOOR_OPEN sur Door Sensor
 (3, 3, 4),   -- étape 3 → MOTION_DETECTED sur Multisensor
-(4, 4, 8);   -- étape 4 → KEYFOB_BUTTON_3 sur Keyfob
+(4, 2, 3);   -- étape 4 → DOOR_CLOSE sur Door Sensor
 
 -- Actions déclenchées par étape
 -- ETAPE_DECLENCHE(id_etape, id_actionneur, id_type_action, ordre, valeur, moment)
 INSERT INTO etape_declenche (id_etape, id_actionneur, id_type_action, ordre_action, valeur_action, moment_declenchement) VALUES
--- Étape 1
-(1, 3, 5, 1, 'Appuyez sur le bouton',      'on_enter'),
-(1, 3, 5, 1, 'Système en ligne.',           'on_success'),
+-- Étape 1  (actionneur 2=LCD, action 3=LCD_MESSAGE | actionneur 1=Wall Plug, action 1=PLUG_ON)
+(1, 2, 3, 1, 'Appuyez sur le bouton',      'on_enter'),
+(1, 2, 3, 1, 'Système en ligne.',           'on_success'),
 (1, 1, 1, 2, NULL,                          'on_success'),
-(1, 3, 5, 1, 'Action incorrecte.',          'on_failure'),
+(1, 2, 3, 1, 'Action incorrecte.',          'on_failure'),
 -- Étape 2
-(2, 3, 5, 1, 'Ouvrez la porte sécurisée',  'on_enter'),
-(2, 3, 5, 1, 'Accès autorisé.',             'on_success'),
-(2, 3, 5, 1, 'Action incorrecte.',          'on_failure'),
+(2, 2, 3, 1, 'Ouvrez la porte sécurisée',  'on_enter'),
+(2, 2, 3, 1, 'Accès autorisé.',             'on_success'),
+(2, 2, 3, 1, 'Action incorrecte.',          'on_failure'),
 -- Étape 3
-(3, 3, 5, 1, 'Traversez la zone de scan',  'on_enter'),
-(3, 3, 5, 1, 'Scan validé.',               'on_success'),
-(3, 2, 3, 2, NULL,                          'on_success'),
-(3, 3, 5, 1, 'Hors zone.',                 'on_failure'),
+(3, 2, 3, 1, 'Traversez la zone de scan',  'on_enter'),
+(3, 2, 3, 1, 'Scan validé.',               'on_success'),
+(3, 1, 1, 2, NULL,                          'on_success'),
+(3, 2, 3, 1, 'Hors zone.',                 'on_failure'),
 -- Étape 4
-(4, 3, 5, 1, 'Entrez le code final',        'on_enter'),
-(4, 3, 5, 1, 'ESCAPE SUCCESSFUL !',         'on_success'),
+(4, 2, 3, 1, 'Refermez la porte',          'on_enter'),
+(4, 2, 3, 1, 'ESCAPE SUCCESSFUL !',        'on_success'),
 (4, 1, 1, 2, NULL,                          'on_success'),
-(4, 3, 5, 1, 'Code incorrect.',             'on_failure');
+(4, 2, 3, 1, 'Action incorrecte.',         'on_failure');
