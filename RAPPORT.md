@@ -26,33 +26,53 @@
 
 ## 1. Introduction
 
-Dans le cadre de notre projet de développement logiciel orienté domotique, nous avons conçu et développé **DomEscape** : une plateforme applicative complète permettant de piloter un escape game physique instrumenté de capteurs et d'actionneurs Z-Wave.
+Dans le cadre de notre projet de développement logiciel orienté domotique, nous avons conçu et développé **DomEscape**, une plateforme applicative permettant de piloter un escape game physique instrumenté par des capteurs et des actionneurs Z-Wave.
 
-Ce rapport présente l'ensemble des choix conceptuels et techniques retenus, avec un accent particulier sur la modélisation de la base de données, véritable cœur du système. En effet, DomEscape repose sur une architecture **stateless** : tout l'état de jeu est persisté en base de données. Scénarios, étapes, événements capteurs, actions physiques et sessions joueurs sont intégralement tracés, sans aucun état conservé en mémoire dans le code applicatif.
+L'objectif du projet est de transformer une pièce réelle en environnement interactif scénarisé. Les joueurs doivent effectuer des actions physiques sur des équipements connectés, tandis qu'un moteur de jeu interprète ces événements en temps réel, vérifie leur cohérence avec le scénario en cours, puis déclenche des réactions adaptées.
 
-Le rapport couvre la description fonctionnelle du projet, le dictionnaire des données, la modélisation entité-association, le schéma relationnel et des exemples de données représentatifs.
+Le choix architectural central de DomEscape est de reposer sur un **moteur stateless** : l'application PHP ne conserve aucun état de jeu en mémoire ; l'intégralité de l'état courant est persistée en base de données. Cette décision renforce la robustesse du système, simplifie la reprise après incident et garantit la cohérence entre les différentes interfaces.
+
+Ce rapport présente les principaux éléments de conception du projet, avec un accent particulier sur la base de données, qui constitue à la fois :
+- le support de configuration des scénarios,
+- le registre de l'état courant des parties,
+- et l'historique complet des événements et actions exécutés.
+
+Le document couvre ainsi la description fonctionnelle du projet, l'architecture générale, le rôle du site web, le dictionnaire des données, la modélisation entité-association, le schéma relationnel ainsi que des exemples représentatifs de données.
 
 ---
 
 ## 2. Description du sujet
 
-### Contexte
+### 2.1. Contexte
 
-Un escape game est un jeu physique dans lequel des participants enfermés dans une pièce doivent résoudre une série d'énigmes dans un temps limité pour « s'évader ». DomEscape transpose ce concept dans un environnement domotique réel : les énigmes sont résolues en interagissant avec des équipements physiques connectés (boutons, capteurs de porte, détecteurs de mouvement, télécommandes Z-Wave).
+Un escape game est un jeu physique dans lequel des participants doivent résoudre une série d'énigmes dans un ordre donné afin de progresser dans un scénario, généralement dans un temps limité. DomEscape transpose ce principe dans un environnement domotique réel : les énigmes ne reposent plus uniquement sur des mécanismes statiques, mais sur des interactions avec des équipements connectés.
 
-### Problématique
+Dans notre cas, les joueurs interagissent avec des dispositifs physiques tels qu'un bouton, un capteur de porte, un détecteur de mouvement ou une télécommande Z-Wave. Ces interactions sont captées, centralisées, puis interprétées par un moteur logiciel.
 
-Comment gérer de manière robuste et traçable le déroulement d'un escape game piloté par des capteurs physiques, en garantissant la cohérence de l'état de jeu face à des événements concurrents, tout en offrant des interfaces adaptées aux différents acteurs (joueur, animateur, administrateur) ?
+### 2.2. Problématique
 
-### Objectifs
+La problématique principale du projet est la suivante :
 
-- Recevoir en temps réel les événements issus de capteurs Z-Wave via Domoticz
-- Faire progresser automatiquement les joueurs dans un scénario entièrement configurable en base de données
-- Déclencher des feedbacks physiques (lampes, prises, écran LCD) à chaque étape
-- Tracer l'intégralité des événements et actions pour analyse post-session
-- Offrir une interface web adaptée à chaque acteur : joueur, game master et administrateur
+> *Comment concevoir une plateforme capable de gérer de manière robuste, cohérente et traçable le déroulement d'un escape game physique piloté par des événements issus de capteurs domotiques ?*
 
-### Périmètre matériel
+Cette problématique implique plusieurs enjeux :
+- recevoir et interpréter des événements matériels en temps réel ;
+- garantir la cohérence de l'état de jeu malgré les rebonds matériels ou les événements concurrents ;
+- déclencher des actions physiques adaptées à la progression ;
+- conserver un historique complet pour le suivi, le débogage et l'analyse ;
+- proposer des interfaces distinctes selon les profils utilisateur.
+
+### 2.3. Objectifs
+
+Les objectifs fonctionnels de DomEscape sont les suivants :
+- recevoir en temps réel les événements issus des capteurs Z-Wave via Domoticz ;
+- faire progresser automatiquement les joueurs dans un scénario entièrement configurable en base de données ;
+- déclencher des retours physiques (messages LCD, lampes, prises commandées) à chaque étape ;
+- conserver la trace complète des événements reçus et des actions exécutées ;
+- fournir une interface distincte pour les joueurs, les superviseurs et les administrateurs ;
+- permettre le test du système même en l'absence de matériel réel, grâce à une couche de simulation.
+
+### 2.4. Périmètre matériel
 
 | Équipement | Marque | Rôle |
 |---|---|---|
@@ -70,7 +90,7 @@ Comment gérer de manière robuste et traçable le déroulement d'un escape game
 
 ## 3. Description générale du système
 
-### Architecture globale
+### 3.1. Architecture globale
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -93,7 +113,7 @@ Comment gérer de manière robuste et traçable le déroulement d'un escape game
                  Joueur      Game Master        Admin
 ```
 
-### Stack technique
+### 3.2. Stack technique
 
 | Couche | Technologie | Version |
 |---|---|---|
@@ -101,33 +121,49 @@ Comment gérer de manière robuste et traçable le déroulement d'un escape game
 | Serveur web | Apache2 + PHP-FPM | 2.4 / 8.4 |
 | Base de données | MariaDB | 11.8 |
 | Domotique | Domoticz + dzVents | — |
-| Communication | Webhooks HTTP + Z-Wave | — |
-| Frontend | Bootstrap + JS vanilla | 5.3 |
+| Service LCD | Python Flask | — |
+| Frontend applicatif | Bootstrap + JavaScript vanilla | 5.3 |
+| Site vitrine | HTML / CSS / JavaScript statiques | — |
 
-### Flux d'un événement en jeu
+### 3.3. Principe de fonctionnement
 
-1. Un joueur appuie sur un bouton physique Z-Wave
-2. Domoticz détecte le changement d'état du device
-3. dzVents (Lua) exécute un script qui envoie un **webhook HTTP POST** vers `/api/handle_event.php`
-4. `EventManager` normalise le payload brut (`idx` + `nvalue`) en événement métier (`BUTTON_PRESS`)
-5. `GameEngine` compare l'événement à ce qui est attendu pour l'étape courante
-6. Si **valide** : passage à l'étape suivante + actions de feedback (LCD, lampe...)
-7. Si **invalide** : compteur d'erreurs incrémenté + message d'erreur LCD
-8. Tout est enregistré dans `evenement_session` et `action_executee`
+Lorsqu'un joueur effectue une action physique, par exemple en appuyant sur un bouton Z-Wave, cette action suit le flux suivant :
 
-### Choix de conception majeurs
+1. le capteur envoie un signal Z-Wave ;
+2. Domoticz centralise le changement d'état du device ;
+3. un script dzVents déclenche un webhook HTTP POST vers `/api/handle_event.php` ;
+4. `EventManager` convertit le payload brut (`idx` + `nvalue`) en événement métier normalisé (`BUTTON_PRESS`, `DOOR_OPEN`…) ;
+5. `GameEngine` compare cet événement à ce qui est attendu pour l'étape courante, dans une transaction SQL verrouillée ;
+6. si l'événement est correct, la session progresse vers l'étape suivante ;
+7. `ActionManager` exécute les retours physiques définis pour l'étape (LCD, lampe, prise) ;
+8. les événements et actions sont archivés dans `evenement_session` et `action_executee`.
 
-Le choix central de l'architecture est un **moteur de jeu entièrement stateless** : aucune progression n'est conservée en mémoire dans le code PHP. Tout l'état est lu et écrit en base de données à chaque requête. Ce choix renforce la robustesse du système, simplifie la reprise après incident et garantit la cohérence entre les différentes interfaces.
+### 3.4. Choix de conception majeurs
 
-Les autres décisions structurantes sont les suivantes :
+Plusieurs décisions de conception structurent le projet :
 
-- **Configuration des scénarios en base de données** : les tables `etape_attend` et `etape_declenche` permettent de définir n'importe quel scénario sans modifier le code. Le moteur de jeu lit dynamiquement la configuration à chaque événement.
-- **Journalisation exhaustive** : chaque signal capteur reçu et chaque action physique déclenchée sont tracés dans `evenement_session` et `action_executee`, ce qui permet l'analyse post-session et la détection d'anomalies.
-- **Robustesse face aux événements concurrents** : le moteur de jeu traite chaque événement dans une **transaction SQL avec verrouillage** (`SELECT ... FOR UPDATE`), afin d'éviter les incohérences dues aux événements Z-Wave concurrents ou aux rebonds matériels (bouncing).
-- **Couche de simulation** : afin de permettre le test et la démonstration indépendamment du matériel réel, une couche de simulation a été mise en place. Elle permet de reproduire le comportement des capteurs et de valider l'intégralité de la logique de jeu sans dépendre du réseau Z-Wave.
-- **Séparation stricte des rôles** : la gestion des accès repose sur un modèle RBAC (Role-Based Access Control) géré en base, sans configuration statique dans le code.
+**a) Moteur stateless**
+Le backend PHP ne conserve aucun état de session en mémoire entre deux requêtes. L'état courant de la partie est relu en base à chaque événement. Ce choix renforce la robustesse du système, simplifie la reprise après incident et garantit la cohérence entre les différentes interfaces.
 
-### Rôles utilisateurs
+**b) Configuration en base de données**
+Les tables `etape_attend` et `etape_declenche` permettent de décrire n'importe quel scénario sans modifier le code. Le moteur de jeu lit dynamiquement cette configuration à chaque appel.
+
+**c) Séparation des responsabilités**
+Le projet distingue clairement :
+- la normalisation des événements (`EventManager`) ;
+- la logique métier (`GameEngine`) ;
+- l'exécution des effets physiques (`ActionManager`).
+
+**d) Observabilité**
+Chaque événement reçu et chaque action exécutée sont tracés en base avec horodatage et statut, ce qui facilite le débogage, la supervision et l'analyse post-session.
+
+**e) Protection contre les événements concurrents**
+Le moteur traite les événements dans une transaction SQL avec verrouillage (`SELECT ... FOR UPDATE`) afin d'éviter les incohérences dues aux rebonds matériels Z-Wave ou aux déclenchements multiples.
+
+**f) Couche de simulation**
+Afin de permettre le test et la démonstration indépendamment du matériel réel, une couche de simulation a été mise en place (`/dev/simulate.php`, `/api/debug_event.php`). Elle permet de reproduire le comportement des capteurs et de valider la logique de jeu sans dépendre du réseau Z-Wave.
+
+### 3.5. Rôles utilisateurs
 
 | Rôle | Accès |
 |---|---|
@@ -139,17 +175,17 @@ Les autres décisions structurantes sont les suivantes :
 
 ## 4. Description du site Web et intérêt de la base de données
 
-DomEscape se compose de deux parties distinctes : un **site vitrine** statique présentant le concept et l'architecture du projet, et une **application métier** dynamique pilotant le jeu en temps réel.
+### 4.1. Deux composantes complémentaires
 
-### Site vitrine (`/website/`)
+Le projet comprend deux ensembles web distincts mais complémentaires.
 
-Le site vitrine est un ensemble de pages HTML statiques présentant :
-- la vision et le concept du projet (escape game domotique)
-- l'architecture technique et le moteur de jeu
-- la base de données et son rôle
-- la documentation et les scénarios disponibles
+**a) Le site vitrine (`/website/`)**
+Il présente DomEscape comme plateforme et expose son architecture, son positionnement, ses cas d'usage, sa documentation technique et sa feuille de route. Il s'agit d'un ensemble de pages HTML statiques, indépendantes de l'application métier.
 
-### Application métier (`/public/`, `/admin/`, `/api/`)
+**b) L'application métier (`/public/`, `/admin/`, `/api/`)**
+Elle permet l'authentification, le lancement des sessions, le suivi du jeu en temps réel, la supervision et l'administration complète de la plateforme.
+
+### 4.2. Pages principales de l'application métier
 
 | Page | Rôle |
 |---|---|
@@ -163,7 +199,7 @@ Le site vitrine est un ensemble de pages HTML statiques présentant :
 | `/admin/utilisateurs.php` | Gestion des comptes et des rôles |
 | `/dev/simulate.php` | Simulateur d'événements capteurs (sans hardware) |
 
-### APIs exposées
+### 4.3. APIs exposées
 
 | Endpoint | Méthode | Description |
 |---|---|---|
@@ -174,9 +210,9 @@ Le site vitrine est un ensemble de pages HTML statiques présentant :
 | `/api/abandon_game.php` | POST | Abandon de partie |
 | `/api/healthcheck.php` | GET | État du système (BDD, Domoticz, LCD) |
 
-### Intérêt de la base de données
+### 4.4. Intérêt de la base de données
 
-La base de données est le **seul point de vérité** du système. Elle sert à :
+La base de données constitue le **point de vérité unique** du système. Elle sert à :
 
 **1. Stocker l'état courant de la partie**
 La table `session` contient l'étape courante, le score, le nombre d'erreurs et le statut. Le frontend poll `/api/session_status.php` toutes les secondes pour rafraîchir l'affichage sans rechargement de page.
@@ -192,6 +228,9 @@ Z-Wave peut générer plusieurs événements identiques en rafale (rebond hardwa
 
 **5. Gérer les accès multi-rôles**
 Les tables `utilisateur`, `role` et `utilisateur_role` implémentent un contrôle d'accès basé sur les rôles (RBAC). Cette configuration est entièrement gérée en base, sans aucune configuration statique dans le code.
+
+**6. Supporter la simulation et la validation**
+La base est également utilisée dans les outils de simulation, ce qui permet de tester la plateforme en conditions proches du réel sans dépendre immédiatement du matériel Z-Wave.
 
 ---
 
@@ -791,14 +830,18 @@ utilisateur_role (
 
 ## 9. Conclusion
 
-DomEscape est une plateforme applicative complète illustrant l'intégration d'un système informatique avec un environnement physique instrumenté. La base de données, conçue autour d'un modèle entité-association rigoureux, joue un rôle central : elle est à la fois le moteur de configuration des scénarios, le registre d'état de jeu en temps réel et l'archive exhaustive de l'activité.
+DomEscape est une plateforme applicative complète illustrant l'intégration d'un système logiciel avec un environnement physique instrumenté. À travers ce projet, nous avons conçu une architecture capable de recevoir des événements matériels, de les interpréter en temps réel, puis de piloter des réactions physiques cohérentes avec un scénario de jeu.
 
-Plusieurs choix de conception méritent d'être soulignés :
+La base de données joue un rôle central dans cette architecture. Elle ne sert pas uniquement à stocker des informations de manière passive : elle constitue à la fois le support de configuration des scénarios, le registre d'état des sessions en cours et l'archive exhaustive des événements et actions.
 
-- L'utilisation d'**associations ternaires** (`etape_attend`, `etape_declenche`) pour modéliser la configuration des puzzles de façon entièrement déclarative, sans duplication de données ni modification du code.
-- Le recours aux **transactions avec verrouillage** (`SELECT FOR UPDATE`) dans le moteur de jeu pour garantir la cohérence face aux événements Z-Wave concurrents et aux rebonds hardware.
-- Un modèle **stateless** où le code PHP ne maintient aucun état applicatif en mémoire — tout est lu et écrit en base à chaque requête, simplifiant la reprise après incident.
-- La séparation claire entre données de **configuration** (scénarios, étapes) et données de **runtime** (sessions, événements, actions), qui permet de modifier les scénarios sans interruption de service.
-- Une **couche de simulation** permettant de valider l'intégralité de la logique de jeu sans dépendre du matériel Z-Wave, facilitant le développement et la démonstration.
+Plusieurs choix de conception structurants ressortent du projet :
+- un **moteur de jeu stateless**, sans état applicatif conservé en mémoire ;
+- une **configuration entièrement pilotée par les données**, via des associations ternaires (`etape_attend`, `etape_declenche`) ;
+- une **séparation nette des responsabilités** entre normalisation des événements, logique métier et exécution des effets physiques ;
+- une **gestion des accès fondée sur les rôles** (RBAC), centralisée en base ;
+- un **mécanisme transactionnel** (`SELECT FOR UPDATE`) garantissant la cohérence du jeu face aux événements concurrents et aux rebonds matériels Z-Wave ;
+- une **couche de simulation** permettant de valider la logique de jeu sans dépendre du matériel réel.
 
-Le projet est actuellement déployé et fonctionnel sur une VM Ubuntu et sur un environnement macOS de développement. La prochaine étape est l'intégration sur Raspberry Pi avec le hardware Z-Wave réel, pour une validation en conditions opérationnelles.
+La modélisation retenue permet d'obtenir un système à la fois robuste, extensible et analysable. Elle ouvre également la voie à des évolutions futures, telles que les étapes chronométrées, les embranchements de scénario, les événements composites ou le support multi-salles.
+
+À ce stade, le projet est techniquement prêt à être validé en environnement matériel réel sur Raspberry Pi avec les équipements Z-Wave. Les prochaines étapes consistent principalement à finaliser l'intégration physique, à valider les flux en conditions réelles et à consolider l'expérience de démonstration.
