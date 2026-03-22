@@ -30,11 +30,13 @@ if (!Auth::check() || !Auth::hasRole(ROLE_ADMINISTRATEUR)) {
 // Mapping code → payload Domoticz (idx = seed data réels)
 // Fibaro Button idx=5 | Door Sensor idx=8 | Multisensor idx=10
 $mapping = [
-    'BUTTON_PRESS'    => ['idx' => 5,  'nvalue' => 1, 'svalue' => ''],
-    'DOOR_OPEN'       => ['idx' => 8,  'nvalue' => 1, 'svalue' => ''],
-    'DOOR_CLOSE'      => ['idx' => 8,  'nvalue' => 0, 'svalue' => ''],
-    'MOTION_DETECTED' => ['idx' => 10, 'nvalue' => 1, 'svalue' => ''],
-    'NO_MOTION'       => ['idx' => 10, 'nvalue' => 0, 'svalue' => ''],
+    'BUTTON_PRESS'        => ['idx' => 5,  'nvalue' => 1, 'svalue' => ''],
+    'BUTTON_DOUBLE_PRESS' => ['idx' => 5,  'nvalue' => 2, 'svalue' => ''],
+    'BUTTON_TRIPLE_PRESS' => ['idx' => 5,  'nvalue' => 3, 'svalue' => ''],
+    'DOOR_OPEN'           => ['idx' => 8,  'nvalue' => 1, 'svalue' => ''],
+    'DOOR_CLOSE'          => ['idx' => 8,  'nvalue' => 0, 'svalue' => ''],
+    'MOTION_DETECTED'     => ['idx' => 10, 'nvalue' => 1, 'svalue' => ''],
+    'NO_MOTION'           => ['idx' => 10, 'nvalue' => 0, 'svalue' => ''],
 ];
 
 $eventCode = strtoupper(trim($_GET['event'] ?? $_POST['event'] ?? ''));

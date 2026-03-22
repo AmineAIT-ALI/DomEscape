@@ -87,7 +87,7 @@ class EventManager
     //
     //   door_sensor   nvalue=1 → DOOR_OPEN   | nvalue=0 → DOOR_CLOSE
     //   motion_sensor nvalue=1 → MOTION_DETECTED | nvalue=0 → NO_MOTION
-    //   button        nvalue=1 → BUTTON_PRESS
+    //   button        nvalue=1 → BUTTON_PRESS | nvalue=2 → BUTTON_DOUBLE_PRESS | nvalue=3 → BUTTON_TRIPLE_PRESS
     // ----------------------------------------------------------
     private static function mapToCodeEvenement(string $typeCapteur, int $nvalue, string $svalue): ?string
     {
@@ -99,7 +99,12 @@ class EventManager
                 return $nvalue === 1 ? 'MOTION_DETECTED' : 'NO_MOTION';
 
             case 'button':
-                return $nvalue === 1 ? 'BUTTON_PRESS' : null;
+                return match($nvalue) {
+                    1 => 'BUTTON_PRESS',
+                    2 => 'BUTTON_DOUBLE_PRESS',
+                    3 => 'BUTTON_TRIPLE_PRESS',
+                    default => null,
+                };
 
             default:
                 return null;

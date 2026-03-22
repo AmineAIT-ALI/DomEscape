@@ -231,7 +231,9 @@ CREATE TABLE action_executee (
 
 -- Catalogue des événements
 INSERT INTO evenement_type (code_evenement, libelle_evenement, type_capteur, description) VALUES
-('BUTTON_PRESS',    'Bouton appuyé',        'button',       'Appui simple sur le Fibaro Button'),
+('BUTTON_PRESS',         'Bouton — appui simple',  'button', 'Fibaro Button : 1 appui (nvalue=1)'),
+('BUTTON_DOUBLE_PRESS',  'Bouton — double appui',  'button', 'Fibaro Button : 2 appuis consécutifs (nvalue=2)'),
+('BUTTON_TRIPLE_PRESS',  'Bouton — triple appui',  'button', 'Fibaro Button : 3 appuis consécutifs (nvalue=3)'),
 ('DOOR_OPEN',       'Porte ouverte',        'door_sensor',  'Capteur porte : état ouvert'),
 ('DOOR_CLOSE',      'Porte fermée',         'door_sensor',  'Capteur porte : état fermé'),
 ('MOTION_DETECTED', 'Mouvement détecté',    'motion_sensor','Multisensor : mouvement présent'),
@@ -280,19 +282,19 @@ INSERT INTO etape (id_scenario, numero_etape, titre_etape, description_etape, me
     'Passez devant le capteur central.',
     200, FALSE),
 (1, 4, 'Final Code',
-    'Refermez la porte pour sceller le laboratoire.',
+    'Appuyez deux fois sur le bouton pour sceller le laboratoire.',
     'Félicitations ! Escape réussi.',
-    'Action incorrecte.',
-    'La porte doit être fermée pour compléter la séquence.',
+    'Action incorrecte. Double appui requis.',
+    'Un double appui est nécessaire pour valider la séquence finale.',
     300, TRUE);
 
 -- Événements attendus par étape
 -- ETAPE_ATTEND(id_etape, id_capteur, id_type_evenement)
 INSERT INTO etape_attend (id_etape, id_capteur, id_type_evenement) VALUES
-(1, 1, 1),   -- étape 1 → BUTTON_PRESS sur Fibaro Button
-(2, 2, 2),   -- étape 2 → DOOR_OPEN sur Door Sensor
-(3, 3, 4),   -- étape 3 → MOTION_DETECTED sur Multisensor
-(4, 2, 3);   -- étape 4 → DOOR_CLOSE sur Door Sensor
+(1, 1, 1),   -- étape 1 → BUTTON_PRESS (id=1) sur Fibaro Button
+(2, 2, 4),   -- étape 2 → DOOR_OPEN (id=4) sur Door Sensor
+(3, 3, 6),   -- étape 3 → MOTION_DETECTED (id=6) sur Multisensor
+(4, 1, 2);   -- étape 4 → BUTTON_DOUBLE_PRESS (id=2) sur Fibaro Button
 
 -- Actions déclenchées par étape
 -- ETAPE_DECLENCHE(id_etape, id_actionneur, id_type_action, ordre, valeur, moment)

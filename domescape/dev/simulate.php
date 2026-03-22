@@ -36,8 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $capteur = $stmt->fetch();
 
         if ($capteur) {
-            $nvalue = match(true) {
-                in_array($eventCode, ['DOOR_OPEN', 'MOTION_DETECTED', 'BUTTON_PRESS']) => 1,
+            $nvalue = match($eventCode) {
+                'BUTTON_PRESS', 'DOOR_OPEN', 'MOTION_DETECTED' => 1,
+                'BUTTON_DOUBLE_PRESS' => 2,
+                'BUTTON_TRIPLE_PRESS' => 3,
                 default => 0,
             };
 
@@ -309,7 +311,7 @@ $recentEvents = $pdo->query("
                     <code>BUTTON_PRESS</code> →
                     <code>DOOR_OPEN</code> →
                     <code>MOTION_DETECTED</code> →
-                    <code>DOOR_CLOSE</code>
+                    <code>BUTTON_DOUBLE_PRESS</code>
                 </li>
                 <li>Observer la progression en temps réel</li>
             </ol>
