@@ -35,8 +35,8 @@ Capteurs Z-Wave (Fibaro, Aeotec)
 ```
 DomEscape/
 ├── domescape/
-│   ├── admin/          ← Gestion des utilisateurs (admin)
-│   ├── api/            ← Endpoints HTTP (webhook, sessions, healthcheck)
+│   ├── admin/          ← Administration (utilisateurs, scénarios, étapes)
+│   ├── api/            ← Endpoints HTTP (webhook, sessions, indices, healthcheck)
 │   ├── config/         ← Configuration BDD, app, secrets
 │   ├── core/           ← Moteur de jeu, auth, gestion des événements
 │   ├── dev/            ← Simulateur (sans hardware)
@@ -44,31 +44,23 @@ DomEscape/
 │   ├── dzvents/        ← Script Lua pour Domoticz
 │   ├── partials/       ← Composants HTML partagés
 │   ├── public/         ← Pages accessibles (joueur, game master, auth)
-│   ├── scripts/        ← Service LCD Python (Raspberry Pi)
+│   ├── scripts/        ← Service LCD Python + script deploy.sh
 │   ├── sql/            ← Schéma BDD + migration auth
 │   └── website/        ← Documentation du projet (HTML statique)
-├── install.sh          ← Script d'installation automatique
 └── sync.sh             ← Synchronisation Desktop → Apache (dev macOS)
 ```
 
 ---
 
-## Installation rapide (Ubuntu 24.04 / 25.04)
+## Installation rapide (Ubuntu / Raspberry Pi OS)
 
 ```bash
 git clone https://github.com/AmineAIT-ALI/DomEscape.git
 cd DomEscape
-sudo bash install.sh
+sudo bash domescape/scripts/deploy.sh
 ```
 
-L'installation configure automatiquement Apache, MariaDB, PHP, importe le schéma et crée le compte admin.
-
-À l'issue :
-```
-URL          : http://<IP>/domescape/public/tableau-de-bord.php
-Email        : admin@domescape.local
-Mot de passe : Admin1234!
-```
+Le script configure automatiquement Apache, MariaDB, PHP, importe le schéma, crée `config/secrets.php` et vérifie la connexion PDO.
 
 ---
 
@@ -168,8 +160,11 @@ curl -s http://localhost/domescape/api/healthcheck.php
 | `/public/connexion.php` | Connexion | Tous |
 | `/public/tableau-de-bord.php` | Tableau de bord | Tous |
 | `/public/player.php` | Vue joueur en partie | Joueur |
-| `/public/gamemaster.php` | Contrôle en direct | Game Master |
-| `/admin/dashboard.php` | Administration | Admin |
+| `/public/gamemaster.php` | Contrôle en direct + envoi d'indices | Game Master |
+| `/admin/dashboard.php` | Tableau de bord plateforme | Admin |
+| `/admin/scenarios.php` | Gestion des scénarios | Admin |
+| `/admin/scenario_edit.php` | Édition scénario + étapes | Admin |
+| `/admin/utilisateurs.php` | Gestion des comptes | Admin |
 | `/dev/simulate.php` | Simulateur sans hardware | Admin |
 
 ---
@@ -180,7 +175,8 @@ curl -s http://localhost/domescape/api/healthcheck.php
 |---|---|---|
 | `/api/handle_event.php` | POST | Webhook Domoticz (événement capteur) |
 | `/api/start_game.php` | POST | Démarrer une session |
-| `/api/session_status.php` | GET | État temps réel de la session |
+| `/api/session_status.php` | GET | État temps réel de la session (polling 2s) |
+| `/api/send_hint.php` | POST | Envoyer l'indice de l'étape courante (Game Master) |
 | `/api/reset_game.php` | POST | Réinitialiser la session (Game Master) |
 | `/api/abandon_game.php` | POST | Abandonner une partie |
 | `/api/debug_event.php` | POST | Simuler un événement (sans hardware) |

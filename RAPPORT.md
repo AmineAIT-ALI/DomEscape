@@ -194,10 +194,12 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 | `/public/connexion.php` | Authentification des utilisateurs |
 | `/public/inscription.php` | Création de compte joueur |
 | `/public/tableau-de-bord.php` | Hub central adapté au rôle de l'utilisateur |
-| `/public/player.php` | Interface joueur : étape courante, progression, bouton abandon |
-| `/public/gamemaster.php` | Interface superviseur : démarrage, reset, suivi temps réel |
+| `/public/player.php` | Interface joueur : étape courante, progression, indice, abandon |
+| `/public/gamemaster.php` | Interface superviseur : suivi temps réel, indices, reset |
 | `/public/mes-sessions.php` | Historique personnel des parties |
 | `/admin/dashboard.php` | Tableau de bord administrateur |
+| `/admin/scenarios.php` | Gestion des scénarios (création, activation, suppression) |
+| `/admin/scenario_edit.php` | Édition d'un scénario et de ses étapes (CRUD complet) |
 | `/admin/utilisateurs.php` | Gestion des comptes et des rôles |
 | `/dev/simulate.php` | Simulateur d'événements capteurs (sans hardware) |
 
@@ -207,7 +209,8 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 |---|---|---|
 | `/api/handle_event.php` | POST | Réception des webhooks Domoticz |
 | `/api/start_game.php` | POST | Démarrage d'une session |
-| `/api/session_status.php` | GET | Polling de l'état de la session (toutes les secondes) |
+| `/api/session_status.php` | GET | Polling de l'état de la session (toutes les 2 secondes) |
+| `/api/send_hint.php` | POST | Envoi de l'indice de l'étape courante (superviseur) |
 | `/api/reset_game.php` | POST | Réinitialisation (superviseur) |
 | `/api/abandon_game.php` | POST | Abandon de partie |
 | `/api/debug_event.php` | POST / GET | Simulation d'un événement capteur sans matériel réel |
