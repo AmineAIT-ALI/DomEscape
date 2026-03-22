@@ -22,7 +22,8 @@
       <a href="vision.html">Vision</a>
     </div>
     <div class="nav-cta">
-      <a href="demo.html" class="btn btn-primary btn-sm">Voir la démo →</a>
+      <a href="../public/connexion.php" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="../public/inscription.php" class="btn btn-primary btn-sm">Créer un compte</a>
     </div>
   </div>
 </nav>
@@ -242,7 +243,7 @@
     <div class="grid-3">
       <!-- EventManager -->
       <div class="card glow-card animate-fade-up delay-1" style="border-color: rgba(124,58,237,0.2);">
-        <div class="card-icon purple">📡</div>
+        <div class="card-icon purple"><i data-lucide="radio"></i></div>
         <div class="card-title">EventManager</div>
         <div style="margin: 16px 0; border-top: 1px solid var(--border); padding-top: 16px;">
           <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
@@ -275,7 +276,7 @@
 
       <!-- GameEngine -->
       <div class="card glow-card animate-fade-up delay-2" style="border-color: rgba(0,255,136,0.2);">
-        <div class="card-icon green">⚙️</div>
+        <div class="card-icon green"><i data-lucide="cpu"></i></div>
         <div class="card-title">GameEngine</div>
         <div style="margin: 16px 0; border-top: 1px solid var(--border); padding-top: 16px;">
           <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
@@ -308,7 +309,7 @@
 
       <!-- ActionManager -->
       <div class="card glow-card animate-fade-up delay-3" style="border-color: rgba(59,130,246,0.2);">
-        <div class="card-icon blue">🔧</div>
+        <div class="card-icon blue"><i data-lucide="zap"></i></div>
         <div class="card-title">ActionManager</div>
         <div style="margin: 16px 0; border-top: 1px solid var(--border); padding-top: 16px;">
           <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
@@ -347,22 +348,22 @@
 
   <div class="grid-2">
     <div class="card glow-card animate-fade-up delay-1">
-      <div class="card-icon green">🔒</div>
+      <div class="card-icon green"><i data-lucide="server"></i></div>
       <div class="card-title">Backend stateless</div>
       <p class="card-text">PHP ne conserve aucun état de session. Chaque requête lit depuis MariaDB. Le système est résistant aux pannes, redémarrable, et horizontalement scalable.</p>
     </div>
     <div class="card glow-card animate-fade-up delay-2">
-      <div class="card-icon blue">📨</div>
+      <div class="card-icon blue"><i data-lucide="webhook"></i></div>
       <div class="card-title">Webhook plutôt que polling</div>
       <p class="card-text">Domoticz pousse les événements vers PHP via webhook HTTP (dzVents openURL). Aucun processus PHP ne scrute Domoticz. Aucune latence supplémentaire.</p>
     </div>
     <div class="card glow-card animate-fade-up delay-3">
-      <div class="card-icon orange">🚫</div>
+      <div class="card-icon orange"><i data-lucide="ban"></i></div>
       <div class="card-title">Pas de boucle actionneur</div>
       <p class="card-text">Les actionneurs (prise, LCD) sont exclus du listener dzVents. Seuls les capteurs déclenchent des webhooks. Cela évite les boucles d'événements.</p>
     </div>
     <div class="card glow-card animate-fade-up delay-4">
-      <div class="card-icon purple">🖥️</div>
+      <div class="card-icon purple"><i data-lucide="monitor"></i></div>
       <div class="card-title">LCD comme microservice</div>
       <p class="card-text">L'écran LCD (PiFace, bus SPI) est contrôlé via un service Python Flask. Cela évite les problèmes de permissions SPI de www-data sur Raspberry Pi.</p>
     </div>
@@ -382,6 +383,8 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 <script src="assets/js/domescape.js"></script>
 </body>
 </html>

@@ -22,7 +22,8 @@
       <a href="vision.html">Vision</a>
     </div>
     <div class="nav-cta">
-      <a href="demo.html" class="btn btn-primary btn-sm">Voir la démo →</a>
+      <a href="../public/connexion.php" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="../public/inscription.php" class="btn btn-primary btn-sm">Créer un compte</a>
     </div>
   </div>
 </nav>
@@ -51,11 +52,11 @@
       <div class="stat-label" style="margin-top: 8px;">Étapes</div>
     </div>
     <div class="stat-widget animate-fade-up delay-2" style="text-align: center;">
-      <div class="stat-value green">4</div>
+      <div class="stat-value green">3</div>
       <div class="stat-label" style="margin-top: 8px;">Capteurs Z-Wave</div>
     </div>
     <div class="stat-widget animate-fade-up delay-3" style="text-align: center;">
-      <div class="stat-value green">3</div>
+      <div class="stat-value green">2</div>
       <div class="stat-label" style="margin-top: 8px;">Actionneurs</div>
     </div>
   </div>
@@ -75,7 +76,7 @@
       <div class="card glow-card animate-fade-up delay-1" style="display: grid; grid-template-columns: 80px 1fr; gap: 32px; align-items: start;">
         <div style="text-align: center;">
           <div style="font-family: var(--font-head); font-size: 2.5rem; font-weight: 700; color: var(--green); line-height: 1;">01</div>
-          <div style="font-size: 1.5rem; margin-top: 8px;">🔘</div>
+          <div style="margin-top: 8px; color: var(--green);"><i data-lucide="mouse-pointer-click"></i></div>
         </div>
         <div>
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
@@ -104,7 +105,7 @@
       <div class="card glow-card animate-fade-up delay-2" style="display: grid; grid-template-columns: 80px 1fr; gap: 32px; align-items: start;">
         <div style="text-align: center;">
           <div style="font-family: var(--font-head); font-size: 2.5rem; font-weight: 700; color: var(--purple); line-height: 1;">02</div>
-          <div style="font-size: 1.5rem; margin-top: 8px;">🚪</div>
+          <div style="margin-top: 8px; color: var(--purple);"><i data-lucide="door-open"></i></div>
         </div>
         <div>
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
@@ -133,7 +134,7 @@
       <div class="card glow-card animate-fade-up delay-3" style="display: grid; grid-template-columns: 80px 1fr; gap: 32px; align-items: start;">
         <div style="text-align: center;">
           <div style="font-family: var(--font-head); font-size: 2.5rem; font-weight: 700; color: var(--blue); line-height: 1;">03</div>
-          <div style="font-size: 1.5rem; margin-top: 8px;">🎯</div>
+          <div style="margin-top: 8px; color: var(--blue);"><i data-lucide="scan"></i></div>
         </div>
         <div>
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
@@ -162,7 +163,7 @@
       <div class="card glow-card animate-fade-up delay-4" style="display: grid; grid-template-columns: 80px 1fr; gap: 32px; align-items: start; border-color: rgba(0,255,136,0.2);">
         <div style="text-align: center;">
           <div style="font-family: var(--font-head); font-size: 2.5rem; font-weight: 700; color: var(--orange); line-height: 1;">04</div>
-          <div style="font-size: 1.5rem; margin-top: 8px;">🎮</div>
+          <div style="margin-top: 8px; color: var(--orange);"><i data-lucide="mouse-pointer-2"></i></div>
         </div>
         <div>
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
@@ -246,17 +247,17 @@
 
     <div class="grid-3">
       <div class="card glow-card animate-fade-up delay-1">
-        <div class="card-icon green">🖐️</div>
+        <div class="card-icon green"><i data-lucide="hand"></i></div>
         <div class="card-title">Interface physique avant tout</div>
         <p class="card-text">Pas d'écran tactile. Pas de clavier. Les joueurs interagissent avec de vrais objets : boutons, portes, capteurs de mouvement.</p>
       </div>
       <div class="card glow-card animate-fade-up delay-2">
-        <div class="card-icon blue">⚡</div>
+        <div class="card-icon blue"><i data-lucide="zap"></i></div>
         <div class="card-title">Feedback en moins d'une seconde</div>
         <p class="card-text">Du déclenchement capteur au message LCD et à la réaction de la prise : moins d'une seconde. Événement → Moteur → Actionneur.</p>
       </div>
       <div class="card glow-card animate-fade-up delay-3">
-        <div class="card-icon purple">🔄</div>
+        <div class="card-icon purple"><i data-lucide="settings"></i></div>
         <div class="card-title">Infiniment reconfigurable</div>
         <p class="card-text">Changer de scénario ne nécessite aucune modification du code. Chaque étape, capteur et réaction est configuré dans la base de données.</p>
       </div>
@@ -277,6 +278,8 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 <script src="assets/js/domescape.js"></script>
 </body>
 </html>

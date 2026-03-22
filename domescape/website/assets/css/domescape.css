@@ -131,6 +131,9 @@ a:hover { opacity: 0.8; }
 }
 .nav-cta {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .btn {
   display: inline-flex;
@@ -324,6 +327,10 @@ a:hover { opacity: 0.8; }
 .card-icon.purple { background: var(--purple-dim); color: var(--purple); }
 .card-icon.blue   { background: var(--blue-dim); color: var(--blue); }
 .card-icon.orange { background: rgba(245,158,11,0.12); color: var(--orange); }
+.card-icon svg {
+  width: 20px;
+  height: 20px;
+}
 .card-title {
   font-family: var(--font-head);
   font-size: 1rem;

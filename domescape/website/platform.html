@@ -22,7 +22,8 @@
       <a href="vision.html">Vision</a>
     </div>
     <div class="nav-cta">
-      <a href="demo.html" class="btn btn-primary btn-sm">Voir la démo →</a>
+      <a href="../public/connexion.php" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="../public/inscription.php" class="btn btn-primary btn-sm">Créer un compte</a>
     </div>
   </div>
 </nav>
@@ -168,17 +169,17 @@
 
     <div class="grid-3">
       <div class="card glow-card animate-fade-up delay-1">
-        <div class="card-icon green">👤</div>
+        <div class="card-icon green"><i data-lucide="user"></i></div>
         <div class="card-title">Joueur</div>
         <p class="card-text">Interagit avec l'espace physique. N'a pas accès à l'interface. Reçoit le feedback via les actionneurs : prise murale, messages LCD. Immersion totale.</p>
       </div>
       <div class="card glow-card animate-fade-up delay-2">
-        <div class="card-icon purple">🎮</div>
+        <div class="card-icon purple"><i data-lucide="monitor"></i></div>
         <div class="card-title">Supervision</div>
         <p class="card-text">Surveille la session en temps réel via la console de supervision. Peut réinitialiser la session, envoyer des indices et observer tous les événements en direct.</p>
       </div>
       <div class="card glow-card animate-fade-up delay-3">
-        <div class="card-icon blue">⚙️</div>
+        <div class="card-icon blue"><i data-lucide="settings"></i></div>
         <div class="card-title">Administration</div>
         <p class="card-text">Configure les scénarios, mappe les capteurs, gère la base de données. Accès complet au tableau de bord d'administration et à l'éditeur de scénarios.</p>
       </div>
@@ -238,6 +239,8 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 <script src="assets/js/domescape.js"></script>
 </body>
 </html>

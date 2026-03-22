@@ -22,7 +22,8 @@
       <a href="vision.html">Vision</a>
     </div>
     <div class="nav-cta">
-      <a href="demo.html" class="btn btn-primary btn-sm">Voir la démo →</a>
+      <a href="../public/connexion.php" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="../public/inscription.php" class="btn btn-primary btn-sm">Créer un compte</a>
     </div>
   </div>
 </nav>
@@ -298,17 +299,17 @@
 
     <div class="grid-3" style="margin-bottom: 40px;">
       <div class="card glow-card animate-fade-up delay-1">
-        <div class="card-icon green">📊</div>
+        <div class="card-icon green"><i data-lucide="bar-chart-2"></i></div>
         <div class="card-title">Quelle étape est la plus difficile ?</div>
         <p class="card-text">Compter les événements d'erreur par étape sur toutes les sessions. Taux d'erreur élevé = problème de conception ou instruction peu claire.</p>
       </div>
       <div class="card glow-card animate-fade-up delay-2">
-        <div class="card-icon blue">⏱️</div>
+        <div class="card-icon blue"><i data-lucide="timer"></i></div>
         <div class="card-title">Durée moyenne de session</div>
         <p class="card-text"><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--green);">SELECT AVG(duree_secondes) FROM session WHERE statut = 'gagnee'</span>. Comparaison avec le temps cible du scénario.</p>
       </div>
       <div class="card glow-card animate-fade-up delay-3">
-        <div class="card-icon purple">🎯</div>
+        <div class="card-icon purple"><i data-lucide="target"></i></div>
         <div class="card-title">Taux de réussite par scénario</div>
         <p class="card-text">Ratio de sessions gagnee sur abandonnee + perdue. Mesure l'équilibre global et l'accessibilité du scénario.</p>
       </div>
@@ -358,6 +359,8 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 <script src="assets/js/domescape.js"></script>
 </body>
 </html>
