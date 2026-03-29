@@ -50,7 +50,10 @@ return {
         -- Filtre de sécurité par idx — évite les faux positifs de noms
         if not WATCHED_IDX[device.id] then
             domoticz.log(
-                string.format('[DomEscape] idx=%d (%s) ignoré — non dans WATCHED_IDX', device.id, device.name),
+                string.format(
+                    '[DomEscape] idx=%d (%s) ignoré — non dans WATCHED_IDX nvalue=%d svalue=%s',
+                    device.id, device.name, device.nValue or 0, device.sValue or ''
+                ),
                 domoticz.LOG_DEBUG
             )
             return

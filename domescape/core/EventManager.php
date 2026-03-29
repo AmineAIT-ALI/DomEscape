@@ -63,7 +63,7 @@ class EventManager
         // 2. Mapper vers un code d'événement normalisé
         $codeEvenement = self::mapToCodeEvenement($capteur['type_capteur'], $nvalue, $svalue);
         if ($codeEvenement === null) {
-            error_log("[EventManager] Impossible de mapper type_capteur={$capteur['type_capteur']} nvalue=$nvalue");
+            error_log("[EventManager] Impossible de mapper type_capteur={$capteur['type_capteur']} nvalue=$nvalue svalue='$svalue'");
             return null;
         }
 
