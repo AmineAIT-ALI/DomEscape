@@ -36,7 +36,9 @@ if (!$session) {
 
 $pdo->prepare("
     UPDATE session
-    SET statut_session = 'abandonnee', date_fin = NOW()
+    SET statut_session = 'abandonnee',
+        date_fin       = NOW(),
+        duree_secondes = TIMESTAMPDIFF(SECOND, date_debut, NOW())
     WHERE id_session = ?
 ")->execute([$session['id_session']]);
 

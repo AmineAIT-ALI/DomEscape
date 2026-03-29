@@ -263,7 +263,9 @@ class GameEngine
         $pdo = getDB();
         $pdo->exec("
             UPDATE session
-            SET statut_session = 'abandonnee', date_fin = NOW()
+            SET statut_session  = 'abandonnee',
+                date_fin        = NOW(),
+                duree_secondes  = TIMESTAMPDIFF(SECOND, date_debut, NOW())
             WHERE statut_session = 'en_cours'
         ");
     }

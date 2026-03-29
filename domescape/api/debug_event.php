@@ -27,17 +27,28 @@ if (!Auth::check() || !Auth::hasRole(ROLE_ADMINISTRATEUR)) {
     exit;
 }
 
-// Mapping code → payload Domoticz (idx = seed data réels)
-// Fibaro Button idx=5 | Door Sensor idx=8 | Multisensor idx=10
+// Charger les idx depuis la BDD pour coller aux vrais capteurs
+$pdo = getDB();
+$capteurs = $pdo->query("SELECT type_capteur, domoticz_idx FROM capteur WHERE actif = 1")->fetchAll();
+
+$idxByType = [];
+foreach ($capteurs as $c) {
+    $idxByType[$c['type_capteur']] = (int)$c['domoticz_idx'];
+}
+
+$idxButton = $idxByType['button']        ?? null;
+$idxDoor   = $idxByType['door_sensor']   ?? null;
+$idxMotion = $idxByType['motion_sensor'] ?? null;
+
 $mapping = [
-    'BUTTON_PRESS'        => ['idx' => 5,  'nvalue' => 1, 'svalue' => ''],
-    'BUTTON_DOUBLE_PRESS' => ['idx' => 5,  'nvalue' => 2, 'svalue' => ''],
-    'BUTTON_TRIPLE_PRESS' => ['idx' => 5,  'nvalue' => 3, 'svalue' => ''],
-    'BUTTON_HOLD'         => ['idx' => 5,  'nvalue' => 10, 'svalue' => ''], // nvalue placeholder
-    'DOOR_OPEN'           => ['idx' => 8,  'nvalue' => 1, 'svalue' => ''],
-    'DOOR_CLOSE'          => ['idx' => 8,  'nvalue' => 0, 'svalue' => ''],
-    'MOTION_DETECTED'     => ['idx' => 10, 'nvalue' => 1, 'svalue' => ''],
-    'NO_MOTION'           => ['idx' => 10, 'nvalue' => 0, 'svalue' => ''],
+    'BUTTON_PRESS'        => ['idx' => $idxButton, 'nvalue' => 1,  'svalue' => ''],
+    'BUTTON_DOUBLE_PRESS' => ['idx' => $idxButton, 'nvalue' => 2,  'svalue' => ''],
+    'BUTTON_TRIPLE_PRESS' => ['idx' => $idxButton, 'nvalue' => 3,  'svalue' => ''],
+    'BUTTON_HOLD'         => ['idx' => $idxButton, 'nvalue' => 10, 'svalue' => ''],
+    'DOOR_OPEN'           => ['idx' => $idxDoor,   'nvalue' => 1,  'svalue' => ''],
+    'DOOR_CLOSE'          => ['idx' => $idxDoor,   'nvalue' => 0,  'svalue' => ''],
+    'MOTION_DETECTED'     => ['idx' => $idxMotion, 'nvalue' => 1,  'svalue' => ''],
+    'NO_MOTION'           => ['idx' => $idxMotion, 'nvalue' => 0,  'svalue' => ''],
 ];
 
 $eventCode = strtoupper(trim($_GET['event'] ?? $_POST['event'] ?? ''));

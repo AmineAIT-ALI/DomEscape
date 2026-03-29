@@ -89,6 +89,19 @@ else
     warn "Import schéma échoué (tables existent peut-être déjà)"
 fi
 
+if mariadb domescape < "$DEPLOY_DIR/sql/auth_extension.sql" 2>/dev/null; then
+    ok "Auth extension importée (utilisateur, role, utilisateur_role)"
+else
+    warn "Import auth_extension échoué (tables existent peut-être déjà)"
+fi
+
+# --- 5b. Créer le dossier logs/ avec les bonnes permissions ---
+echo ">>> Dossier logs/..."
+mkdir -p "$DEPLOY_DIR/logs"
+chown www-data:www-data "$DEPLOY_DIR/logs"
+chmod 755 "$DEPLOY_DIR/logs"
+ok "logs/ prêt"
+
 # --- 6. Tester la connexion PHP → MariaDB ---
 echo ">>> Test connexion PHP..."
 php -r "
@@ -126,11 +139,29 @@ apache2ctl configtest > /dev/null 2>&1 && ok "Syntaxe Apache valide" || fail "Er
 systemctl reload apache2
 ok "Apache rechargé"
 
-# --- 8. Résumé ---
+# --- 8. Service LCD systemd ---
+echo ">>> Service LCD..."
+if [ -f /etc/systemd/system/domescape-lcd.service ]; then
+    warn "Service domescape-lcd déjà installé — rechargement..."
+    systemctl daemon-reload
+    systemctl restart domescape-lcd 2>/dev/null || true
+else
+    cp "$DEPLOY_DIR/scripts/domescape-lcd.service" /etc/systemd/system/
+    systemctl daemon-reload
+    systemctl enable domescape-lcd
+    systemctl start domescape-lcd 2>/dev/null || warn "LCD service non démarré (pifacecad absent ? Normal hors Raspberry Pi)"
+fi
+ok "Service LCD configuré"
+
+# --- 9. Résumé ---
 echo ""
 echo "  ================================="
 ok "Déploiement terminé !"
 echo ""
-echo "  Accès : http://$(hostname -I | awk '{print $1}')/domescape/public/connexion.php"
+echo "  Accès    : http://$(hostname -I | awk '{print $1}')/domescape/public/connexion.php"
+echo "  Admin    : admin@domescape.local / Admin1234!"
+echo "  IMPORTANT: Changer le mot de passe admin après connexion !"
+echo "  LCD      : systemctl status domescape-lcd"
+echo "  Logs     : tail -f $DEPLOY_DIR/logs/debug.log"
 echo "  ================================="
 echo ""

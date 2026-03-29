@@ -42,6 +42,13 @@ RoleGuard::requireLogin();
     </div>
 </div>
 
+<!-- Bannière panne réseau -->
+<div id="networkError" style="display:none; background:#1a0808; border-bottom:1px solid #ff4444;
+     color:#ff6666; text-align:center; padding:8px; font-size:.78rem; font-family:'Courier New',monospace;">
+    <i data-lucide="wifi-off" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"></i>
+    Connexion au serveur perdue — nouvelle tentative en cours…
+</div>
+
 <div class="container my-5">
 
     <!-- Bannière victoire -->
@@ -122,6 +129,7 @@ function poll() {
         })
         .then(data => {
             if (!data) return;
+            document.getElementById('networkError').style.display = 'none';
             if (data.status === 'no_session') {
                 document.getElementById('noSession').classList.remove('d-none');
                 document.getElementById('gameView').querySelector('.puzzle-card').classList.add('d-none');
@@ -178,7 +186,9 @@ function poll() {
                 hintBox.classList.add('d-none');
             }
         })
-        .catch(() => {});
+        .catch(() => {
+            document.getElementById('networkError').style.display = 'block';
+        });
 }
 
 function abandonGame() {
