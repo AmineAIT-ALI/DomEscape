@@ -240,7 +240,7 @@
   <!-- Header -->
   <div class="debug-header">
     <div class="debug-title">Debug Panel</div>
-    <div class="debug-sub">Simulation d'événements capteurs sans hardware — les vrais idx du seed data sont utilisés</div>
+    <div class="debug-sub">Simulation d'événements capteurs sans hardware — idx chargés depuis la BDD (9 / 25 / 7)</div>
   </div>
 
   <!-- Session controls -->
@@ -283,23 +283,23 @@
     <div class="event-grid">
       <button class="event-btn" data-event="BUTTON_PRESS" onclick="simulateEvent('BUTTON_PRESS')">
         <span class="ev-code">BUTTON_PRESS</span>
-        <span class="ev-label">Fibaro Button</span>
-        <span class="ev-meta">idx=5  nvalue=1  → step 1</span>
+        <span class="ev-label">Button — Node 3</span>
+        <span class="ev-meta">idx=9  nvalue=1  → step 1</span>
       </button>
       <button class="event-btn btn-blue" data-event="DOOR_OPEN" onclick="simulateEvent('DOOR_OPEN')">
         <span class="ev-code">DOOR_OPEN</span>
-        <span class="ev-label">Door Sensor</span>
-        <span class="ev-meta">idx=8  nvalue=1  → step 2</span>
+        <span class="ev-label">Porte — Node 5</span>
+        <span class="ev-meta">idx=25 nvalue=1  → step 2</span>
       </button>
       <button class="event-btn btn-purple" data-event="MOTION_DETECTED" onclick="simulateEvent('MOTION_DETECTED')">
         <span class="ev-code">MOTION_DETECTED</span>
-        <span class="ev-label">Multisensor</span>
-        <span class="ev-meta">idx=10 nvalue=1  → step 3</span>
+        <span class="ev-label">Multisensor — Node 2</span>
+        <span class="ev-meta">idx=7  nvalue=1  → step 3</span>
       </button>
-      <button class="event-btn btn-orange" data-event="KEYFOB_BUTTON_3" onclick="simulateEvent('KEYFOB_BUTTON_3')">
-        <span class="ev-code">KEYFOB_BUTTON_3</span>
-        <span class="ev-label">KeyFob — btn 3</span>
-        <span class="ev-meta">idx=7  nvalue=3  → step 4 (WIN)</span>
+      <button class="event-btn btn-orange" data-event="BUTTON_DOUBLE_PRESS" onclick="simulateEvent('BUTTON_DOUBLE_PRESS')">
+        <span class="ev-code">BUTTON_DOUBLE_PRESS</span>
+        <span class="ev-label">Button — double appui</span>
+        <span class="ev-meta">idx=9  nvalue=2  → step 4 (WIN)</span>
       </button>
     </div>
   </div>
@@ -310,11 +310,8 @@
     <div class="extra-grid">
       <button class="ev-small" onclick="simulateEvent('DOOR_CLOSE')">DOOR_CLOSE</button>
       <button class="ev-small" onclick="simulateEvent('NO_MOTION')">NO_MOTION</button>
-      <button class="ev-small" onclick="simulateEvent('KEYFOB_BUTTON_1')">KEYFOB_1</button>
-      <button class="ev-small" onclick="simulateEvent('KEYFOB_BUTTON_2')">KEYFOB_2</button>
-      <button class="ev-small" onclick="simulateEvent('KEYFOB_BUTTON_4')">KEYFOB_4</button>
-      <button class="ev-small" onclick="simulateEvent('KEYFOB_BUTTON_5')">KEYFOB_5</button>
-      <button class="ev-small" onclick="simulateEvent('KEYFOB_BUTTON_6')">KEYFOB_6</button>
+      <button class="ev-small" onclick="simulateEvent('BUTTON_TRIPLE_PRESS')">BUTTON_TRIPLE</button>
+      <button class="ev-small" onclick="simulateEvent('BUTTON_HOLD')">BUTTON_HOLD</button>
     </div>
   </div>
 

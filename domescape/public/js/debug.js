@@ -82,7 +82,7 @@ const DEMO_SEQUENCE = [
     { event: 'BUTTON_PRESS',    delay: 1200, step: '1/4' },
     { event: 'DOOR_OPEN',       delay: 3500, step: '2/4' },
     { event: 'MOTION_DETECTED', delay: 6000, step: '3/4' },
-    { event: 'KEYFOB_BUTTON_3', delay: 8500, step: '4/4' },
+    { event: 'BUTTON_DOUBLE_PRESS', delay: 8500, step: '4/4' },
 ];
 
 async function runDemo() {
