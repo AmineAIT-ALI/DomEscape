@@ -8,7 +8,7 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>DomEscape — Game Master</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; }
         .panel { background: #1a1a2e; border: 1px solid #0f3460; border-radius: 8px; padding: 24px; }
@@ -113,7 +113,7 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
     </div>
 </div>
 
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="/domescape/assets/vendor/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
 <script>
 let lastSessionId = null;

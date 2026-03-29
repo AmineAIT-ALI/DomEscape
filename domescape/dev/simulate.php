@@ -142,7 +142,7 @@ $recentEvents = $pdo->query("
 <head>
     <meta charset="UTF-8">
     <title>DomEscape — Simulateur</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #0d0d0d; color: #e0e0e0; font-family: 'Courier New', monospace; }
         .panel { background: #1a1a2e; border: 1px solid #0f3460; border-radius: 8px; padding: 20px; margin-bottom: 20px; }

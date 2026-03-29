@@ -52,7 +52,7 @@ class Auth
     // ----------------------------------------------------------
     // Connexion — retourne true ou un message d'erreur string
     // ----------------------------------------------------------
-    public static function login(string $email, string $password): bool|string
+    public static function login(string $email, string $password)
     {
         $repo = new UserRepository();
         $user = $repo->findByEmail(trim($email));

@@ -8,7 +8,7 @@ RoleGuard::requireLogin();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>DomEscape — Joueur</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; }
         .status-bar { background: #111; border-bottom: 1px solid #0f3460; padding: 10px 0; }
@@ -95,7 +95,7 @@ RoleGuard::requireLogin();
     </div>
 </div>
 
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="/domescape/assets/vendor/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
 <script>
 let totalPuzzles = 0;
