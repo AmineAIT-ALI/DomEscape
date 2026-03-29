@@ -46,10 +46,14 @@ $event = EventManager::fromWebhook($payload);
 if ($event === null) {
     if (is_dir($logDir) && is_writable($logDir)) {
         @file_put_contents($logDir . '/debug.log',
-            '[' . date('Y-m-d H:i:s') . '] [IGNORED] idx=' . $payload['idx'] . PHP_EOL, FILE_APPEND);
+            '[' . date('Y-m-d H:i:s') . '] [IGNORED] idx=' . $payload['idx']
+            . ' nvalue=' . $payload['nvalue']
+            . " svalue='" . $payload['svalue'] . "'"
+            . ' — capteur inconnu ou event non mappable' . PHP_EOL,
+            FILE_APPEND);
     }
     http_response_code(200);
-    echo json_encode(['status' => 'ignored', 'message' => 'Événement non reconnu ou capteur inconnu.']);
+    echo json_encode(['status' => 'ignored', 'idx' => $payload['idx'], 'message' => 'Capteur inconnu ou événement non mappable.']);
     exit;
 }
 

@@ -85,29 +85,54 @@ class EventManager
     // ----------------------------------------------------------
     // Mapping type_capteur + nvalue/svalue → code normalisé
     //
-    //   door_sensor   nvalue=1 → DOOR_OPEN   | nvalue=0 → DOOR_CLOSE
-    //   motion_sensor nvalue=1 → MOTION_DETECTED | nvalue=0 → NO_MOTION
-    //   button        nvalue=1 → BUTTON_PRESS | nvalue=2 → BUTTON_DOUBLE_PRESS | nvalue=3 → BUTTON_TRIPLE_PRESS
-    //                nvalue=? → BUTTON_HOLD  (nvalue réel à confirmer sur hardware — Central Scene KeyAttribute)
+    // door_sensor (idx 25 — Alert Z-Wave Access Control 6)
+    //   nvalue=0               → DOOR_CLOSE
+    //   nvalue>0 (1 ou 255)    → DOOR_OPEN
+    //   svalue "clos"/"closed" → DOOR_CLOSE (confirmation secondaire)
+    //
+    // motion_sensor (idx 7 — Alert Z-Wave Home Security)
+    //   tamper filtré via svalue ("tamper" / "product moved") → null
+    //   nvalue>0               → MOTION_DETECTED
+    //   nvalue=0               → NO_MOTION
+    //
+    // button (idx 9 — Central Scene / Switch Multilevel)
+    //   V1 : mapping simplifié — tout nvalue>0 → BUTTON_PRESS
+    //   nvalue=0 = release/off → ignoré
+    //   Double/Triple/Hold à préciser après test hardware réel
     // ----------------------------------------------------------
     private static function mapToCodeEvenement(string $typeCapteur, int $nvalue, string $svalue): ?string
     {
         switch ($typeCapteur) {
+
             case 'door_sensor':
-                return $nvalue === 1 ? 'DOOR_OPEN' : 'DOOR_CLOSE';
+                // Device Domoticz de type Alert — Z-Wave Access Control
+                // nvalue=0 = alarme levée (porte fermée)
+                // nvalue=255 (ou 1) = alarme active (porte ouverte)
+                // svalue peut contenir 'Open' / 'Closed' selon version Domoticz
+                $svLower = strtolower($svalue);
+                if ($nvalue === 0
+                    || str_contains($svLower, 'clos')
+                    || str_contains($svLower, 'closed')) {
+                    return 'DOOR_CLOSE';
+                }
+                return 'DOOR_OPEN';
 
             case 'motion_sensor':
-                return $nvalue === 1 ? 'MOTION_DETECTED' : 'NO_MOTION';
+                // Filtrer les événements de tamper (product moved) qui peuvent
+                // partager le même idx Home Security dans certaines versions Domoticz
+                $svLower = strtolower($svalue);
+                if (str_contains($svLower, 'tamper') || str_contains($svLower, 'product moved')) {
+                    error_log("[EventManager] motion_sensor — tamper ignoré nvalue=$nvalue svalue='$svalue'");
+                    return null;
+                }
+                return $nvalue > 0 ? 'MOTION_DETECTED' : 'NO_MOTION';
 
             case 'button':
-                // nvalue pour Hold = à vérifier en vrai sur Raspberry Pi (Central Scene KeyAttribute)
-                return match($nvalue) {
-                    1 => 'BUTTON_PRESS',
-                    2 => 'BUTTON_DOUBLE_PRESS',
-                    3 => 'BUTTON_TRIPLE_PRESS',
-                    10 => 'BUTTON_HOLD',   // placeholder — ajuster après test hardware
-                    default => null,
-                };
+                // Mapping V1 simplifié — Central Scene / Switch Multilevel Node 3
+                // Tout nvalue>0 = appui actif, nvalue=0 = release ignoré
+                // Les nvalue exacts (double/triple/hold) à confirmer sur hardware réel
+                if ($nvalue > 0) return 'BUTTON_PRESS';
+                return null;
 
             default:
                 return null;
