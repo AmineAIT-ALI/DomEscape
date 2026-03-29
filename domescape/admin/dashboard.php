@@ -346,13 +346,13 @@ $sessions = $pdo->query("
             <tbody>
             <?php foreach ($sessions as $s):
                 $statut = $s['statut_session'];
-                $sbClass = match($statut) {
+                $sbMap = [
                     'gagnee'   => 'sb-gagnee',
                     'perdue'   => 'sb-perdue',
                     'en_cours' => 'sb-en_cours',
                     'terminee' => 'sb-terminee',
-                    default    => 'sb-other',
-                };
+                ];
+                $sbClass = $sbMap[$statut] ?? 'sb-other';
                 $statLabels = [
                     'gagnee'   => 'Victoire',
                     'perdue'   => 'Défaite',

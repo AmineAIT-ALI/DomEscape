@@ -111,8 +111,8 @@ class EventManager
                 // svalue peut contenir 'Open' / 'Closed' selon version Domoticz
                 $svLower = strtolower($svalue);
                 if ($nvalue === 0
-                    || str_contains($svLower, 'clos')
-                    || str_contains($svLower, 'closed')) {
+                    || strpos($svLower, 'clos') !== false
+                    || strpos($svLower, 'closed') !== false) {
                     return 'DOOR_CLOSE';
                 }
                 return 'DOOR_OPEN';
@@ -121,7 +121,7 @@ class EventManager
                 // Filtrer les événements de tamper (product moved) qui peuvent
                 // partager le même idx Home Security dans certaines versions Domoticz
                 $svLower = strtolower($svalue);
-                if (str_contains($svLower, 'tamper') || str_contains($svLower, 'product moved')) {
+                if (strpos($svLower, 'tamper') !== false || strpos($svLower, 'product moved') !== false) {
                     error_log("[EventManager] motion_sensor — tamper ignoré nvalue=$nvalue svalue='$svalue'");
                     return null;
                 }

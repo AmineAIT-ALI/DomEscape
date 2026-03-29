@@ -36,13 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $capteur = $stmt->fetch();
 
         if ($capteur) {
-            $nvalue = match($eventCode) {
-                'BUTTON_PRESS', 'DOOR_OPEN', 'MOTION_DETECTED' => 1,
-                'BUTTON_DOUBLE_PRESS' => 2,
-                'BUTTON_TRIPLE_PRESS' => 3,
-                'BUTTON_HOLD'         => 10, // placeholder — ajuster après test hardware
-                default => 0,
-            };
+            $nvalueMap = [
+                'BUTTON_PRESS'       => 1,
+                'DOOR_OPEN'          => 1,
+                'MOTION_DETECTED'    => 1,
+                'BUTTON_DOUBLE_PRESS'=> 2,
+                'BUTTON_TRIPLE_PRESS'=> 3,
+                'BUTTON_HOLD'        => 10, // placeholder — ajuster après test hardware
+            ];
+            $nvalue = $nvalueMap[$eventCode] ?? 0;
 
             $payload = [
                 'idx'    => $capteur['domoticz_idx'],

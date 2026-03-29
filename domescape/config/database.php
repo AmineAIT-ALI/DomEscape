@@ -40,9 +40,9 @@ function getDB(): PDO
 /**
  * Affiche une erreur DB propre (HTML ou JSON selon le contexte) et exit.
  */
-function _renderDbError(): never
+function _renderDbError(): void
 {
-    $isApi = str_contains($_SERVER['REQUEST_URI'] ?? '', '/api/');
+    $isApi = strpos($_SERVER['REQUEST_URI'] ?? '', '/api/') !== false;
 
     if ($isApi) {
         header('Content-Type: application/json');
