@@ -225,6 +225,22 @@ CREATE TABLE action_executee (
         ON DELETE SET NULL
 );
 
+-- -------------------------------------------------------------
+-- MESURE_CAPTEUR
+-- Données télémétriques continues (température, humidité)
+-- Séparé d'evenement_session qui gère la logique de jeu
+-- -------------------------------------------------------------
+CREATE TABLE mesure_capteur (
+    id_mesure    INT AUTO_INCREMENT PRIMARY KEY,
+    id_capteur   INT          NOT NULL,
+    date_mesure  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    temperature  DECIMAL(5,2),
+    humidite     DECIMAL(5,2),
+    CONSTRAINT fk_mesure_capteur
+        FOREIGN KEY (id_capteur) REFERENCES capteur(id_capteur)
+        ON DELETE CASCADE
+);
+
 -- =============================================================
 -- SEED DATA
 -- =============================================================
@@ -247,16 +263,16 @@ INSERT INTO action_type (code_action, libelle_action, description) VALUES
 ('LCD_MESSAGE', 'Message LCD',      'Affiche un message sur l\'écran LCD PiFace'),
 ('LOG_ONLY',    'Log uniquement',   'Enregistre l\'action sans effet physique');
 
--- Capteurs (idx à adapter selon Domoticz)
+-- Capteurs — idx validés sur hardware réel (Raspberry Pi Z-Wave)
 INSERT INTO capteur (nom_capteur, type_capteur, domoticz_idx, emplacement) VALUES
-('Fibaro Button',  'button',       5,  'Bureau'),
-('Door Sensor',    'door_sensor',  8,  'Porte principale'),
-('Multisensor',    'motion_sensor',10, 'Centre pièce');
+('Button',     'button',       9,  'Bureau'),      -- Node 3 — idx 9 : Level
+('Porte',      'door_sensor',  25, 'Porte principale'), -- Node 5 — idx 25 : Alarm Type: Access Control 6
+('Multisensor','motion_sensor',7,  'Centre pièce'); -- Node 2 — idx 7 : Alarm Type: Home Security 7
 
--- Actionneurs
+-- Actionneurs — idx validés sur hardware réel
 INSERT INTO actionneur (nom_actionneur, type_actionneur, domoticz_idx, emplacement) VALUES
-('Wall Plug',        'plug', 4,    'Bureau'),
-('LCD PiFace',       'lcd',  NULL, 'Bureau');
+('Wall Plug',  'plug', 13,   'Bureau'),     -- Node 4 — idx 13 : Switch
+('LCD PiFace', 'lcd',  NULL, 'Bureau');     -- Service Flask Python (hors Domoticz)
 
 -- Scénario de démo
 INSERT INTO scenario (nom_scenario, description, theme) VALUES

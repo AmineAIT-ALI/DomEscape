@@ -5,23 +5,21 @@
 -- Écoute les capteurs DomEscape et envoie un webhook POST
 -- à handle_event.php à chaque changement d'état.
 --
--- ⚠ MISE À JOUR REQUISE avant déploiement Raspberry Pi :
---   1. Vérifier les noms dans SENSOR_NAMES via Setup > Devices
---   2. Les WATCHED_IDX doivent correspondre aux idx réels Domoticz
+-- Mapping idx validé (Setup > Devices) :
+--   idx 7  → 'Alarm Type: Home Security 7 (0x07)'  — Multisensor Node 2
+--   idx 9  → 'Level'                                — Button Node 3
+--   idx 25 → 'Alarm Type: Access Control 6 (0x06)' — Porte Node 5
 -- =============================================================
 
 -- =============================================================
--- CONFIGURATION — à adapter selon Setup > Devices dans Domoticz
+-- CONFIGURATION — noms exacts validés dans Domoticz
 -- =============================================================
 
--- Noms exacts des devices tels qu'affichés dans Domoticz
--- (Setup > Devices > colonne "Name")
--- ⚠ Mettre à jour si les noms diffèrent dans votre installation
+-- Noms exacts des devices tels qu'affichés dans Setup > Devices
 local SENSOR_NAMES = {
-    'Home Security',       -- Node 2 — Multisensor (idx 7)
-    'Button',              -- Node 3 — Bouton (idx 9)
-    'Access Control',      -- Node 5 — Porte (idx 21 ou 25)
-    'Alarm Type',          -- Node 5 — Porte alarm (idx 25)
+    'Alarm Type: Home Security 7 (0x07)',  -- Node 2 — Multisensor (idx 7)
+    'Level',                               -- Node 3 — Bouton (idx 9)
+    'Alarm Type: Access Control 6 (0x06)', -- Node 5 — Porte (idx 25)
 }
 
 -- Idx surveillés (sécurité supplémentaire — filtre dans execute())
