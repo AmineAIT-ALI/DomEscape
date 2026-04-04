@@ -4,8 +4,7 @@
 ---
 
 **Auteur :** Amine AIT-ALI
-**Formation :** BUT Informatique
-**Date :** Mars 2026
+**Date :** Avril 2026
 **Dépôt GitHub :** https://github.com/AmineAIT-ALI/DomEscape
 
 ---
@@ -115,10 +114,10 @@ Les objectifs fonctionnels de DomEscape sont les suivants :
 
 | Couche | Technologie | Version |
 |---|---|---|
-| Langage backend | PHP | 8.4 |
-| Serveur web | Apache2 + PHP-FPM | 2.4 / 8.4 |
-| Base de données | MariaDB | 11.8 |
-| Domotique | Domoticz + dzVents | — |
+| Langage backend | PHP | 7.4+ (développé sous 8.4, déployé sur 7.4 Raspberry Pi) |
+| Serveur web | Apache2 + mod_php | 2.4 |
+| Base de données | MariaDB | 10.5+ |
+| Domotique | Domoticz V2024.4 + dzVents + Scenes | 3.1.8 |
 | Service LCD | Python Flask | — |
 | Frontend applicatif | Bootstrap + JavaScript vanilla | 5.3 |
 | Site vitrine | HTML / CSS / JavaScript statiques | — |
@@ -129,12 +128,14 @@ Lorsqu'un joueur effectue une action physique, par exemple en appuyant sur un bo
 
 1. le capteur envoie un signal Z-Wave ;
 2. Domoticz centralise le changement d'état du device ;
-3. un script dzVents déclenche un webhook HTTP POST vers `/api/handle_event.php` ;
+3. un script dzVents déclenche un webhook HTTP POST vers `/api/handle_event.php` (flux temps réel) ;
 4. `EventManager` convertit le payload brut (`idx` + `nvalue`) en événement métier normalisé (`BUTTON_PRESS`, `DOOR_OPEN`…) ;
 5. `GameEngine` compare cet événement à ce qui est attendu pour l'étape courante, dans une transaction SQL verrouillée ;
 6. si l'événement est correct, la session progresse vers l'étape suivante ;
 7. `ActionManager` exécute les retours physiques définis pour l'étape (LCD, lampe, prise) ;
 8. les événements et actions sont archivés dans `evenement_session` et `action_executee`.
+
+Pour les interactions ne nécessitant pas de réactivité immédiate (déclenchement de scènes, supervision, lecture de capteurs), DomEscape exploite également l'**API REST Domoticz** via les Scenes configurées dans l'interface Domoticz. Cette double intégration permet de combiner réactivité événementielle (dzVents) et interrogation à la demande (API REST).
 
 ### 3.4. Choix de conception majeurs
 
@@ -223,7 +224,7 @@ L'interface `/dev/simulate.php` s'appuie sur l'endpoint `/api/debug_event.php` p
 La base de données constitue le **point de vérité unique** du système. Elle sert à :
 
 **1. Stocker l'état courant de la partie**
-La table `session` contient l'étape courante, le score, le nombre d'erreurs et le statut. Le frontend interroge périodiquement `/api/session_status.php` (polling toutes les secondes) afin de rafraîchir l'affichage sans rechargement de page.
+La table `session` contient l'étape courante, le score, le nombre d'erreurs et le statut. Le frontend interroge périodiquement `/api/session_status.php` (polling toutes les 2 secondes) afin de rafraîchir l'affichage sans rechargement de page.
 
 **2. Configurer les scénarios sans toucher au code**
 Les tables `scenario`, `etape`, `etape_attend` et `etape_declenche` permettent de créer et modifier n'importe quel scénario directement en base. Le moteur de jeu lit dynamiquement cette configuration à chaque appel.
@@ -244,7 +245,7 @@ La base est également utilisée dans les outils de simulation, ce qui permet de
 
 ## 5. Dictionnaire des Données (DD)
 
-La base de données de DomEscape est composée de **12 tables métier** dédiées au moteur de jeu, auxquelles s'ajoutent **3 tables applicatives** pour l'authentification et la gestion des rôles, soit **15 tables au total**.
+La base de données de DomEscape est composée de **13 tables métier** dédiées au moteur de jeu, **3 tables applicatives** pour l'authentification et la gestion des rôles, et **4 tables d'extension** pour le déploiement multi-sites, soit **20 tables au total**.
 
 ### Tables de référence (catalogues)
 
@@ -269,6 +270,18 @@ La base de données de DomEscape est composée de **12 tables métier** dédiée
 | domoticz_idx | INT | UNIQUE, NULL | Identifiant Domoticz (NULL pour le LCD, géré hors Domoticz) |
 | emplacement | VARCHAR(100) | — | Localisation physique |
 | actif | BOOLEAN | DEFAULT TRUE | Indique si l'actionneur est opérationnel |
+
+#### Table : mesure_capteur
+
+Stocke les relevés télémétriques périodiques des capteurs environnementaux (température, humidité).
+
+| Attribut | Type | Contrainte | Description |
+|---|---|---|---|
+| id_mesure | INT | PK, AUTO_INCREMENT | Identifiant du relevé |
+| id_capteur | INT | FK → capteur | Capteur source de la mesure |
+| date_mesure | DATETIME | NOT NULL | Horodatage du relevé |
+| temperature | DECIMAL(5,2) | NULL | Température en °C |
+| humidite | DECIMAL(5,2) | NULL | Humidité relative en % |
 
 #### Table : evenement_type
 
@@ -424,6 +437,69 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 | id_utilisateur | INT UNSIGNED | PK, FK → utilisateur | Utilisateur concerné |
 | id_role | INT UNSIGNED | PK, FK → role | Rôle attribué |
 
+### Extension multi-sites et multi-salles
+
+Le modèle actuel de DomEscape est conçu pour fonctionner dans une configuration mono-salle, où l'ensemble des capteurs et actionneurs est implicitement rattaché à un unique environnement physique. Toutefois, afin de permettre un déploiement à plus grande échelle (centres d'escape game, formation multi-sites, environnements industriels), une extension du modèle de données est nécessaire.
+
+#### Table : site
+
+| Attribut | Type | Contrainte | Description |
+|---|---|---|---|
+| id_site | INT | PK, AUTO_INCREMENT | Identifiant du site |
+| nom_site | VARCHAR(100) | NOT NULL | Nom du site |
+| description | TEXT | — | Description du site |
+| adresse | VARCHAR(255) | — | Adresse physique |
+| actif | BOOLEAN | DEFAULT TRUE | Site exploité ou non |
+| cree_le | DATETIME | DEFAULT NOW() | Date de création |
+
+#### Table : salle
+
+| Attribut | Type | Contrainte | Description |
+|---|---|---|---|
+| id_salle | INT | PK, AUTO_INCREMENT | Identifiant de la salle |
+| id_site | INT | FK → site | Site auquel appartient la salle |
+| nom_salle | VARCHAR(100) | NOT NULL | Nom de la salle |
+| description | TEXT | — | Description de la salle |
+| capacite | INT | — | Nombre maximum de participants |
+| actif | BOOLEAN | DEFAULT TRUE | Salle active ou non |
+| cree_le | DATETIME | DEFAULT NOW() | Date de création |
+
+#### Table : scenario_version
+
+Permet de gérer plusieurs versions d'un même scénario sans impacter les sessions en cours ou l'historique existant.
+
+| Attribut | Type | Contrainte | Description |
+|---|---|---|---|
+| id_scenario_version | INT | PK, AUTO_INCREMENT | Identifiant de la version |
+| id_scenario | INT | FK → scenario | Scénario parent |
+| numero_version | VARCHAR(20) | NOT NULL | Label de version (ex : `v1.0`, `v2.1-beta`) |
+| statut_version | VARCHAR(20) | DEFAULT 'draft' | `draft`, `active`, `archived` |
+| commentaire | TEXT | — | Notes de version |
+| cree_le | DATETIME | DEFAULT NOW() | Date de création |
+
+#### Table : salle_scenario
+
+Association entre une salle physique et une version de scénario déployée. Permet de paramétrer localement le comportement d'un scénario selon la salle.
+
+| Attribut | Type | Contrainte | Description |
+|---|---|---|---|
+| id_salle_scenario | INT | PK, AUTO_INCREMENT | Identifiant du déploiement |
+| id_salle | INT | FK → salle | Salle concernée |
+| id_scenario_version | INT | FK → scenario_version | Version de scénario déployée |
+| actif | BOOLEAN | DEFAULT TRUE | Déploiement actif |
+| date_activation | DATETIME | — | Date d'activation |
+| configuration_locale | TEXT | — | Paramétrage JSON propre à la salle (idx locaux, messages adaptés…) |
+
+**Justification de l'extension**
+
+Cette extension permet :
+- de gérer plusieurs salles physiques indépendantes au sein d'un ou plusieurs sites ;
+- de déployer différentes versions d'un scénario sans écraser l'historique existant ;
+- de mutualiser les scénarios entre plusieurs environnements physiques ;
+- de préparer une industrialisation du système vers une plateforme multi-tenants.
+
+Dans la configuration actuelle (Raspberry Pi mono-salle), ces tables existent dans le modèle mais ne sont pas encore exploitées par le moteur de jeu. Elles constituent la fondation de l'évolution naturelle de l'architecture.
+
 ---
 
 ## 6. Modélisation Entité-Association (MCD)
@@ -556,6 +632,14 @@ actionneur (
     actif
 )
 
+mesure_capteur (
+    <u>id_mesure</u>,
+    _id_capteur_ → capteur(id_capteur),
+    date_mesure,
+    temperature,
+    humidite
+)
+
 evenement_type (
     <u>id_type_evenement</u>,
     code_evenement,
@@ -673,6 +757,43 @@ utilisateur_role (
     <u>id_utilisateur</u> → utilisateur(id),
     <u>id_role</u> → role(id)
 )
+
+site (
+    <u>id_site</u>,
+    nom_site,
+    description,
+    adresse,
+    actif,
+    cree_le
+)
+
+salle (
+    <u>id_salle</u>,
+    _id_site_ → site(id_site),
+    nom_salle,
+    description,
+    capacite,
+    actif,
+    cree_le
+)
+
+scenario_version (
+    <u>id_scenario_version</u>,
+    _id_scenario_ → scenario(id_scenario),
+    numero_version,
+    statut_version,
+    commentaire,
+    cree_le
+)
+
+salle_scenario (
+    <u>id_salle_scenario</u>,
+    _id_salle_ → salle(id_salle),
+    _id_scenario_version_ → scenario_version(id_scenario_version),
+    actif,
+    date_activation,
+    configuration_locale
+)
 ```
 
 ---
@@ -685,15 +806,15 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 | id_capteur | nom_capteur | type_capteur | domoticz_idx | emplacement | actif |
 |---|---|---|---|---|---|
-| 1 | Fibaro Button | button | 5 | Bureau | 1 |
-| 2 | Door Sensor | door_sensor | 8 | Porte principale | 1 |
-| 3 | Multisensor | motion_sensor | 10 | Centre pièce | 1 |
+| 1 | Button | button | 9 | Bureau | 1 |
+| 2 | Porte | door_sensor | 25 | Porte principale | 1 |
+| 3 | Multisensor | motion_sensor | 7 | Centre pièce | 1 |
 
 ### actionneur
 
 | id_actionneur | nom_actionneur | type_actionneur | domoticz_idx | emplacement | actif |
 |---|---|---|---|---|---|
-| 1 | Wall Plug | plug | 4 | Bureau | 1 |
+| 1 | Wall Plug | plug | 13 | Bureau | 1 |
 | 2 | LCD PiFace | lcd | NULL | Bureau | 1 |
 
 ### evenement_type
@@ -845,8 +966,8 @@ Plusieurs choix de conception structurants ressortent du projet :
 - un **mécanisme transactionnel** (`SELECT FOR UPDATE`) garantissant la cohérence du jeu face aux événements concurrents et aux rebonds matériels Z-Wave ;
 - une **couche de simulation** permettant de valider la logique de jeu sans dépendre du matériel réel.
 
-La modélisation retenue permet d'obtenir un système à la fois robuste, extensible et analysable. Elle ouvre également la voie à des évolutions futures, telles que les étapes chronométrées, les embranchements de scénario, les événements composites ou le support multi-salles.
+La modélisation retenue permet d'obtenir un système à la fois robuste, extensible et analysable. Elle ouvre la voie à des évolutions concrètes : étapes chronométrées, embranchements de scénario, validations multi-conditions, exécution différée des actions physiques, et déploiement multi-salles.
 
-À ce stade, le projet est techniquement prêt à être validé en environnement matériel réel sur Raspberry Pi avec les équipements Z-Wave. Les prochaines étapes consistent principalement à finaliser l'intégration physique, à valider les flux en conditions réelles et à consolider l'expérience de démonstration.
+Si DomEscape est aujourd'hui démontré à travers un escape game domotique sur Raspberry Pi mono-salle, l'architecture conçue dépasse ce seul cadre. Le moteur de scénarios événementiels, la double intégration Domoticz (dzVents temps réel + API REST), et le modèle de données extensible constituent les fondations d'une plateforme générique de scénarios physiques interactifs. Les tables d'extension multi-sites (`site`, `salle`, `scenario_version`, `salle_scenario`) posent les bases d'un déploiement industrialisé, applicable à la formation, à la simulation ou à tout environnement instrumenté par capteurs.
 
-DomEscape illustre ainsi comment une modélisation rigoureuse des données permet de construire un système interactif physique cohérent, configurable et robuste, à l'interface entre logiciel, base de données et environnement réel.
+DomEscape illustre ainsi comment une modélisation rigoureuse et une architecture orientée événements permettent de construire un système interactif physique cohérent, configurable et robuste — à l'interface entre logiciel, base de données et environnement réel.
