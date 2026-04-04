@@ -162,6 +162,10 @@ function nav_active(string $path): string {
         <?php if ($_nav_isSuperv): ?>
           <a href="/domescape/public/gamemaster.php"
              class="<?= nav_active('gamemaster.php') ?>">Supervision</a>
+          <a href="/domescape/public/stats.php"
+             class="<?= nav_active('stats.php') ?>">Stats</a>
+          <a href="/domescape/public/historique.php"
+             class="<?= nav_active('historique.php') ?>">Historique</a>
         <?php endif; ?>
 
         <?php if ($_nav_isAdmin): ?>
