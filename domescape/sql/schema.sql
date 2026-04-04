@@ -217,13 +217,13 @@ CREATE TABLE etape_attend (
 -- moment_declenchement : on_enter | on_success | on_failure | on_hint
 -- -------------------------------------------------------------
 CREATE TABLE etape_declenche (
+    id_etape_declenche   INT         AUTO_INCREMENT PRIMARY KEY,
     id_etape             INT         NOT NULL,
     id_actionneur        INT         NOT NULL,
     id_type_action       INT         NOT NULL,
     ordre_action         INT         DEFAULT 1,
     valeur_action        TEXT,
     moment_declenchement VARCHAR(20) NOT NULL DEFAULT 'on_success',
-    PRIMARY KEY (id_etape, id_actionneur, id_type_action, ordre_action, moment_declenchement),
     CONSTRAINT fk_declenche_etape
         FOREIGN KEY (id_etape) REFERENCES etape(id_etape)
         ON DELETE CASCADE,
@@ -421,9 +421,10 @@ INSERT INTO action_type (code_action, libelle_action, description) VALUES
 
 -- Capteurs — idx validés sur hardware réel (Raspberry Pi Z-Wave)
 INSERT INTO capteur (nom_capteur, type_capteur, domoticz_idx, emplacement) VALUES
-('Button',      'button',       9,  'Bureau'),           -- Node 3 — idx 9  : Level
-('Porte',       'door_sensor',  25, 'Porte principale'), -- Node 5 — idx 25 : Alarm Access Control 6
-('Multisensor', 'motion_sensor', 7, 'Centre pièce');     -- Node 2 — idx 7  : Alarm Home Security 7
+('Button',        'button',        9,  'Bureau'),           -- Node 3 — idx 9  : Level (appui simple)
+('Porte',         'door_sensor',   25, 'Porte principale'), -- Node 5 — idx 25 : Alarm Access Control 6
+('Multisensor',   'motion_sensor',  7, 'Centre pièce'),     -- Node 2 — idx 7  : Alarm Home Security 7
+('Button Double', 'button_double', 30, 'Bureau');           -- Node 3 — idx 30 : Light/Switch Unknown (double appui)
 
 -- Actionneurs — idx validés sur hardware réel
 INSERT INTO actionneur (nom_actionneur, type_actionneur, domoticz_idx, emplacement) VALUES
@@ -492,7 +493,7 @@ INSERT INTO etape_attend (id_etape, id_capteur, id_type_evenement) VALUES
 (1, 1, 1),   -- étape 1 → BUTTON_PRESS       sur Button     (capteur 1, event 1)
 (2, 2, 5),   -- étape 2 → DOOR_OPEN          sur Porte      (capteur 2, event 5)
 (3, 3, 7),   -- étape 3 → MOTION_DETECTED    sur Multisensor(capteur 3, event 7)
-(4, 1, 2);   -- étape 4 → BUTTON_DOUBLE_PRESS sur Button    (capteur 1, event 2)
+(4, 4, 2);   -- étape 4 → BUTTON_DOUBLE_PRESS sur Button Double (capteur 4, event 2)
 
 -- Actions déclenchées par étape
 -- etape_declenche(id_etape, id_actionneur, id_type_action, ordre, valeur, moment)
