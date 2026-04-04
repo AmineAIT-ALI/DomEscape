@@ -245,16 +245,25 @@ $sessions = $pdo->query("
     <div class="section-label">Actions rapides</div>
     <div class="quick-actions">
         <a href="/domescape/admin/scenarios.php" class="qa-btn">
-            <i data-lucide="layers" style="width:13px;height:13px;opacity:.6;"></i> Gérer les scénarios
+            <i data-lucide="layers" style="width:13px;height:13px;opacity:.6;"></i> Scénarios
+        </a>
+        <a href="/domescape/admin/versions.php" class="qa-btn">
+            <i data-lucide="git-branch" style="width:13px;height:13px;opacity:.6;"></i> Versions
+        </a>
+        <a href="/domescape/admin/sites.php" class="qa-btn">
+            <i data-lucide="map-pin" style="width:13px;height:13px;opacity:.6;"></i> Sites
+        </a>
+        <a href="/domescape/admin/salles.php" class="qa-btn">
+            <i data-lucide="door-open" style="width:13px;height:13px;opacity:.6;"></i> Salles
         </a>
         <a href="/domescape/admin/utilisateurs.php" class="qa-btn">
-            <i data-lucide="users" style="width:13px;height:13px;opacity:.6;"></i> Gérer les utilisateurs
+            <i data-lucide="users" style="width:13px;height:13px;opacity:.6;"></i> Utilisateurs
         </a>
         <a href="/domescape/public/gamemaster.php" class="qa-btn">
-            <i data-lucide="monitor" style="width:13px;height:13px;opacity:.6;"></i> Supervision en direct
+            <i data-lucide="monitor" style="width:13px;height:13px;opacity:.6;"></i> Supervision
         </a>
         <a href="/domescape/api/debug_event.php" class="qa-btn" target="_blank">
-            <i data-lucide="radio" style="width:13px;height:13px;opacity:.6;"></i> Événements Z-Wave
+            <i data-lucide="radio" style="width:13px;height:13px;opacity:.6;"></i> Z-Wave
         </a>
     </div>
 

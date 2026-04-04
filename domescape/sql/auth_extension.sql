@@ -40,8 +40,7 @@ ALTER TABLE joueur
     ADD COLUMN IF NOT EXISTS id_utilisateur INT UNSIGNED NULL DEFAULT NULL;
 
 ALTER TABLE joueur
-    ADD CONSTRAINT IF NOT EXISTS fk_joueur_utilisateur
-    FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id) ON DELETE SET NULL;
+    ADD FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id) ON DELETE SET NULL;
 
 -- Extension multi-sites (Phase 1)
 CREATE TABLE IF NOT EXISTS site (
@@ -87,16 +86,19 @@ CREATE TABLE IF NOT EXISTS salle_scenario (
 
 -- Nullable FKs id_salle sur les tables existantes (Phase 1)
 ALTER TABLE capteur
-    ADD COLUMN IF NOT EXISTS id_salle INT NULL,
-    ADD CONSTRAINT IF NOT EXISTS fk_capteur_salle FOREIGN KEY (id_salle) REFERENCES salle(id_salle) ON DELETE SET NULL;
+    ADD COLUMN IF NOT EXISTS id_salle INT NULL;
+ALTER TABLE capteur
+    ADD FOREIGN KEY (id_salle) REFERENCES salle(id_salle) ON DELETE SET NULL;
 
 ALTER TABLE actionneur
-    ADD COLUMN IF NOT EXISTS id_salle INT NULL,
-    ADD CONSTRAINT IF NOT EXISTS fk_actionneur_salle FOREIGN KEY (id_salle) REFERENCES salle(id_salle) ON DELETE SET NULL;
+    ADD COLUMN IF NOT EXISTS id_salle INT NULL;
+ALTER TABLE actionneur
+    ADD FOREIGN KEY (id_salle) REFERENCES salle(id_salle) ON DELETE SET NULL;
 
 ALTER TABLE session
-    ADD COLUMN IF NOT EXISTS id_salle INT NULL,
-    ADD CONSTRAINT IF NOT EXISTS fk_session_salle FOREIGN KEY (id_salle) REFERENCES salle(id_salle) ON DELETE SET NULL;
+    ADD COLUMN IF NOT EXISTS id_salle INT NULL;
+ALTER TABLE session
+    ADD FOREIGN KEY (id_salle) REFERENCES salle(id_salle) ON DELETE SET NULL;
 
 -- Données initiales
 INSERT IGNORE INTO role (nom) VALUES ('joueur'), ('superviseur'), ('administrateur');

@@ -1,0 +1,267 @@
+<?php
+
+require_once __DIR__ . '/../core/RoleGuard.php';
+require_once __DIR__ . '/../config/database.php';
+
+RoleGuard::requireRole(ROLE_ADMINISTRATEUR);
+
+$pdo     = getDB();
+$error   = '';
+$success = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+
+    if ($action === 'create') {
+        $idScenario = (int)($_POST['id_scenario']    ?? 0);
+        $version    = trim($_POST['numero_version']  ?? '');
+        $commentaire = trim($_POST['commentaire']    ?? '');
+
+        if ($idScenario === 0 || $version === '') {
+            $error = 'Le scénario et le numéro de version sont requis.';
+        } else {
+            $pdo->prepare("INSERT INTO scenario_version (id_scenario, numero_version, statut_version, commentaire) VALUES (?, ?, 'draft', ?)")
+                ->execute([$idScenario, $version, $commentaire ?: null]);
+            $success = "Version « " . htmlspecialchars($version, ENT_QUOTES, 'UTF-8') . " » créée.";
+        }
+    }
+
+    if ($action === 'activate') {
+        $id         = (int)($_POST['id_scenario_version'] ?? 0);
+        $idScenario = (int)($_POST['id_scenario']         ?? 0);
+        // Une seule version active par scénario
+        $pdo->prepare("UPDATE scenario_version SET statut_version = 'archived' WHERE id_scenario = ? AND statut_version = 'active'")
+            ->execute([$idScenario]);
+        $pdo->prepare("UPDATE scenario_version SET statut_version = 'active' WHERE id_scenario_version = ?")
+            ->execute([$id]);
+        $success = 'Version activée.';
+    }
+
+    if ($action === 'archive') {
+        $id = (int)($_POST['id_scenario_version'] ?? 0);
+        $pdo->prepare("UPDATE scenario_version SET statut_version = 'archived' WHERE id_scenario_version = ?")
+            ->execute([$id]);
+        $success = 'Version archivée.';
+    }
+
+    if ($action === 'delete') {
+        $id = (int)($_POST['id_scenario_version'] ?? 0);
+        $used = $pdo->prepare("SELECT COUNT(*) FROM salle_scenario WHERE id_scenario_version = ?");
+        $used->execute([$id]);
+        if ((int)$used->fetchColumn() > 0) {
+            $error = 'Impossible de supprimer : cette version est déployée dans une ou plusieurs salles.';
+        } else {
+            $pdo->prepare("DELETE FROM scenario_version WHERE id_scenario_version = ?")->execute([$id]);
+            $success = 'Version supprimée.';
+        }
+    }
+}
+
+$scenarios = $pdo->query("SELECT id_scenario, nom_scenario FROM scenario WHERE actif = 1 ORDER BY nom_scenario")->fetchAll();
+
+$versions = $pdo->query("
+    SELECT sv.*, sc.nom_scenario,
+           COUNT(ss.id_salle_scenario) AS nb_salles
+    FROM scenario_version sv
+    JOIN scenario sc ON sc.id_scenario = sv.id_scenario
+    LEFT JOIN salle_scenario ss ON ss.id_scenario_version = sv.id_scenario_version
+    GROUP BY sv.id_scenario_version
+    ORDER BY sc.nom_scenario, sv.cree_le DESC
+")->fetchAll();
+
+$statutColors = [
+    'active'   => '#00ff88',
+    'draft'    => '#f0c040',
+    'archived' => '#555',
+];
+$statutLabels = [
+    'active'   => 'Active',
+    'draft'    => 'Brouillon',
+    'archived' => 'Archivée',
+];
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Versions — DomEscape Admin</title>
+    <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        a { color: #00ff88; }
+        .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .admin-header h1 { font-size: 1.1rem; font-weight: 700; margin: 0; color: #e0e0e0; }
+        .admin-header p  { font-size: .72rem; color: #444; margin: 4px 0 0; }
+        .section-label { font-size: .65rem; letter-spacing: .12em; color: #444; text-transform: uppercase; margin-bottom: 14px; }
+        .panel { background: #0f0f18; border: 1px solid #111; border-radius: 6px; margin-bottom: 24px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+        th { font-size: .62rem; letter-spacing: .1em; color: #444; text-transform: uppercase; padding: 11px 16px; text-align: left; font-weight: normal; border-bottom: 1px solid #0a0a14; }
+        td { padding: 12px 16px; border-bottom: 1px solid #0a0a14; vertical-align: middle; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: rgba(255,255,255,.02); }
+        .btn-action { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border: 1px solid; border-radius: 3px; font-size: .72rem; cursor: pointer; background: transparent; font-family: 'Courier New', monospace; transition: all .15s; text-decoration: none; white-space: nowrap; }
+        .btn-activate { color: #00ff88; border-color: rgba(0,255,136,.3); }
+        .btn-activate:hover { background: rgba(0,255,136,.08); }
+        .btn-archive  { color: #888; border-color: #333; }
+        .btn-archive:hover { background: rgba(255,255,255,.04); color: #ccc; }
+        .btn-delete { color: #ff4444; border-color: rgba(255,68,68,.2); }
+        .btn-delete:hover { background: rgba(255,68,68,.07); }
+        .active-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .68rem; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .create-panel { background: #0a0a14; border: 1px solid #111; border-radius: 6px; padding: 24px; margin-bottom: 28px; }
+        .create-panel h2 { font-size: .85rem; font-weight: 700; color: #ccc; margin: 0 0 20px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        .form-group label { font-size: .68rem; color: #555; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+        .form-group input, .form-group select { width: 100%; background: #080810; border: 1px solid #1a1a2e; color: #e0e0e0; font-family: 'Courier New', monospace; font-size: .82rem; padding: 8px 12px; border-radius: 4px; outline: none; transition: border-color .15s; }
+        .form-group input:focus, .form-group select:focus { border-color: #00ff88; }
+        .form-group select option { background: #080810; }
+        .btn-create { background: #00ff88; color: #080810; font-weight: 700; font-size: .8rem; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; transition: background .15s; }
+        .btn-create:hover { background: #00cc6a; }
+        .alert-error   { background: rgba(255,68,68,.07); border: 1px solid rgba(255,68,68,.25); color: #ff6666; padding: 10px 14px; border-radius: 4px; font-size: .8rem; margin-bottom: 20px; }
+        .alert-success { background: rgba(0,255,136,.06); border: 1px solid rgba(0,255,136,.2); color: #00ff88; padding: 10px 14px; border-radius: 4px; font-size: .8rem; margin-bottom: 20px; }
+        @media (max-width: 700px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<?php require_once __DIR__ . '/../partials/nav.php'; ?>
+
+<div class="admin-wrap">
+
+    <div class="admin-header">
+        <div>
+            <h1>Versions de scénario</h1>
+            <p>Gérer les versions de scénarios déployables dans les salles</p>
+        </div>
+        <a href="/domescape/admin/dashboard.php" style="font-size:.78rem; color:#444; text-decoration:none;">← Dashboard</a>
+    </div>
+
+    <?php if ($error): ?>
+        <div class="alert-error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
+    <?php endif; ?>
+    <?php if ($success): ?>
+        <div class="alert-success"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div>
+    <?php endif; ?>
+
+    <?php if (empty($scenarios)): ?>
+        <div class="alert-error">Aucun scénario actif. <a href="/domescape/admin/scenarios.php">Créez d'abord un scénario.</a></div>
+    <?php else: ?>
+    <div class="create-panel">
+        <h2>Nouvelle version</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="create">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Scénario *</label>
+                    <select name="id_scenario" required>
+                        <option value="">— Sélectionner —</option>
+                        <?php foreach ($scenarios as $sc): ?>
+                            <option value="<?= (int)$sc['id_scenario'] ?>">
+                                <?= htmlspecialchars($sc['nom_scenario'], ENT_QUOTES, 'UTF-8') ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Numéro de version *</label>
+                    <input type="text" name="numero_version" placeholder="ex : v1.1, v2.0-beta" maxlength="20" required>
+                </div>
+                <div class="form-group">
+                    <label>Commentaire</label>
+                    <input type="text" name="commentaire" placeholder="Notes de version…" maxlength="500">
+                </div>
+            </div>
+            <button type="submit" class="btn-create">Créer la version →</button>
+        </form>
+    </div>
+    <?php endif; ?>
+
+    <div class="section-label"><?= count($versions) ?> version<?= count($versions) != 1 ? 's' : '' ?></div>
+    <div class="panel">
+        <?php if (empty($versions)): ?>
+            <div style="padding:32px; text-align:center; color:#333; font-size:.8rem;">Aucune version. Créez-en une ci-dessus.</div>
+        <?php else: ?>
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Scénario</th>
+                    <th>Version</th>
+                    <th>Statut</th>
+                    <th>Salles</th>
+                    <th>Commentaire</th>
+                    <th>Créé le</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($versions as $v): ?>
+                <?php
+                    $statut = $v['statut_version'];
+                    $color  = $statutColors[$statut]  ?? '#888';
+                    $label  = $statutLabels[$statut]  ?? $statut;
+                ?>
+                <tr>
+                    <td style="color:#333;"><?= (int)$v['id_scenario_version'] ?></td>
+                    <td style="color:#ccc;"><?= htmlspecialchars($v['nom_scenario'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td>
+                        <span style="font-size:.75rem; color:#e0e0e0; background:#111; border:1px solid #222; padding:2px 8px; border-radius:3px; font-family:monospace;">
+                            <?= htmlspecialchars($v['numero_version'], ENT_QUOTES, 'UTF-8') ?>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="active-badge">
+                            <span class="dot" style="background:<?= $color ?>;"></span>
+                            <span style="color:<?= $color ?>;"><?= $label ?></span>
+                        </span>
+                    </td>
+                    <td style="color:<?= $v['nb_salles'] > 0 ? '#e0e0e0' : '#444' ?>;">
+                        <?= (int)$v['nb_salles'] ?> salle<?= $v['nb_salles'] != 1 ? 's' : '' ?>
+                    </td>
+                    <td style="color:#555; font-size:.72rem;">
+                        <?= $v['commentaire'] ? htmlspecialchars(mb_strimwidth($v['commentaire'], 0, 50, '…'), ENT_QUOTES, 'UTF-8') : '<span style="color:#333;">—</span>' ?>
+                    </td>
+                    <td style="color:#444; font-size:.72rem;"><?= htmlspecialchars(substr($v['cree_le'], 0, 10), ENT_QUOTES, 'UTF-8') ?></td>
+                    <td>
+                        <div style="display:flex; gap:8px; justify-content:flex-end;">
+                            <?php if ($statut !== 'active'): ?>
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="activate">
+                                <input type="hidden" name="id_scenario_version" value="<?= (int)$v['id_scenario_version'] ?>">
+                                <input type="hidden" name="id_scenario" value="<?= (int)$v['id_scenario'] ?>">
+                                <button type="submit" class="btn-action btn-activate">Activer</button>
+                            </form>
+                            <?php endif; ?>
+                            <?php if ($statut === 'active'): ?>
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="archive">
+                                <input type="hidden" name="id_scenario_version" value="<?= (int)$v['id_scenario_version'] ?>">
+                                <button type="submit" class="btn-action btn-archive">Archiver</button>
+                            </form>
+                            <?php endif; ?>
+                            <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cette version ?');">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="id_scenario_version" value="<?= (int)$v['id_scenario_version'] ?>">
+                                <button type="submit" class="btn-action btn-delete">
+                                    <i data-lucide="trash-2" style="width:11px;height:11px;"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        </div>
+        <?php endif; ?>
+    </div>
+
+</div>
+
+<script src="/domescape/assets/vendor/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
