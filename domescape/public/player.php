@@ -8,182 +8,491 @@ RoleGuard::requireLogin();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>DomEscape — Joueur</title>
-    <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; }
-        .status-bar { background: #111; border-bottom: 1px solid #0f3460; padding: 10px 0; }
-        .timer { font-size: 2rem; color: #00ff88; letter-spacing: 4px; }
-        .puzzle-card { background: #1a1a2e; border: 1px solid #0f3460; border-radius: 8px; padding: 30px; }
-        .puzzle-title { color: #00ff88; font-size: 1.5rem; }
-        .puzzle-desc { color: #aaa; margin-top: 10px; }
-        .step-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin: 0 4px; }
-        .dot-done    { background: #00ff88; }
-        .dot-current { background: #fff; border: 2px solid #00ff88; }
-        .dot-future  { background: #333; }
-        #winBanner { display: none; background: #00ff88; color: #0d0d0d; padding: 40px; border-radius: 8px; text-align: center; }
-        .mistake-badge { color: #ff4444; font-size: 1rem; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #080810;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Top bar ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 52px;
+            background: #0a0a14;
+            border-bottom: 1px solid #111827;
+            flex-shrink: 0;
+        }
+        .topbar-brand {
+            font-size: .78rem;
+            font-weight: 700;
+            color: #00ff88;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+        .topbar-team {
+            font-size: .75rem;
+            color: #555;
+        }
+        .topbar-team strong { color: #aaa; }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .btn-abandon {
+            background: transparent;
+            border: 1px solid #1f2937;
+            color: #444;
+            font-family: 'Courier New', monospace;
+            font-size: .72rem;
+            padding: 5px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: border-color .15s, color .15s;
+        }
+        .btn-abandon:hover { border-color: #ff4444; color: #ff4444; }
+
+        /* ── Network error ── */
+        .net-error {
+            display: none;
+            background: #1a0808;
+            border-bottom: 1px solid #ff444433;
+            color: #ff6666;
+            text-align: center;
+            padding: 7px;
+            font-size: .72rem;
+        }
+
+        /* ── Main ── */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 16px;
+        }
+
+        /* ── Timer ── */
+        .timer-display {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #00ff88;
+            letter-spacing: .12em;
+            line-height: 1;
+            margin-bottom: 6px;
+            text-shadow: 0 0 24px rgba(0, 255, 136, .3);
+        }
+        .timer-label {
+            font-size: .65rem;
+            color: #333;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        /* ── Progress ── */
+        .progress-track {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 40px;
+        }
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .progress-step-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .68rem;
+            font-weight: 700;
+            transition: background .3s, border-color .3s;
+        }
+        .step-done    { background: #00ff88; color: #080810; border: 2px solid #00ff88; }
+        .step-current { background: transparent; color: #00ff88; border: 2px solid #00ff88;
+                        box-shadow: 0 0 10px rgba(0,255,136,.4); }
+        .step-future  { background: transparent; color: #333; border: 2px solid #1f2937; }
+        .progress-step-label {
+            font-size: .58rem;
+            color: #333;
+            max-width: 56px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .step-current .progress-step-label, .step-done .progress-step-label { color: #555; }
+        .progress-connector {
+            width: 32px;
+            height: 1px;
+            margin-bottom: 20px;
+            transition: background .3s;
+        }
+        .connector-done    { background: #00ff88; }
+        .connector-pending { background: #1f2937; }
+
+        /* ── Puzzle card ── */
+        .puzzle-card {
+            width: 100%;
+            max-width: 560px;
+            background: #0d0d1a;
+            border: 1px solid #1a1a2e;
+            border-radius: 10px;
+            padding: 32px;
+        }
+        .puzzle-meta {
+            font-size: .65rem;
+            color: #333;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .puzzle-meta span { color: #00ff88; }
+        .puzzle-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 14px;
+            line-height: 1.35;
+        }
+        .puzzle-desc {
+            font-size: .85rem;
+            color: #666;
+            line-height: 1.65;
+        }
+
+        /* ── Hint ── */
+        .hint-box {
+            display: none;
+            margin-top: 20px;
+            padding: 14px 16px;
+            background: rgba(240,192,64,.04);
+            border: 1px solid rgba(240,192,64,.2);
+            border-radius: 6px;
+        }
+        .hint-label {
+            font-size: .62rem;
+            color: #f0c040;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .hint-text { font-size: .82rem; color: #c9a530; line-height: 1.5; }
+
+        /* ── Stats bar ── */
+        .stats-bar {
+            display: flex;
+            gap: 32px;
+            margin-top: 28px;
+        }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 1.1rem; font-weight: 700; color: #e0e0e0; }
+        .stat-label { font-size: .62rem; color: #333; letter-spacing: .1em; text-transform: uppercase; margin-top: 2px; }
+        .stat-errors .stat-value { color: #ff4444; }
+
+        /* ── No session ── */
+        .no-session {
+            display: none;
+            text-align: center;
+            color: #333;
+        }
+        .no-session p { font-size: .85rem; margin-bottom: 16px; }
+        .btn-start {
+            display: inline-block;
+            background: #00ff88;
+            color: #080810;
+            font-family: 'Courier New', monospace;
+            font-size: .8rem;
+            font-weight: 700;
+            padding: 10px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        /* ── End screens ── */
+        .end-screen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 32px;
+            z-index: 100;
+        }
+        .end-screen.active { display: flex; }
+
+        .win-screen  { background: #030f07; }
+        .lose-screen { background: #0f0303; }
+
+        .end-icon { font-size: 4rem; margin-bottom: 24px; }
+        .win-screen  .end-icon { color: #00ff88; text-shadow: 0 0 40px rgba(0,255,136,.5); }
+        .lose-screen .end-icon { color: #ff4444; text-shadow: 0 0 40px rgba(255,68,68,.4); }
+
+        .end-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: .05em;
+        }
+        .win-screen  .end-title { color: #00ff88; }
+        .lose-screen .end-title { color: #ff4444; }
+
+        .end-subtitle { font-size: .85rem; color: #555; margin-bottom: 32px; }
+
+        .end-stats {
+            display: flex;
+            gap: 48px;
+            margin-bottom: 40px;
+            padding: 24px 40px;
+            background: rgba(255,255,255,.02);
+            border: 1px solid #1a1a2e;
+            border-radius: 8px;
+        }
+        .end-stat-value { font-size: 1.6rem; font-weight: 700; color: #e0e0e0; }
+        .end-stat-label { font-size: .65rem; color: #444; text-transform: uppercase; letter-spacing: .1em; margin-top: 4px; }
+
+        .btn-replay {
+            display: inline-block;
+            background: transparent;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: .82rem;
+            padding: 10px 28px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background .15s, color .15s;
+        }
+        .btn-replay:hover { background: #00ff88; color: #080810; }
+        .btn-replay-red {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+        .btn-replay-red:hover { background: #ff4444; color: #080810; }
+
+        /* ── Pulse animation on current step ── */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0,255,136,.4); }
+            50%       { box-shadow: 0 0 20px rgba(0,255,136,.8); }
+        }
+        .step-current { animation: pulse-glow 2s infinite; }
     </style>
 </head>
 <body>
 
-<div class="status-bar">
-    <div class="container d-flex justify-content-between align-items-center">
-        <a href="/domescape/public/tableau-de-bord.php"
-           style="color:#00ff88; font-weight:bold; text-decoration:none;">&#9632; DomEscape</a>
-        <span id="teamDisplay" class="text-muted small"></span>
-        <button id="abandonBtn" onclick="abandonGame()"
-                style="display:none; background:transparent; border:1px solid #333; color:#666;
-                       font-family:'Courier New',monospace; font-size:.75rem; padding:5px 14px;
-                       border-radius:4px; cursor:pointer; transition:all .15s;"
-                onmouseover="this.style.borderColor='#ff4444';this.style.color='#ff4444';"
-                onmouseout="this.style.borderColor='#333';this.style.color='#666';">
-            Abandonner
-        </button>
+<!-- Top bar -->
+<div class="topbar">
+    <a href="/domescape/public/index.php" class="topbar-brand">&#9632; DomEscape</a>
+    <div class="topbar-team" id="teamDisplay"></div>
+    <div class="topbar-right">
+        <button id="abandonBtn" class="btn-abandon" style="display:none;" onclick="abandonGame()">Abandonner</button>
     </div>
 </div>
 
-<!-- Bannière panne réseau -->
-<div id="networkError" style="display:none; background:#1a0808; border-bottom:1px solid #ff4444;
-     color:#ff6666; text-align:center; padding:8px; font-size:.78rem; font-family:'Courier New',monospace;">
-    <i data-lucide="wifi-off" style="width:13px;height:13px;vertical-align:middle;margin-right:6px;"></i>
-    Connexion au serveur perdue — nouvelle tentative en cours…
+<!-- Network error -->
+<div class="net-error" id="networkError">
+    Connexion perdue — nouvelle tentative en cours…
 </div>
 
-<div class="container my-5">
+<!-- Main -->
+<div class="main" id="gameView">
 
-    <!-- Bannière victoire -->
-    <div id="winBanner">
-        <h1><i data-lucide="trophy" style="width:2rem;height:2rem;vertical-align:middle;margin-right:10px;"></i>ESCAPE SUCCESSFUL !</h1>
-        <p id="winDetails" class="mt-3"></p>
-        <a href="/domescape/public/index.php" class="btn btn-dark mt-3">Rejouer</a>
-    </div>
+    <div class="timer-display" id="timer">00:00</div>
+    <div class="timer-label">temps écoulé</div>
 
-    <!-- Vue jeu en cours -->
-    <div id="gameView">
-        <!-- Timer + score -->
-        <div class="text-center mb-4">
-            <div class="timer" id="timer">00:00</div>
-            <div class="text-muted small mt-1">
-                Score : <span id="score">0</span> pts &nbsp;|&nbsp;
-                <span class="mistake-badge"><i data-lucide="x" style="width:14px;height:14px;vertical-align:middle;"></i> <span id="mistakes">0</span> erreur(s)</span>
-            </div>
-        </div>
+    <div class="progress-track" id="progressTrack"></div>
 
-        <!-- Progression (dots) -->
-        <div class="text-center mb-4" id="progressDots"></div>
-
-        <!-- Puzzle courant -->
-        <div class="puzzle-card mx-auto" style="max-width: 600px;">
-            <div class="text-muted small mb-2">ÉNIGME <span id="puzzleOrder">-</span></div>
-            <div class="puzzle-title" id="puzzleTitle">Chargement...</div>
-            <div class="puzzle-desc" id="puzzleDesc"></div>
-            <!-- Indice envoyé par le Game Master -->
-            <div id="hintBox" class="mt-3 p-3 rounded d-none"
-                 style="background:#0d0d18; border:1px solid rgba(255,200,0,.3);">
-                <div class="text-muted small mb-1" style="color:#f0c040!important;">
-                    <i data-lucide="lightbulb" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>INDICE
-                </div>
-                <div id="hintText" style="color:#f0c040; font-size:.85rem;"></div>
-            </div>
-        </div>
-
-        <!-- Pas de session -->
-        <div id="noSession" class="text-center mt-5 d-none">
-            <p class="text-muted">Aucune partie en cours.</p>
-            <a href="/domescape/public/index.php" class="btn btn-outline-light mt-2">Démarrer une partie</a>
+    <div class="puzzle-card" id="puzzleCard">
+        <div class="puzzle-meta">ÉNIGME <span id="puzzleOrder">—</span></div>
+        <div class="puzzle-title" id="puzzleTitle">Chargement…</div>
+        <div class="puzzle-desc"  id="puzzleDesc"></div>
+        <div class="hint-box" id="hintBox">
+            <div class="hint-label">Indice</div>
+            <div class="hint-text" id="hintText"></div>
         </div>
     </div>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="score">0</div>
+            <div class="stat-label">Points</div>
+        </div>
+        <div class="stat-item stat-errors">
+            <div class="stat-value" id="mistakes">0</div>
+            <div class="stat-label">Erreurs</div>
+        </div>
+    </div>
+
+    <div class="no-session" id="noSession">
+        <p>Aucune partie en cours.</p>
+        <a href="/domescape/public/index.php" class="btn-start">Démarrer une partie →</a>
+    </div>
+
 </div>
 
-<script src="/domescape/assets/vendor/lucide.min.js"></script>
-<script>lucide.createIcons();</script>
+<!-- Victoire -->
+<div class="end-screen win-screen" id="winScreen">
+    <div class="end-icon">✓</div>
+    <div class="end-title">ESCAPE SUCCESSFUL</div>
+    <div class="end-subtitle" id="winSubtitle"></div>
+    <div class="end-stats" id="winStats"></div>
+    <a href="/domescape/public/index.php" class="btn-replay">Rejouer →</a>
+</div>
+
+<!-- Défaite -->
+<div class="end-screen lose-screen" id="loseScreen">
+    <div class="end-icon">✗</div>
+    <div class="end-title">TEMPS ÉCOULÉ</div>
+    <div class="end-subtitle" id="loseSubtitle"></div>
+    <div class="end-stats" id="loseStats"></div>
+    <a href="/domescape/public/index.php" class="btn-replay btn-replay-red">Réessayer →</a>
+</div>
+
 <script>
-let totalPuzzles = 0;
-let startTime    = null;
+let totalPuzzles  = 0;
+let stepTitles    = [];
+let startTime     = null;
 let timerInterval = null;
+let lastStatus    = null;
 
-function formatTime(seconds) {
-    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-    const s = String(seconds % 60).padStart(2, '0');
-    return `${m}:${s}`;
+function fmt(s) {
+    return String(Math.floor(s / 60)).padStart(2,'0') + ':' + String(s % 60).padStart(2,'0');
 }
 
-function renderDots(currentOrder, total) {
-    const container = document.getElementById('progressDots');
-    container.innerHTML = '';
+function buildProgress(currentNum, total, titles) {
+    const track = document.getElementById('progressTrack');
+    track.innerHTML = '';
     for (let i = 1; i <= total; i++) {
-        const dot = document.createElement('span');
-        dot.className = 'step-dot ' + (i < currentOrder ? 'dot-done' : i === currentOrder ? 'dot-current' : 'dot-future');
-        container.appendChild(dot);
+        // Connecteur avant chaque step sauf le premier
+        if (i > 1) {
+            const conn = document.createElement('div');
+            conn.className = 'progress-connector ' + (i <= currentNum ? 'connector-done' : 'connector-pending');
+            track.appendChild(conn);
+        }
+        const stepWrap = document.createElement('div');
+        stepWrap.className = 'progress-step';
+
+        const circle = document.createElement('div');
+        const cls = i < currentNum ? 'step-done' : i === currentNum ? 'step-current' : 'step-future';
+        circle.className = 'progress-step-circle ' + cls;
+        circle.textContent = i < currentNum ? '✓' : i;
+
+        const label = document.createElement('div');
+        label.className = 'progress-step-label';
+        label.textContent = titles[i - 1] || '';
+
+        stepWrap.appendChild(circle);
+        stepWrap.appendChild(label);
+        track.appendChild(stepWrap);
+    }
+}
+
+function showEndScreen(type, data) {
+    clearInterval(timerInterval);
+    document.getElementById('gameView').style.display = 'none';
+
+    const mins = Math.floor(data.elapsed_seconds / 60);
+    const secs = data.elapsed_seconds % 60;
+
+    if (type === 'win') {
+        document.getElementById('winSubtitle').textContent =
+            data.scenario + ' — ' + data.joueur;
+        document.getElementById('winStats').innerHTML =
+            `<div class="stat-item"><div class="end-stat-value">${mins}m ${secs}s</div><div class="end-stat-label">Temps</div></div>` +
+            `<div class="stat-item"><div class="end-stat-value">${data.score}</div><div class="end-stat-label">Points</div></div>` +
+            `<div class="stat-item"><div class="end-stat-value">${data.nb_erreurs}</div><div class="end-stat-label">Erreurs</div></div>`;
+        document.getElementById('winScreen').classList.add('active');
+    } else {
+        document.getElementById('loseSubtitle').textContent =
+            data.scenario + ' — ' + data.joueur;
+        document.getElementById('loseStats').innerHTML =
+            `<div class="stat-item"><div class="end-stat-value">${data.score}</div><div class="end-stat-label">Points</div></div>` +
+            `<div class="stat-item"><div class="end-stat-value">${data.nb_erreurs}</div><div class="end-stat-label">Erreurs</div></div>`;
+        document.getElementById('loseScreen').classList.add('active');
     }
 }
 
 function poll() {
     fetch('/domescape/api/session_status.php')
         .then(r => {
-            if (r.status === 401) {
-                window.location.href = '/domescape/public/connexion.php';
-                return null;
-            }
+            if (r.status === 401) { window.location.href = '/domescape/public/connexion.php'; return null; }
             return r.json();
         })
         .then(data => {
             if (!data) return;
             document.getElementById('networkError').style.display = 'none';
+
             if (data.status === 'no_session') {
-                document.getElementById('noSession').classList.remove('d-none');
-                document.getElementById('gameView').querySelector('.puzzle-card').classList.add('d-none');
-                document.getElementById('progressDots').innerHTML = '';
+                document.getElementById('noSession').style.display = 'block';
+                document.getElementById('puzzleCard').style.display = 'none';
+                document.getElementById('progressTrack').innerHTML = '';
                 return;
             }
 
-            document.getElementById('noSession').classList.add('d-none');
+            document.getElementById('noSession').style.display  = 'none';
+            document.getElementById('puzzleCard').style.display = 'block';
             document.getElementById('abandonBtn').style.display = 'inline-block';
-            document.getElementById('teamDisplay').textContent = data.joueur + ' — ' + data.scenario;
+            document.getElementById('teamDisplay').textContent  = data.joueur + ' — ' + data.scenario;
             document.getElementById('score').textContent    = data.score;
             document.getElementById('mistakes').textContent = data.nb_erreurs;
-
             totalPuzzles = data.total_etapes;
 
-            if (data.status === 'gagnee') {
-                clearInterval(timerInterval);
-                document.getElementById('gameView').style.display = 'none';
-                document.getElementById('winBanner').style.display = 'block';
-                const mins = Math.floor(data.elapsed_seconds / 60);
-                const secs = data.elapsed_seconds % 60;
-                document.getElementById('winDetails').textContent =
-                    `Temps : ${mins}m ${secs}s | Score : ${data.score} pts | Erreurs : ${data.nb_erreurs}`;
+            // États terminaux
+            if (data.status === 'gagnee' && lastStatus !== 'gagnee') {
+                lastStatus = 'gagnee';
+                showEndScreen('win', data);
                 return;
             }
+            if ((data.status === 'perdue' || data.status === 'abandonnee') && lastStatus !== data.status) {
+                lastStatus = data.status;
+                showEndScreen('lose', data);
+                return;
+            }
+            if (data.status === 'gagnee' || data.status === 'perdue' || data.status === 'abandonnee') return;
+
+            lastStatus = data.status;
 
             // Timer
-            if (!startTime && data.elapsed_seconds > 0) {
+            if (!startTime && data.elapsed_seconds >= 0) {
                 startTime = Date.now() - data.elapsed_seconds * 1000;
                 if (!timerInterval) {
                     timerInterval = setInterval(() => {
-                        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                        document.getElementById('timer').textContent = formatTime(elapsed);
+                        document.getElementById('timer').textContent =
+                            fmt(Math.floor((Date.now() - startTime) / 1000));
                     }, 1000);
                 }
             }
 
-            // Étape courante
+            // Étape
             if (data.etape && data.etape.id) {
                 document.getElementById('puzzleOrder').textContent = data.etape.numero + ' / ' + totalPuzzles;
                 document.getElementById('puzzleTitle').textContent = data.etape.titre;
                 document.getElementById('puzzleDesc').textContent  = data.etape.description;
-                renderDots(data.etape.numero, totalPuzzles);
+                buildProgress(data.etape.numero, totalPuzzles, []);
             }
 
             // Indice
-            const hintBox  = document.getElementById('hintBox');
-            const hintText = document.getElementById('hintText');
+            const hintBox = document.getElementById('hintBox');
             if (data.nb_indices > 0 && data.etape && data.etape.indice) {
-                hintText.textContent = data.etape.indice;
-                hintBox.classList.remove('d-none');
-                lucide.createIcons();
+                document.getElementById('hintText').textContent = data.etape.indice;
+                hintBox.style.display = 'block';
             } else {
-                hintBox.classList.add('d-none');
+                hintBox.style.display = 'none';
             }
         })
         .catch(() => {
@@ -198,7 +507,6 @@ function abandonGame() {
         .then(() => { window.location.href = '/domescape/public/index.php'; });
 }
 
-// Polling toutes les 2 secondes
 poll();
 setInterval(poll, 2000);
 </script>
