@@ -71,21 +71,21 @@ function fmtDuration(?int $sec): string {
     return sprintf('%dm %02ds', intdiv($sec, 60), $sec % 60);
 }
 function statusColor(string $s): string {
-    return match($s) {
-        'gagnee'    => '#00ff88',
-        'perdue'    => '#ff4444',
-        'abandonnee'=> '#f0c040',
-        default     => '#555',
-    };
+    switch ($s) {
+        case 'gagnee':     return '#00ff88';
+        case 'perdue':     return '#ff4444';
+        case 'abandonnee': return '#f0c040';
+        default:           return '#555';
+    }
 }
 function statusLabel(string $s): string {
-    return match($s) {
-        'gagnee'    => 'Victoire',
-        'perdue'    => 'Perdue',
-        'abandonnee'=> 'Abandon',
-        'en_cours'  => 'En cours',
-        default     => $s,
-    };
+    switch ($s) {
+        case 'gagnee':     return 'Victoire';
+        case 'perdue':     return 'Perdue';
+        case 'abandonnee': return 'Abandon';
+        case 'en_cours':   return 'En cours';
+        default:           return $s;
+    }
 }
 ?>
 <!DOCTYPE html>
