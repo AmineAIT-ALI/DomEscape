@@ -335,6 +335,8 @@ Stocke les relevés télémétriques périodiques des capteurs environnementaux 
 | points | INT | DEFAULT 100 | Points accordés en cas de réussite |
 | finale | BOOLEAN | DEFAULT FALSE | TRUE pour la dernière étape (victoire) |
 
+> **Phase 1 → Phase 2 :** En Phase 1, `etape.id_scenario` relie directement une étape à un scénario. La table `scenario_version` pose les bases d'une évolution future (Phase 2) où chaque version d'un scénario pourrait disposer de ses propres étapes (`etape.id_scenario_version`), permettant ainsi un vrai versionnage des parcours de jeu sans modifier le moteur. Ce découplage n'est pas implémenté dans le code actuel afin de ne pas perturber la chaîne de production validée sur hardware.
+
 #### Table : etape_attend *(association ternaire)*
 
 Définit quel événement sur quel capteur doit être reçu pour valider une étape.
@@ -352,12 +354,13 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 
 | Attribut | Type | Contrainte | Description |
 |---|---|---|---|
-| id_etape | INT | PK, FK → etape | Étape concernée |
-| id_actionneur | INT | PK, FK → actionneur | Actionneur ciblé |
-| id_type_action | INT | PK, FK → action_type | Type d'action à exécuter |
-| ordre_action | INT | PK, DEFAULT 1 | Ordre d'exécution |
+| id_etape_declenche | INT | PK, AUTO_INCREMENT | Identifiant technique de la ligne |
+| id_etape | INT | FK → etape | Étape concernée |
+| id_actionneur | INT | FK → actionneur | Actionneur ciblé |
+| id_type_action | INT | FK → action_type | Type d'action à exécuter |
+| ordre_action | INT | DEFAULT 1 | Ordre d'exécution |
 | valeur_action | TEXT | — | Paramètre de l'action (ex : texte LCD) |
-| moment_declenchement | VARCHAR(20) | PK | `on_enter`, `on_success`, `on_failure`, `on_hint` |
+| moment_declenchement | VARCHAR(20) | NOT NULL | `on_enter`, `on_success`, `on_failure`, `on_hint` |
 
 ### Tables de session (runtime)
 
@@ -401,6 +404,8 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 | valeur_brute | TEXT | — | Payload JSON brut reçu de Domoticz |
 | evenement_attendu | BOOLEAN | — | Indique si l'événement reçu correspondait à l'attendu défini pour l'étape courante. |
 | valide | BOOLEAN | — | Indique si l'événement a été retenu comme exploitable par le moteur dans le contexte de la session courante. |
+| raison_rejet | TEXT | — | Motif de rejet si l'événement n'est pas retenu (ex : hors séquence, doublon, session terminée). |
+| traite_le | DATETIME | — | Horodatage du traitement effectif par le moteur (permet de mesurer la latence de traitement). |
 
 #### Table : action_executee
 
@@ -414,6 +419,8 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 | date_execution | DATETIME | NOT NULL | Horodatage de l'exécution |
 | valeur_action | TEXT | — | Paramètre utilisé (ex : message LCD) |
 | statut_execution | VARCHAR(20) | DEFAULT 'ok' | `ok`, `erreur`, `simulation` |
+| message_erreur | TEXT | — | Détail de l'erreur si `statut_execution = 'erreur'` (ex : timeout, réponse HTTP non-200). |
+| duree_ms | INT | — | Durée d'exécution de l'action en millisecondes (utile pour détecter les actionneurs lents). |
 
 ### Tables d'authentification
 
@@ -716,11 +723,12 @@ etape_attend (
 )
 
 etape_declenche (
-    <u>id_etape</u> → etape(id_etape),
-    <u>id_actionneur</u> → actionneur(id_actionneur),
-    <u>id_type_action</u> → action_type(id_type_action),
-    <u>ordre_action</u>,
-    <u>moment_declenchement</u>,
+    <u>id_etape_declenche</u>,
+    _id_etape_ → etape(id_etape),
+    _id_actionneur_ → actionneur(id_actionneur),
+    _id_type_action_ → action_type(id_type_action),
+    ordre_action,
+    moment_declenchement,
     valeur_action
 )
 
@@ -733,7 +741,9 @@ evenement_session (
     date_evenement,
     valeur_brute,
     evenement_attendu,
-    valide
+    valide,
+    raison_rejet,
+    traite_le
 )
 
 action_executee (
@@ -744,7 +754,9 @@ action_executee (
     _id_etape_ → etape(id_etape),
     date_execution,
     valeur_action,
-    statut_execution
+    statut_execution,
+    message_erreur,
+    duree_ms
 )
 
 utilisateur (
@@ -983,6 +995,8 @@ Plusieurs choix de conception structurants ressortent du projet :
 - une **couche de simulation** permettant de valider la logique de jeu sans dépendre du matériel réel.
 
 La modélisation retenue permet d'obtenir un système à la fois robuste, extensible et analysable. Elle ouvre la voie à des évolutions concrètes : étapes chronométrées, embranchements de scénario, validations multi-conditions, exécution différée des actions physiques, et déploiement multi-salles.
+
+Le passage à un modèle basé sur `scenario_version` constitue une évolution structurante : elle permettrait de déployer simultanément plusieurs variantes d'un même scénario dans des salles différentes, d'effectuer des mises à jour sans interrompre les sessions en cours, et d'assurer une traçabilité complète des modifications de contenu. Cette évolution, préparée mais non activée en Phase 1, représente le principal levier d'industrialisation de la plateforme.
 
 La chaîne complète a été validée sur hardware réel : capteurs Z-Wave → Domoticz → dzVents → handle_event.php → GameEngine → base de données. Plusieurs sessions ont été jouées et remportées sur le Raspberry Pi de production, confirmant la robustesse du système en conditions réelles.
 
