@@ -18,19 +18,30 @@ require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../core/EventManager.php';
 require_once __DIR__ . '/../core/GameEngine.php';
 
-// 1. Vérification du token
-$token = $_POST['token'] ?? $_GET['token'] ?? '';
+// 1. Lecture du body — dzVents openURL envoie du JSON (table Lua),
+//    curl/-d envoie du form-encoded. On supporte les deux.
+$jsonInput = [];
+$rawBody = file_get_contents('php://input');
+if ($rawBody !== false && $rawBody !== '') {
+    $decoded = json_decode($rawBody, true);
+    if (is_array($decoded)) {
+        $jsonInput = $decoded;
+    }
+}
+
+$token = $_POST['token'] ?? $_GET['token'] ?? ($jsonInput['token'] ?? '');
+
 if ($token !== WEBHOOK_TOKEN) {
     http_response_code(403);
     echo json_encode(['status' => 'error', 'message' => 'Token invalide.']);
     exit;
 }
 
-// 2. Extraction du payload
+// 2. Extraction du payload (form-encoded ou JSON)
 $payload = [
-    'idx'    => $_POST['idx']    ?? $_GET['idx']    ?? 0,
-    'nvalue' => $_POST['nvalue'] ?? $_GET['nvalue'] ?? 0,
-    'svalue' => $_POST['svalue'] ?? $_GET['svalue'] ?? '',
+    'idx'    => $_POST['idx']    ?? $_GET['idx']    ?? ($jsonInput['idx']    ?? 0),
+    'nvalue' => $_POST['nvalue'] ?? $_GET['nvalue'] ?? ($jsonInput['nvalue'] ?? 0),
+    'svalue' => $_POST['svalue'] ?? $_GET['svalue'] ?? ($jsonInput['svalue'] ?? ''),
 ];
 
 // DEBUG — log du payload entrant

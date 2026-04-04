@@ -18,17 +18,17 @@
 -- Noms exacts des devices tels qu'affichés dans Setup > Devices
 local SENSOR_NAMES = {
     'Alarm Type: Home Security 7 (0x07)',  -- Node 2 — Multisensor (idx 7)
-    'Level',                               -- Node 3 — Bouton (idx 9)
+    'Level',                               -- Node 3 — Bouton simple (idx 9)
     'Alarm Type: Access Control 6 (0x06)', -- Node 5 — Porte (idx 25)
+    'double_press',                        -- Node 3 — Bouton double appui (idx 30)
 }
 
 -- Idx surveillés (sécurité supplémentaire — filtre dans execute())
--- Seuls ces idx déclenchent un webhook, même si un autre device
--- porte un nom similaire à ceux de SENSOR_NAMES
 local WATCHED_IDX = {
     [7]  = true,   -- Multisensor — Home Security / Motion (Node 2)
-    [9]  = true,   -- Button (Node 3)
+    [9]  = true,   -- Button simple (Node 3)
     [25] = true,   -- Door sensor — Alarm Type: Access Control 6 (Node 5)
+    [30] = true,   -- Button double appui (Node 3 — device séparé Domoticz)
 }
 
 -- URL du webhook backend

@@ -128,11 +128,15 @@ class EventManager
                 return $nvalue > 0 ? 'MOTION_DETECTED' : 'NO_MOTION';
 
             case 'button':
-                // Mapping V1 simplifié — Central Scene / Switch Multilevel Node 3
-                // Tout nvalue>0 = appui actif, nvalue=0 = release ignoré
-                // Les nvalue exacts (double/triple/hold) à confirmer sur hardware réel
-                if ($nvalue > 0) return 'BUTTON_PRESS';
-                return null;
+                // Fibaro Button FGPB-101 — idx 9 — appui simple uniquement
+                // nvalue=0 = release → ignoré
+                return $nvalue > 0 ? 'BUTTON_PRESS' : null;
+
+            case 'button_double':
+                // Fibaro Button FGPB-101 — idx 30 — device dédié double appui
+                // Domoticz crée un device séparé (Light/Switch Unknown) pour chaque type d'appui
+                // Tout nvalue > 0 sur ce device = double appui confirmé
+                return $nvalue > 0 ? 'BUTTON_DOUBLE_PRESS' : null;
 
             default:
                 return null;

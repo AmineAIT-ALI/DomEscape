@@ -1,26 +1,32 @@
--- ============================================================
--- DomEscape — Extension authentification & autorisation
--- À exécuter UNE SEULE FOIS sur la BDD domescape
--- ============================================================
+-- =============================================================
+-- DÉPRÉCIÉ — Ce fichier n'est plus utilisé.
+--
+-- Les tables utilisateur, role et utilisateur_role,
+-- ainsi que le compte admin par défaut, sont désormais
+-- inclus dans schema.sql (BDD v3 — VERSION GELÉE).
+--
+-- Conserver uniquement pour référence / migration de l'ancienne
+-- BDD v2 vers v3 (ALTER TABLE uniquement, pas de CREATE).
+-- =============================================================
 
--- Table des utilisateurs
+-- Migration v2 → v3 : ajouter les tables auth si elles n'existent pas encore
+-- (utile si la BDD a été créée avec l'ancien schema.sql à 13 tables)
+
 CREATE TABLE IF NOT EXISTS utilisateur (
-    id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    nom            VARCHAR(100)  NOT NULL,
-    email          VARCHAR(255)  NOT NULL UNIQUE,
-    mot_de_passe   VARCHAR(255)  NOT NULL,
-    actif          TINYINT(1)    NOT NULL DEFAULT 1,
-    cree_le        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    derniere_connexion DATETIME  NULL
+    id                 INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nom                VARCHAR(100) NOT NULL,
+    email              VARCHAR(255) NOT NULL UNIQUE,
+    mot_de_passe       VARCHAR(255) NOT NULL,
+    actif              TINYINT(1)   NOT NULL DEFAULT 1,
+    cree_le            DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    derniere_connexion DATETIME     NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Table des rôles
 CREATE TABLE IF NOT EXISTS role (
-    id    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    nom   VARCHAR(50) NOT NULL UNIQUE   -- 'joueur' | 'superviseur' | 'administrateur'
+    id  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Table de liaison utilisateur ↔ rôle (N:N)
 CREATE TABLE IF NOT EXISTS utilisateur_role (
     id_utilisateur INT UNSIGNED NOT NULL,
     id_role        INT UNSIGNED NOT NULL,
@@ -29,31 +35,73 @@ CREATE TABLE IF NOT EXISTS utilisateur_role (
     CONSTRAINT fk_ur_role        FOREIGN KEY (id_role)        REFERENCES role(id)        ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Lien optionnel entre un joueur et un compte utilisateur
--- (exécuter seulement si la colonne n'existe pas encore)
+-- Lien joueur → utilisateur (si colonne absente)
 ALTER TABLE joueur
-    ADD COLUMN id_utilisateur INT UNSIGNED NULL DEFAULT NULL,
-    ADD CONSTRAINT fk_joueur_utilisateur FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id) ON DELETE SET NULL;
+    ADD COLUMN IF NOT EXISTS id_utilisateur INT UNSIGNED NULL DEFAULT NULL;
 
--- ============================================================
+ALTER TABLE joueur
+    ADD CONSTRAINT IF NOT EXISTS fk_joueur_utilisateur
+    FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id) ON DELETE SET NULL;
+
+-- Extension multi-sites (Phase 1)
+CREATE TABLE IF NOT EXISTS site (
+    id_site     INT AUTO_INCREMENT PRIMARY KEY,
+    nom_site    VARCHAR(100) NOT NULL,
+    description TEXT,
+    adresse     VARCHAR(255),
+    actif       BOOLEAN  DEFAULT TRUE,
+    cree_le     DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS salle (
+    id_salle    INT AUTO_INCREMENT PRIMARY KEY,
+    id_site     INT NOT NULL,
+    nom_salle   VARCHAR(100) NOT NULL,
+    description TEXT,
+    capacite    INT,
+    actif       BOOLEAN  DEFAULT TRUE,
+    cree_le     DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_salle_site FOREIGN KEY (id_site) REFERENCES site(id_site) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS scenario_version (
+    id_scenario_version INT AUTO_INCREMENT PRIMARY KEY,
+    id_scenario         INT         NOT NULL,
+    numero_version      VARCHAR(20) NOT NULL,
+    statut_version      VARCHAR(20) DEFAULT 'draft',
+    commentaire         TEXT,
+    cree_le             DATETIME    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_scenver_scenario FOREIGN KEY (id_scenario) REFERENCES scenario(id_scenario) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS salle_scenario (
+    id_salle_scenario   INT AUTO_INCREMENT PRIMARY KEY,
+    id_salle            INT NOT NULL,
+    id_scenario_version INT NOT NULL,
+    actif               BOOLEAN  DEFAULT TRUE,
+    date_activation     DATETIME,
+    configuration_locale TEXT,
+    CONSTRAINT fk_ss_salle    FOREIGN KEY (id_salle)            REFERENCES salle(id_salle)                       ON DELETE RESTRICT,
+    CONSTRAINT fk_ss_version  FOREIGN KEY (id_scenario_version) REFERENCES scenario_version(id_scenario_version) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Nullable FKs id_salle sur les tables existantes (Phase 1)
+ALTER TABLE capteur
+    ADD COLUMN IF NOT EXISTS id_salle INT NULL,
+    ADD CONSTRAINT IF NOT EXISTS fk_capteur_salle FOREIGN KEY (id_salle) REFERENCES salle(id_salle) ON DELETE SET NULL;
+
+ALTER TABLE actionneur
+    ADD COLUMN IF NOT EXISTS id_salle INT NULL,
+    ADD CONSTRAINT IF NOT EXISTS fk_actionneur_salle FOREIGN KEY (id_salle) REFERENCES salle(id_salle) ON DELETE SET NULL;
+
+ALTER TABLE session
+    ADD COLUMN IF NOT EXISTS id_salle INT NULL,
+    ADD CONSTRAINT IF NOT EXISTS fk_session_salle FOREIGN KEY (id_salle) REFERENCES salle(id_salle) ON DELETE SET NULL;
+
 -- Données initiales
--- ============================================================
-
--- Rôles de base
 INSERT IGNORE INTO role (nom) VALUES ('joueur'), ('superviseur'), ('administrateur');
 
--- Compte administrateur par défaut  (mot de passe : Admin1234!)
--- IMPORTANT : changer ce mot de passe en production
-INSERT IGNORE INTO utilisateur (nom, email, mot_de_passe, actif)
-VALUES (
-    'Administrateur',
-    'admin@domescape.local',
-    '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',  -- Admin1234!
-    1
-);
-
--- Assigner le rôle administrateur au compte par défaut
-INSERT IGNORE INTO utilisateur_role (id_utilisateur, id_role)
-SELECT u.id, r.id
-FROM utilisateur u, role r
-WHERE u.email = 'admin@domescape.local' AND r.nom = 'administrateur';
+-- Version initiale du scénario de démo (si scenario id=1 existe)
+INSERT IGNORE INTO scenario_version (id_scenario, numero_version, statut_version, commentaire)
+SELECT 1, 'v1.0', 'active', 'Version initiale — démo Raspberry Pi'
+FROM scenario WHERE id_scenario = 1 LIMIT 1;
