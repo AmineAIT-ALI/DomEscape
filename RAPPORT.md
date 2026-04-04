@@ -202,6 +202,9 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 | `/admin/scenarios.php` | Gestion des scénarios (création, activation, suppression) |
 | `/admin/scenario_edit.php` | Édition d'un scénario et de ses étapes (CRUD complet) |
 | `/admin/utilisateurs.php` | Gestion des comptes et des rôles |
+| `/admin/sites.php` | Gestion des sites physiques |
+| `/admin/salles.php` | Gestion des salles par site |
+| `/admin/versions.php` | Gestion des versions de scénario (draft / active / archived) |
 | `/dev/simulate.php` | Simulateur d'événements capteurs (sans hardware) |
 
 ### 4.3. APIs exposées
@@ -255,10 +258,11 @@ La base de données de DomEscape est composée de **13 tables métier** dédiée
 |---|---|---|---|
 | id_capteur | INT | PK, AUTO_INCREMENT | Identifiant unique du capteur |
 | nom_capteur | VARCHAR(100) | NOT NULL | Nom descriptif du capteur |
-| type_capteur | VARCHAR(50) | NOT NULL | Famille : `door_sensor`, `button`, `motion_sensor` |
+| type_capteur | VARCHAR(50) | NOT NULL | Famille : `door_sensor`, `button`, `button_double`, `motion_sensor` |
 | domoticz_idx | INT | NOT NULL, UNIQUE | Identifiant Domoticz du device |
 | emplacement | VARCHAR(100) | — | Localisation physique dans la pièce |
 | actif | BOOLEAN | DEFAULT TRUE | Indique si le capteur est en service |
+| id_salle | INT | FK → salle, NULL | Salle physique associée (NULL en Phase 1, NOT NULL en Phase 4) |
 
 #### Table : actionneur
 
@@ -266,10 +270,11 @@ La base de données de DomEscape est composée de **13 tables métier** dédiée
 |---|---|---|---|
 | id_actionneur | INT | PK, AUTO_INCREMENT | Identifiant unique de l'actionneur |
 | nom_actionneur | VARCHAR(100) | NOT NULL | Nom descriptif |
-| type_actionneur | VARCHAR(50) | NOT NULL | Famille : `lamp`, `plug`, `lcd` |
+| type_actionneur | VARCHAR(50) | NOT NULL | Famille : `plug`, `lcd` |
 | domoticz_idx | INT | UNIQUE, NULL | Identifiant Domoticz (NULL pour le LCD, géré hors Domoticz) |
 | emplacement | VARCHAR(100) | — | Localisation physique |
 | actif | BOOLEAN | DEFAULT TRUE | Indique si l'actionneur est opérationnel |
+| id_salle | INT | FK → salle, NULL | Salle physique associée (NULL en Phase 1, NOT NULL en Phase 4) |
 
 #### Table : mesure_capteur
 
@@ -381,6 +386,7 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 | nb_erreurs | INT | DEFAULT 0 | Nombre d'erreurs commises |
 | nb_indices | INT | DEFAULT 0 | Nombre d'indices demandés |
 | duree_secondes | INT | — | Durée totale en secondes (calculée à la fin) |
+| id_salle | INT | FK → salle, NULL | Salle d'exécution (NULL en Phase 1, NOT NULL en Phase 4) |
 
 #### Table : evenement_session
 
@@ -620,7 +626,8 @@ capteur (
     type_capteur,
     domoticz_idx,
     emplacement,
-    actif
+    actif,
+    _id_salle_ → salle(id_salle)   [NULL Phase 1]
 )
 
 actionneur (
@@ -629,7 +636,8 @@ actionneur (
     type_actionneur,
     domoticz_idx,
     emplacement,
-    actif
+    actif,
+    _id_salle_ → salle(id_salle)   [NULL Phase 1]
 )
 
 mesure_capteur (
@@ -696,7 +704,8 @@ session (
     score,
     nb_erreurs,
     nb_indices,
-    duree_secondes
+    duree_secondes,
+    _id_salle_ → salle(id_salle)   [NULL Phase 1]
 )
 
 etape_attend (
@@ -809,6 +818,9 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 1 | Button | button | 9 | Bureau | 1 |
 | 2 | Porte | door_sensor | 25 | Porte principale | 1 |
 | 3 | Multisensor | motion_sensor | 7 | Centre pièce | 1 |
+| 4 | Button Double | button_double | 30 | Bureau | 1 |
+
+> **Note :** Le Fibaro Button FGPB-101 crée un device Domoticz distinct (`idx 30`, nommé `double_press`) pour le double appui. Le simple appui est traité sur `idx 9`. Cette particularité du protocole Z-Wave impose deux entrées capteur distinctes dans le modèle.
 
 ### actionneur
 
@@ -847,6 +859,8 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 2 | Mission Infiltration | Espionnage | 1 |
 | 3 | L'Héritage du Savant | Mystère | 0 |
 
+> **Note :** Le scénario `DomEscape Lab 01` est le seul déployé et testé sur hardware réel. Les scénarios 2 et 3 sont des exemples illustratifs du modèle multi-scénarios.
+
 ### etape
 
 | id_etape | id_scenario | numero_etape | titre_etape | points | finale |
@@ -864,8 +878,10 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 1 | 1 | 1 | 1 |
 | 2 | 2 | 5 | 1 |
 | 3 | 3 | 7 | 1 |
-| 4 | 1 | 2 | 1 |
+| 4 | 4 | 2 | 1 |
 | 5 | 1 | 1 | 1 |
+
+> **Note :** L'étape 4 attend l'événement `BUTTON_DOUBLE_PRESS` (id=2) sur le capteur `Button Double` (id=4, idx=30), et non sur le capteur `Button` (id=1, idx=9). Cette distinction est imposée par la façon dont Domoticz expose les appuis multiples du Fibaro Button.
 
 ### etape_declenche
 
@@ -967,6 +983,8 @@ Plusieurs choix de conception structurants ressortent du projet :
 - une **couche de simulation** permettant de valider la logique de jeu sans dépendre du matériel réel.
 
 La modélisation retenue permet d'obtenir un système à la fois robuste, extensible et analysable. Elle ouvre la voie à des évolutions concrètes : étapes chronométrées, embranchements de scénario, validations multi-conditions, exécution différée des actions physiques, et déploiement multi-salles.
+
+La chaîne complète a été validée sur hardware réel : capteurs Z-Wave → Domoticz → dzVents → handle_event.php → GameEngine → base de données. Plusieurs sessions ont été jouées et remportées sur le Raspberry Pi de production, confirmant la robustesse du système en conditions réelles.
 
 Si DomEscape est aujourd'hui démontré à travers un escape game domotique sur Raspberry Pi mono-salle, l'architecture conçue dépasse ce seul cadre. Le moteur de scénarios événementiels, la double intégration Domoticz (dzVents temps réel + API REST), et le modèle de données extensible constituent les fondations d'une plateforme générique de scénarios physiques interactifs. Les tables d'extension multi-sites (`site`, `salle`, `scenario_version`, `salle_scenario`) posent les bases d'un déploiement industrialisé, applicable à la formation, à la simulation ou à tout environnement instrumenté par capteurs.
 
