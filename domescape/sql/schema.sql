@@ -91,10 +91,10 @@ CREATE TABLE capteur (
     domoticz_idx INT          NOT NULL UNIQUE,
     emplacement  VARCHAR(100),
     actif        BOOLEAN      DEFAULT TRUE,
-    id_salle     INT          NULL,
+    id_salle     INT          NOT NULL,
     CONSTRAINT fk_capteur_salle
         FOREIGN KEY (id_salle) REFERENCES salle(id_salle)
-        ON DELETE SET NULL
+        ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
@@ -108,10 +108,10 @@ CREATE TABLE actionneur (
     domoticz_idx    INT          UNIQUE,      -- NULL pour LCD (hors Domoticz)
     emplacement     VARCHAR(100),
     actif           BOOLEAN      DEFAULT TRUE,
-    id_salle        INT          NULL,
+    id_salle        INT          NOT NULL,
     CONSTRAINT fk_actionneur_salle
         FOREIGN KEY (id_salle) REFERENCES salle(id_salle)
-        ON DELETE SET NULL
+        ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================================
@@ -309,7 +309,7 @@ CREATE TABLE session (
     nb_erreurs        INT          DEFAULT 0,
     nb_indices        INT          DEFAULT 0,
     duree_secondes    INT,
-    id_salle          INT          NULL,
+    id_salle          INT          NOT NULL,
     CONSTRAINT fk_session_scenario
         FOREIGN KEY (id_scenario) REFERENCES scenario(id_scenario),
     CONSTRAINT fk_session_joueur
@@ -419,17 +419,24 @@ INSERT INTO action_type (code_action, libelle_action, description) VALUES
 ('LCD_MESSAGE', 'Message LCD',      'Affiche un message sur l\'écran LCD PiFace'),
 ('LOG_ONLY',    'Log uniquement',   'Enregistre l\'action sans effet physique');
 
+-- Site et salle physiques (Raspberry Pi de démo)
+INSERT INTO site (id_site, nom_site, adresse, actif)
+VALUES (1, 'DomEscape Lab', 'Raspberry Pi — local', TRUE);
+
+INSERT INTO salle (id_salle, id_site, nom_salle, description, capacite, actif)
+VALUES (1, 1, 'Salle 1', 'Salle principale démo Raspberry Pi', 4, TRUE);
+
 -- Capteurs — idx validés sur hardware réel (Raspberry Pi Z-Wave)
-INSERT INTO capteur (nom_capteur, type_capteur, domoticz_idx, emplacement) VALUES
-('Button',        'button',        9,  'Bureau'),           -- Node 3 — idx 9  : Level (appui simple)
-('Porte',         'door_sensor',   25, 'Porte principale'), -- Node 5 — idx 25 : Alarm Access Control 6
-('Multisensor',   'motion_sensor',  7, 'Centre pièce'),     -- Node 2 — idx 7  : Alarm Home Security 7
-('Button Double', 'button_double', 30, 'Bureau');           -- Node 3 — idx 30 : Light/Switch Unknown (double appui)
+INSERT INTO capteur (nom_capteur, type_capteur, domoticz_idx, emplacement, id_salle) VALUES
+('Button',        'button',        9,  'Bureau',           1), -- Node 3 — idx 9  : Level (appui simple)
+('Porte',         'door_sensor',   25, 'Porte principale', 1), -- Node 5 — idx 25 : Alarm Access Control 6
+('Multisensor',   'motion_sensor',  7, 'Centre pièce',     1), -- Node 2 — idx 7  : Alarm Home Security 7
+('Button Double', 'button_double', 30, 'Bureau',           1); -- Node 3 — idx 30 : Light/Switch Unknown (double appui)
 
 -- Actionneurs — idx validés sur hardware réel
-INSERT INTO actionneur (nom_actionneur, type_actionneur, domoticz_idx, emplacement) VALUES
-('Wall Plug',  'plug', 13,   'Bureau'),     -- Node 4 — idx 13 : Switch
-('LCD PiFace', 'lcd',  NULL, 'Bureau');     -- Service Flask Python (hors Domoticz)
+INSERT INTO actionneur (nom_actionneur, type_actionneur, domoticz_idx, emplacement, id_salle) VALUES
+('Wall Plug',  'plug', 13,   'Bureau', 1),  -- Node 4 — idx 13 : Switch
+('LCD PiFace', 'lcd',  NULL, 'Bureau', 1);  -- Service Flask Python (hors Domoticz)
 
 -- Auth — Rôles de base
 INSERT INTO role (nom) VALUES ('joueur'), ('superviseur'), ('administrateur');

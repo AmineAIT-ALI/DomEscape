@@ -221,7 +221,7 @@ class GameEngine
      * Démarre une nouvelle session pour un scénario et un joueur.
      * Exécute les actions on_enter de la première étape.
      */
-    public static function startSession(int $idScenario, int $idJoueur): int
+    public static function startSession(int $idScenario, int $idJoueur, int $idSalle): int
     {
         $pdo = getDB();
 
@@ -242,15 +242,15 @@ class GameEngine
         $now = date('Y-m-d H:i:s');
         $pdo->prepare("
             INSERT INTO session
-                (id_scenario, id_joueur, statut_session, date_debut, id_etape_courante)
-            VALUES (?, ?, 'en_cours', ?, ?)
-        ")->execute([$idScenario, $idJoueur, $now, $premiereEtape['id_etape']]);
+                (id_scenario, id_joueur, statut_session, date_debut, id_etape_courante, id_salle)
+            VALUES (?, ?, 'en_cours', ?, ?, ?)
+        ")->execute([$idScenario, $idJoueur, $now, $premiereEtape['id_etape'], $idSalle]);
 
         $idSession = (int)$pdo->lastInsertId();
 
         ActionManager::executeForEtape($premiereEtape['id_etape'], 'on_enter', $idSession);
 
-        error_log("[GameEngine] Session $idSession démarrée — scénario $idScenario, joueur $idJoueur.");
+        error_log("[GameEngine] Session $idSession démarrée — scénario $idScenario, joueur $idJoueur, salle $idSalle.");
 
         return $idSession;
     }

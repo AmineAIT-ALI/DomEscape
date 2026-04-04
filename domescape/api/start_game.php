@@ -29,10 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $idScenario = (int)(  $_POST['id_scenario'] ?? 0);
 $nomJoueur  = trim(   $_POST['nom_joueur']  ?? '');
+$idSalle    = (int)(  $_POST['id_salle']    ?? 0);
 
-if ($idScenario === 0 || $nomJoueur === '') {
+if ($idScenario === 0 || $nomJoueur === '' || $idSalle === 0) {
     http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Paramètres manquants.']);
+    echo json_encode(['status' => 'error', 'message' => 'Paramètres manquants (id_scenario, nom_joueur, id_salle).']);
     exit;
 }
 
@@ -64,7 +65,7 @@ if ($joueur) {
 }
 
 try {
-    $idSession = GameEngine::startSession($idScenario, $idJoueur);
+    $idSession = GameEngine::startSession($idScenario, $idJoueur, $idSalle);
     echo json_encode([
         'status'     => 'ok',
         'id_session' => $idSession,
