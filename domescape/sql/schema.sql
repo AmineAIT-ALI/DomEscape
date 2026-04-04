@@ -507,22 +507,22 @@ INSERT INTO etape_attend (id_etape, id_capteur, id_type_evenement) VALUES
 -- id_actionneur : 1=Wall Plug  2=LCD PiFace
 -- id_type_action : 1=PLUG_ON  2=PLUG_OFF  3=LCD_MESSAGE  4=LOG_ONLY
 INSERT INTO etape_declenche (id_etape, id_actionneur, id_type_action, ordre_action, valeur_action, moment_declenchement) VALUES
--- Étape 1
-(1, 2, 3, 1, 'Appuyez sur le bouton',      'on_enter'),
-(1, 2, 3, 1, 'Système en ligne.',           'on_success'),
+-- Étape 1 — Boot Sequence
+(1, 2, 3, 1, 'Systeme en veille...',        'on_enter'),
+(1, 2, 3, 1, 'Systeme active. Niveau 1.',   'on_success'),
 (1, 1, 1, 2, NULL,                          'on_success'),
-(1, 2, 3, 1, 'Action incorrecte.',          'on_failure'),
--- Étape 2
-(2, 2, 3, 1, 'Ouvrez la porte sécurisée',  'on_enter'),
-(2, 2, 3, 1, 'Accès autorisé.',             'on_success'),
-(2, 2, 3, 1, 'Action incorrecte.',          'on_failure'),
--- Étape 3
-(3, 2, 3, 1, 'Traversez la zone de scan',  'on_enter'),
-(3, 2, 3, 1, 'Scan validé.',               'on_success'),
+(1, 2, 3, 1, 'Sequence invalide.',          'on_failure'),
+-- Étape 2 — Secret Door
+(2, 2, 3, 1, 'Acces restreint. Entrez.',    'on_enter'),
+(2, 2, 3, 1, 'Acces autorise. Niveau 2.',   'on_success'),
+(2, 2, 3, 1, 'Intrusion refusee.',          'on_failure'),
+-- Étape 3 — Motion Scan
+(3, 2, 3, 1, 'Scanner en attente...',       'on_enter'),
+(3, 2, 3, 1, 'Scan valide. Niveau 3.',      'on_success'),
 (3, 1, 1, 2, NULL,                          'on_success'),
-(3, 2, 3, 1, 'Hors zone.',                 'on_failure'),
--- Étape 4
-(4, 2, 3, 1, 'Refermez la porte',          'on_enter'),
-(4, 2, 3, 1, 'ESCAPE SUCCESSFUL !',        'on_success'),
+(3, 2, 3, 1, 'Hors perimetre. Stop.',       'on_failure'),
+-- Étape 4 — Final Code
+(4, 2, 3, 1, 'Code final: double appui.',   'on_enter'),
+(4, 2, 3, 1, 'ESCAPE SUCCESSFUL !',         'on_success'),
 (4, 1, 1, 2, NULL,                          'on_success'),
-(4, 2, 3, 1, 'Action incorrecte.',         'on_failure');
+(4, 2, 3, 1, 'Code invalide. Reessayez.',   'on_failure');
