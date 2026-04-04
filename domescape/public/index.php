@@ -330,6 +330,7 @@ if ($authUser) {
             <div class="modal-body">
                 <div id="modalScenarioName" class="modal-scenario-name"></div>
                 <input type="hidden" id="selectedScenarioId">
+                <input type="hidden" id="selectedSalleId" value="1">
                 <div class="mb-0">
                     <label class="form-label" for="nomJoueur">Nom de votre équipe</label>
                     <input type="text" id="nomJoueur" class="form-control"
@@ -384,9 +385,12 @@ function startGame() {
     btn.textContent = 'Démarrage…';
     btn.disabled = true;
 
+    const idSalle = document.getElementById('selectedSalleId').value;
+
     const fd = new FormData();
     fd.append('id_scenario', idScenario);
     fd.append('nom_joueur',  nomJoueur);
+    fd.append('id_salle',    idSalle);
 
     fetch('/domescape/api/start_game.php', { method: 'POST', body: fd })
         .then(r => r.json())
