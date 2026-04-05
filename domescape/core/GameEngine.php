@@ -107,7 +107,7 @@ class GameEngine
 
         } else {
             // Passer à l'étape suivante
-            $etapeSuivante = self::getEtapeSuivante($etape['id_scenario'], $etape['numero_etape']);
+            $etapeSuivante = self::getEtapeSuivante($etape, $etape['numero_etape']);
 
             if ($etapeSuivante === null) {
                 error_log('[GameEngine] Aucune étape suivante trouvée malgré finale=false.');
@@ -192,16 +192,27 @@ class GameEngine
         return $stmt->fetch() ?: null;
     }
 
-    private static function getEtapeSuivante(int $idScenario, int $numeroActuel): ?array
+    private static function getEtapeSuivante(array $etape, int $numeroActuel): ?array
     {
-        $pdo  = getDB();
-        $stmt = $pdo->prepare("
-            SELECT * FROM etape
-            WHERE id_scenario = ? AND numero_etape > ?
-            ORDER BY numero_etape ASC
-            LIMIT 1
-        ");
-        $stmt->execute([$idScenario, $numeroActuel]);
+        $pdo = getDB();
+        if (!empty($etape['id_scenario_version'])) {
+            $stmt = $pdo->prepare("
+                SELECT * FROM etape
+                WHERE id_scenario_version = ? AND numero_etape > ?
+                ORDER BY numero_etape ASC
+                LIMIT 1
+            ");
+            $stmt->execute([$etape['id_scenario_version'], $numeroActuel]);
+        } else {
+            // Fallback : ancienne logique par id_scenario
+            $stmt = $pdo->prepare("
+                SELECT * FROM etape
+                WHERE id_scenario = ? AND numero_etape > ?
+                ORDER BY numero_etape ASC
+                LIMIT 1
+            ");
+            $stmt->execute([$etape['id_scenario'], $numeroActuel]);
+        }
         return $stmt->fetch() ?: null;
     }
 
@@ -221,18 +232,28 @@ class GameEngine
      * Démarre une nouvelle session pour un scénario et un joueur.
      * Exécute les actions on_enter de la première étape.
      */
-    public static function startSession(int $idScenario, int $idJoueur, int $idSalle): int
+    public static function startSession(int $idScenario, int $idJoueur, int $idSalle, ?int $idScenarioVersion = null): int
     {
         $pdo = getDB();
 
-        // Première étape du scénario
-        $stmt = $pdo->prepare("
-            SELECT * FROM etape
-            WHERE id_scenario = ?
-            ORDER BY numero_etape ASC
-            LIMIT 1
-        ");
-        $stmt->execute([$idScenario]);
+        // Première étape — via version si disponible, sinon fallback id_scenario
+        if ($idScenarioVersion !== null) {
+            $stmt = $pdo->prepare("
+                SELECT * FROM etape
+                WHERE id_scenario_version = ?
+                ORDER BY numero_etape ASC
+                LIMIT 1
+            ");
+            $stmt->execute([$idScenarioVersion]);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT * FROM etape
+                WHERE id_scenario = ?
+                ORDER BY numero_etape ASC
+                LIMIT 1
+            ");
+            $stmt->execute([$idScenario]);
+        }
         $premiereEtape = $stmt->fetch();
 
         if (!$premiereEtape) {
@@ -242,15 +263,15 @@ class GameEngine
         $now = date('Y-m-d H:i:s');
         $pdo->prepare("
             INSERT INTO session
-                (id_scenario, id_joueur, statut_session, date_debut, id_etape_courante, id_salle)
-            VALUES (?, ?, 'en_cours', ?, ?, ?)
-        ")->execute([$idScenario, $idJoueur, $now, $premiereEtape['id_etape'], $idSalle]);
+                (id_scenario, id_scenario_version, id_joueur, statut_session, date_debut, id_etape_courante, id_salle)
+            VALUES (?, ?, ?, 'en_cours', ?, ?, ?)
+        ")->execute([$idScenario, $idScenarioVersion, $idJoueur, $now, $premiereEtape['id_etape'], $idSalle]);
 
         $idSession = (int)$pdo->lastInsertId();
 
         ActionManager::executeForEtape($premiereEtape['id_etape'], 'on_enter', $idSession);
 
-        error_log("[GameEngine] Session $idSession démarrée — scénario $idScenario, joueur $idJoueur, salle $idSalle.");
+        error_log("[GameEngine] Session $idSession démarrée — scénario $idScenario, version $idScenarioVersion, joueur $idJoueur, salle $idSalle.");
 
         return $idSession;
     }

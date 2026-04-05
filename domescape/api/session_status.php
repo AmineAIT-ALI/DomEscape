@@ -23,12 +23,25 @@ if (!Auth::check()) {
 
 $session = GameEngine::getActiveSession();
 
-if ($session === null) {
-    echo json_encode(['status' => 'no_session']);
-    exit;
-}
-
 $pdo = getDB();
+
+if ($session === null) {
+    // Vérifier si une session vient de se terminer (dans les 10 dernières minutes)
+    $stmtRecent = $pdo->prepare("
+        SELECT * FROM session
+        WHERE statut_session IN ('gagnee', 'perdue')
+        AND date_fin >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)
+        ORDER BY date_fin DESC
+        LIMIT 1
+    ");
+    $stmtRecent->execute();
+    $session = $stmtRecent->fetch() ?: null;
+
+    if ($session === null) {
+        echo json_encode(['status' => 'no_session']);
+        exit;
+    }
+}
 
 // Étape courante
 $etapeStmt = $pdo->prepare("SELECT * FROM etape WHERE id_etape = ? LIMIT 1");
@@ -45,14 +58,21 @@ $scenarioStmt = $pdo->prepare("SELECT * FROM scenario WHERE id_scenario = ? LIMI
 $scenarioStmt->execute([$session['id_scenario']]);
 $scenario = $scenarioStmt->fetch();
 
-// Nombre total d'étapes du scénario
-$totalStmt = $pdo->prepare("SELECT COUNT(*) as total FROM etape WHERE id_scenario = ?");
-$totalStmt->execute([$session['id_scenario']]);
+// Nombre total d'étapes — par version si disponible, sinon par scénario
+if (!empty($session['id_scenario_version'])) {
+    $totalStmt = $pdo->prepare("SELECT COUNT(*) as total FROM etape WHERE id_scenario_version = ?");
+    $totalStmt->execute([$session['id_scenario_version']]);
+} else {
+    $totalStmt = $pdo->prepare("SELECT COUNT(*) as total FROM etape WHERE id_scenario = ?");
+    $totalStmt->execute([$session['id_scenario']]);
+}
 $total = (int)$totalStmt->fetch()['total'];
 
 // Durée écoulée
 $elapsed = 0;
-if ($session['date_debut']) {
+if ($session['statut_session'] === 'gagnee' && !empty($session['duree_secondes'])) {
+    $elapsed = (int)$session['duree_secondes'];
+} elseif ($session['date_debut']) {
     $elapsed = time() - strtotime($session['date_debut']);
 }
 

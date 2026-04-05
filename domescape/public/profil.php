@@ -59,7 +59,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mon profil — DomEscape</title>
-  <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
   <style>
     body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
     a { color: #00ff88; }
@@ -332,30 +331,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
   <div class="pw-card">
 
     <?php if ($pwSuccess): ?>
-      <div class="alert-success-custom mb-3"><?= htmlspecialchars($pwSuccess, ENT_QUOTES, 'UTF-8') ?></div>
+      <div class="alert-success-custom" style="margin-bottom:16px;"><?= htmlspecialchars($pwSuccess, ENT_QUOTES, 'UTF-8') ?></div>
     <?php elseif ($pwError): ?>
-      <div class="alert-error-custom mb-3"><?= htmlspecialchars($pwError, ENT_QUOTES, 'UTF-8') ?></div>
+      <div class="alert-error-custom" style="margin-bottom:16px;"><?= htmlspecialchars($pwError, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
 
     <form method="post" action="">
       <input type="hidden" name="_action" value="change_password">
-      <div class="row g-3">
-        <div class="col-md-4">
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:16px;">
+        <div>
           <label class="form-label" for="current_password">Mot de passe actuel</label>
           <input type="password" id="current_password" name="current_password" class="form-control" required>
         </div>
-        <div class="col-md-4">
+        <div>
           <label class="form-label" for="new_password">Nouveau mot de passe</label>
           <input type="password" id="new_password" name="new_password" class="form-control" required>
         </div>
-        <div class="col-md-4">
+        <div>
           <label class="form-label" for="confirm_password">Confirmer</label>
           <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
         </div>
       </div>
-      <div class="mt-3">
-        <button type="submit" class="btn-save">Mettre à jour le mot de passe →</button>
-      </div>
+      <button type="submit" class="btn-save">Mettre à jour le mot de passe →</button>
     </form>
   </div>
 
@@ -369,7 +366,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
 
 </div>
 
-<script src="/domescape/assets/vendor/bootstrap.bundle.min.js"></script>
 <script src="/domescape/assets/vendor/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
 </body>

@@ -118,7 +118,7 @@ Les objectifs fonctionnels de DomEscape sont les suivants :
 | Serveur web | Apache2 + mod_php | 2.4 |
 | Base de données | MariaDB | 10.5+ |
 | Domotique | Domoticz V2024.4 + dzVents + Scenes | 3.1.8 |
-| Service LCD | Python Flask | — |
+| Service LCD | Python 3 stdlib (http.server) | — |
 | Frontend applicatif | Bootstrap + JavaScript vanilla | 5.3 |
 | Site vitrine | HTML / CSS / JavaScript statiques | — |
 
@@ -130,7 +130,7 @@ Lorsqu'un joueur effectue une action physique, par exemple en appuyant sur un bo
 2. Domoticz centralise le changement d'état du device ;
 3. un script dzVents déclenche un webhook HTTP POST vers `/api/handle_event.php` (flux temps réel) ;
 4. `EventManager` convertit le payload brut (`idx` + `nvalue`) en événement métier normalisé (`BUTTON_PRESS`, `DOOR_OPEN`…) ;
-5. `GameEngine` compare cet événement à ce qui est attendu pour l'étape courante, dans une transaction SQL verrouillée ;
+5. `GameEngine` charge la configuration des étapes via `session.id_scenario_version`, puis compare cet événement à ce qui est attendu pour l'étape courante, dans une transaction SQL verrouillée ;
 6. si l'événement est correct, la session progresse vers l'étape suivante ;
 7. `ActionManager` exécute les retours physiques définis pour l'étape (LCD, lampe, prise) ;
 8. les événements et actions sont archivés dans `evenement_session` et `action_executee`.
@@ -161,6 +161,9 @@ Le moteur traite les événements dans une transaction SQL avec verrouillage (`S
 
 **f) Couche de simulation**
 Afin de permettre le test et la démonstration indépendamment du matériel réel, une couche de simulation a été mise en place (`/dev/simulate.php`, `/api/debug_event.php`). Elle permet de reproduire le comportement des capteurs et de valider la logique de jeu sans dépendre du réseau Z-Wave.
+
+**g) Versionnage des scénarios**
+Lors du démarrage d'une session, `start_game.php` résout la version active du scénario et initialise `session.id_scenario_version`. Le moteur charge ensuite les étapes exclusivement via ce champ, garantissant l'isolation complète des versions : une session n'est jamais impactée par une modification ultérieure du scénario.
 
 ### 3.5. Authentification et gestion des rôles
 
@@ -205,6 +208,8 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 | `/admin/sites.php` | Gestion des sites physiques |
 | `/admin/salles.php` | Gestion des salles par site |
 | `/admin/versions.php` | Gestion des versions de scénario (draft / active / archived) |
+| `/public/historique.php` | Chronologie détaillée des événements et actions d'une session (superviseur) |
+| `/public/stats.php` | Indicateurs globaux : taux de victoire, meilleur temps, difficulté par étape |
 | `/dev/simulate.php` | Simulateur d'événements capteurs (sans hardware) |
 
 ### 4.3. APIs exposées
@@ -218,6 +223,7 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 | `/api/reset_game.php` | POST | Réinitialisation (superviseur) |
 | `/api/abandon_game.php` | POST | Abandon de partie |
 | `/api/debug_event.php` | POST / GET | Simulation d'un événement capteur sans matériel réel |
+| `/api/gamemaster_status.php` | GET | Données temps réel pour le gamemaster : session, événements, actions |
 | `/api/healthcheck.php` | GET | État du système (BDD, Domoticz, LCD) |
 
 L'interface `/dev/simulate.php` s'appuie sur l'endpoint `/api/debug_event.php` pour injecter des événements capteurs simulés directement dans le moteur de jeu, sans dépendre du réseau Z-Wave.
@@ -262,7 +268,7 @@ La base de données de DomEscape est composée de **13 tables métier** dédiée
 | domoticz_idx | INT | NOT NULL, UNIQUE | Identifiant Domoticz du device |
 | emplacement | VARCHAR(100) | — | Localisation physique dans la pièce |
 | actif | BOOLEAN | DEFAULT TRUE | Indique si le capteur est en service |
-| id_salle | INT | FK → salle, NULL | Salle physique associée (NULL en Phase 1, NOT NULL en Phase 4) |
+| id_salle | INT | FK → salle, NOT NULL | Salle physique associée |
 
 #### Table : actionneur
 
@@ -274,11 +280,11 @@ La base de données de DomEscape est composée de **13 tables métier** dédiée
 | domoticz_idx | INT | UNIQUE, NULL | Identifiant Domoticz (NULL pour le LCD, géré hors Domoticz) |
 | emplacement | VARCHAR(100) | — | Localisation physique |
 | actif | BOOLEAN | DEFAULT TRUE | Indique si l'actionneur est opérationnel |
-| id_salle | INT | FK → salle, NULL | Salle physique associée (NULL en Phase 1, NOT NULL en Phase 4) |
+| id_salle | INT | FK → salle, NOT NULL | Salle physique associée |
 
 #### Table : mesure_capteur
 
-Stocke les relevés télémétriques périodiques des capteurs environnementaux (température, humidité).
+Stocke les relevés télémétriques périodiques des capteurs environnementaux (température, humidité). Bien que non exploitée dans la version actuelle du moteur, cette table est déjà alimentable via l'API Domoticz et constitue une extension directe vers des scénarios adaptatifs basés sur des conditions environnementales.
 
 | Attribut | Type | Contrainte | Description |
 |---|---|---|---|
@@ -326,6 +332,7 @@ Stocke les relevés télémétriques périodiques des capteurs environnementaux 
 |---|---|---|---|
 | id_etape | INT | PK, AUTO_INCREMENT | Identifiant de l'étape |
 | id_scenario | INT | FK → scenario | Scénario auquel appartient l'étape |
+| id_scenario_version | INT | FK → scenario_version, NULL | Version du scénario à laquelle appartient l'étape |
 | numero_etape | INT | NOT NULL | Ordre de l'étape dans le scénario |
 | titre_etape | VARCHAR(150) | NOT NULL | Titre affiché |
 | description_etape | TEXT | — | Consigne affichée au joueur |
@@ -335,7 +342,7 @@ Stocke les relevés télémétriques périodiques des capteurs environnementaux 
 | points | INT | DEFAULT 100 | Points accordés en cas de réussite |
 | finale | BOOLEAN | DEFAULT FALSE | TRUE pour la dernière étape (victoire) |
 
-> **Phase 1 → Phase 2 :** En Phase 1, `etape.id_scenario` relie directement une étape à un scénario. La table `scenario_version` pose les bases d'une évolution future (Phase 2) où chaque version d'un scénario pourrait disposer de ses propres étapes (`etape.id_scenario_version`), permettant ainsi un vrai versionnage des parcours de jeu sans modifier le moteur. Ce découplage n'est pas implémenté dans le code actuel afin de ne pas perturber la chaîne de production validée sur hardware.
+> **Versionnage des étapes :** `etape.id_scenario_version` rattache chaque étape à une version précise du scénario. Le moteur (`GameEngine`) charge les étapes via `id_scenario_version` quand celui-ci est renseigné, garantissant qu'une session exécute toujours la version figée au moment de son démarrage. Un fallback sur `id_scenario` assure la compatibilité descendante avec les sessions antérieures à l'intégration du versionnage.
 
 #### Table : etape_attend *(association ternaire)*
 
@@ -380,6 +387,7 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 |---|---|---|---|
 | id_session | INT | PK, AUTO_INCREMENT | Identifiant de la session |
 | id_scenario | INT | FK → scenario | Scénario joué |
+| id_scenario_version | INT | FK → scenario_version, NULL | Version du scénario figée au démarrage de la session |
 | id_joueur | INT | FK → joueur | Joueur ou équipe |
 | id_etape_courante | INT | FK → etape, NULL | Étape en cours (NULL en fin de partie) |
 | statut_session | VARCHAR(20) | NOT NULL | `en_attente`, `en_cours`, `gagnee`, `perdue`, `abandonnee` |
@@ -389,7 +397,7 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 | nb_erreurs | INT | DEFAULT 0 | Nombre d'erreurs commises |
 | nb_indices | INT | DEFAULT 0 | Nombre d'indices demandés |
 | duree_secondes | INT | — | Durée totale en secondes (calculée à la fin) |
-| id_salle | INT | FK → salle, NULL | Salle d'exécution (NULL en Phase 1, NOT NULL en Phase 4) |
+| id_salle | INT | FK → salle, NOT NULL | Salle d'exécution |
 
 #### Table : evenement_session
 
@@ -511,7 +519,7 @@ Cette extension permet :
 - de mutualiser les scénarios entre plusieurs environnements physiques ;
 - de préparer une industrialisation du système vers une plateforme multi-tenants.
 
-Dans la configuration actuelle (Raspberry Pi mono-salle), ces tables existent dans le modèle mais ne sont pas encore exploitées par le moteur de jeu. Elles constituent la fondation de l'évolution naturelle de l'architecture.
+La table `salle_scenario` n'est pas encore utilisée dans le moteur d'exécution, mais elle permettrait d'associer dynamiquement une version de scénario à une salle physique, ouvrant la voie à un déploiement multi-salles avec configurations spécifiques par salle. Dans la configuration actuelle (Raspberry Pi mono-salle), ces tables constituent la fondation de l'évolution naturelle de l'architecture vers une plateforme multi-tenants.
 
 ---
 
@@ -542,16 +550,16 @@ Dans la configuration actuelle (Raspberry Pi mono-salle), ces tables existent da
 │   type_capteur    │    │   description     │
 └───────────────────┘    └───────────────────┘
 
-┌───────────────────┐    ┌───────────────────┐
-│    SCENARIO       │    │      ETAPE         │
-│───────────────────│    │───────────────────│
-│ # id_scenario     │    │ # id_etape        │
-│   nom_scenario    │    │   numero_etape    │
-│   description     │    │   titre_etape     │
-│   theme           │    │   description_etape │
-│   actif           │    │   points          │
-└───────────────────┘    │   finale          │
-                         └───────────────────┘
+┌───────────────────┐    ┌───────────────────┐    ┌───────────────────┐
+│    SCENARIO       │    │ SCENARIO_VERSION   │    │      ETAPE         │
+│───────────────────│    │───────────────────│    │───────────────────│
+│ # id_scenario     │    │ # id_scen_version │    │ # id_etape        │
+│   nom_scenario    │    │   numero_version  │    │   numero_etape    │
+│   description     │    │   statut_version  │    │   titre_etape     │
+│   theme           │    │   commentaire     │    │   description_etape │
+│   actif           │    └───────────────────┘    │   points          │
+└───────────────────┘                             │   finale          │
+                                                  └───────────────────┘
 
 ┌───────────────────┐    ┌───────────────────┐
 │     JOUEUR        │    │     SESSION        │
@@ -579,11 +587,11 @@ Dans la configuration actuelle (Raspberry Pi mono-salle), ces tables existent da
 ### Associations et cardinalités
 
 ```
-SCENARIO ──(1,n)────── contient ──────(1,1)── ETAPE
-    │                                              │
-   (1,n)                               ┌──────────┴────────────┐
-    │                                  │                        │
-  SESSION                           ATTEND               DECLENCHE
+SCENARIO ──(1,n)── SCENARIO_VERSION ──(1,n)── ETAPE
+    │                    │                        │
+   (1,n)               (0,n)          ┌──────────┴────────────┐
+    │                    │            │                        │
+  SESSION ──────────────┘          ATTEND               DECLENCHE
     │                           (ternaire)             (ternaire)
   /   \                         /          \           /          \
 (1,n)(1,n)               CAPTEUR   EVENEMENT_TYPE   ACTIONNEUR  ACTION_TYPE
@@ -600,7 +608,9 @@ UTILISATEUR ──(n,n)── ROLE
 
 | Association | Entités | Cardinalités | Description |
 |---|---|---|---|
-| contient | SCENARIO — ETAPE | 1,n — 1,1 | Un scénario est composé d'une ou plusieurs étapes ordonnées |
+| contient | SCENARIO — SCENARIO_VERSION | 1,n — 1,1 | Un scénario peut avoir plusieurs versions (draft / active / archived) |
+| version_de | SCENARIO_VERSION — ETAPE | 1,n — 1,1 | Une version regroupe les étapes qui lui appartiennent |
+| fige | SESSION — SCENARIO_VERSION | n,0..1 | Une session est liée à la version active au moment de son démarrage |
 | joue | SESSION — SCENARIO | n,1 | Une session correspond à l'exécution d'un scénario précis |
 | appartient_à | SESSION — JOUEUR | n,1 | Une session est associée à un joueur ou une équipe |
 | est_à | SESSION — ETAPE | n,0..1 | Une session pointe vers l'étape active (NULL en fin de partie) |
@@ -634,7 +644,7 @@ capteur (
     domoticz_idx,
     emplacement,
     actif,
-    _id_salle_ → salle(id_salle)   [NULL Phase 1]
+    _id_salle_ → salle(id_salle)
 )
 
 actionneur (
@@ -644,7 +654,7 @@ actionneur (
     domoticz_idx,
     emplacement,
     actif,
-    _id_salle_ → salle(id_salle)   [NULL Phase 1]
+    _id_salle_ → salle(id_salle)
 )
 
 mesure_capteur (
@@ -682,6 +692,7 @@ scenario (
 etape (
     <u>id_etape</u>,
     _id_scenario_ → scenario(id_scenario),
+    _id_scenario_version_ → scenario_version(id_scenario_version),
     numero_etape,
     titre_etape,
     description_etape,
@@ -703,6 +714,7 @@ joueur (
 session (
     <u>id_session</u>,
     _id_scenario_ → scenario(id_scenario),
+    _id_scenario_version_ → scenario_version(id_scenario_version),
     _id_joueur_ → joueur(id_joueur),
     _id_etape_courante_ → etape(id_etape),
     statut_session,
@@ -712,7 +724,7 @@ session (
     nb_erreurs,
     nb_indices,
     duree_secondes,
-    _id_salle_ → salle(id_salle)   [NULL Phase 1]
+    _id_salle_ → salle(id_salle)
 )
 
 etape_attend (
@@ -825,21 +837,21 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 ### capteur
 
-| id_capteur | nom_capteur | type_capteur | domoticz_idx | emplacement | actif |
-|---|---|---|---|---|---|
-| 1 | Button | button | 9 | Bureau | 1 |
-| 2 | Porte | door_sensor | 25 | Porte principale | 1 |
-| 3 | Multisensor | motion_sensor | 7 | Centre pièce | 1 |
-| 4 | Button Double | button_double | 30 | Bureau | 1 |
+| id_capteur | nom_capteur | type_capteur | domoticz_idx | emplacement | actif | id_salle |
+|---|---|---|---|---|---|---|
+| 1 | Button | button | 9 | Bureau | 1 | 1 |
+| 2 | Porte | door_sensor | 25 | Porte principale | 1 | 1 |
+| 3 | Multisensor | motion_sensor | 7 | Centre pièce | 1 | 1 |
+| 4 | Button Double | button_double | 30 | Bureau | 1 | 1 |
 
 > **Note :** Le Fibaro Button FGPB-101 crée un device Domoticz distinct (`idx 30`, nommé `double_press`) pour le double appui. Le simple appui est traité sur `idx 9`. Cette particularité du protocole Z-Wave impose deux entrées capteur distinctes dans le modèle.
 
 ### actionneur
 
-| id_actionneur | nom_actionneur | type_actionneur | domoticz_idx | emplacement | actif |
-|---|---|---|---|---|---|
-| 1 | Wall Plug | plug | 13 | Bureau | 1 |
-| 2 | LCD PiFace | lcd | NULL | Bureau | 1 |
+| id_actionneur | nom_actionneur | type_actionneur | domoticz_idx | emplacement | actif | id_salle |
+|---|---|---|---|---|---|---|
+| 1 | Wall Plug | plug | 13 | Bureau | 1 | 1 |
+| 2 | LCD PiFace | lcd | NULL | Bureau | 1 | 1 |
 
 ### evenement_type
 
@@ -875,13 +887,13 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 ### etape
 
-| id_etape | id_scenario | numero_etape | titre_etape | points | finale |
-|---|---|---|---|---|---|
-| 1 | 1 | 1 | Boot Sequence | 100 | 0 |
-| 2 | 1 | 2 | Secret Door | 150 | 0 |
-| 3 | 1 | 3 | Motion Scan | 200 | 0 |
-| 4 | 1 | 4 | Final Code | 300 | 1 |
-| 5 | 2 | 1 | Neutraliser l'alarme | 100 | 0 |
+| id_etape | id_scenario | id_scenario_version | numero_etape | titre_etape | points | finale |
+|---|---|---|---|---|---|---|
+| 1 | 1 | 2 | 1 | Boot Sequence | 100 | 0 |
+| 2 | 1 | 2 | 2 | Secret Door | 150 | 0 |
+| 3 | 1 | 2 | 3 | Motion Scan | 200 | 0 |
+| 4 | 1 | 2 | 4 | Final Code | 300 | 1 |
+| 5 | 2 | NULL | 1 | Neutraliser l'alarme | 100 | 0 |
 
 ### etape_attend
 
@@ -897,13 +909,13 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 ### etape_declenche
 
-| id_etape | id_actionneur | id_type_action | ordre_action | valeur_action | moment_declenchement |
-|---|---|---|---|---|---|
-| 1 | 2 | 3 | 1 | Appuyez sur le bouton | on_enter |
-| 1 | 2 | 3 | 1 | Système en ligne. | on_success |
-| 1 | 1 | 1 | 2 | NULL | on_success |
-| 1 | 2 | 3 | 1 | Action incorrecte. | on_failure |
-| 2 | 2 | 3 | 1 | Ouvrez la porte sécurisée | on_enter |
+| id_etape_declenche | id_etape | id_actionneur | id_type_action | ordre_action | valeur_action | moment_declenchement |
+|---|---|---|---|---|---|---|
+| 1 | 1 | 2 | 3 | 1 | En veille... | on_enter |
+| 2 | 1 | 2 | 3 | 1 | Niveau 1 OK ! | on_success |
+| 3 | 1 | 1 | 1 | 2 | NULL | on_success |
+| 4 | 1 | 2 | 3 | 1 | Invalide ! | on_failure |
+| 5 | 2 | 2 | 3 | 1 | Zone restreinte | on_enter |
 
 ### joueur
 
@@ -917,13 +929,15 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 ### session
 
-| id_session | id_scenario | id_joueur | statut_session | score | nb_erreurs | duree_secondes |
-|---|---|---|---|---|---|---|
-| 1 | 1 | 1 | gagnee | 750 | 2 | 1842 |
-| 2 | 1 | 2 | perdue | 250 | 8 | 3600 |
-| 3 | 1 | 3 | gagnee | 650 | 4 | 2210 |
-| 4 | 2 | 4 | abandonnee | 100 | 1 | NULL |
-| 5 | 1 | 5 | gagnee | 750 | 0 | 1520 |
+| id_session | id_scenario | id_scenario_version | id_joueur | statut_session | score | nb_erreurs | duree_secondes | id_salle |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 1 | 1 | 1 | gagnee | 750 | 2 | 1842 | 1 |
+| 2 | 1 | 1 | 2 | perdue | 250 | 8 | 3600 | 1 |
+| 3 | 1 | 2 | 3 | gagnee | 750 | 0 | 194 | 1 |
+| 4 | 2 | NULL | 4 | abandonnee | 100 | 1 | NULL | 1 |
+| 5 | 1 | 2 | 5 | gagnee | 750 | 0 | 27 | 1 |
+
+> **Note :** `id_scenario_version` est renseigné dès le démarrage de la session et reste figé pour toute sa durée, garantissant la reproductibilité et la traçabilité du parcours joué. Les sessions antérieures à l'intégration du versionnage conservent leur version d'origine via le backfill de migration.
 
 ### evenement_session
 
@@ -942,12 +956,24 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 | id_action_executee | id_session | id_actionneur | id_type_action | id_etape | valeur_action | statut_execution |
 |---|---|---|---|---|---|---|
-| 1 | 1 | 2 | 3 | 1 | Appuyez sur le bouton | ok |
-| 2 | 1 | 2 | 3 | 1 | Système en ligne. | ok |
+| 1 | 1 | 2 | 3 | 1 | En veille... | ok |
+| 2 | 1 | 2 | 3 | 1 | Niveau 1 OK ! | ok |
 | 3 | 1 | 1 | 1 | 1 | NULL | ok |
-| 4 | 1 | 2 | 3 | 2 | Accès autorisé. | ok |
-| 5 | 1 | 2 | 3 | 4 | ESCAPE SUCCESSFUL ! | ok |
-| 6 | 2 | 2 | 3 | 1 | Action incorrecte. | ok |
+| 4 | 1 | 2 | 3 | 2 | Acces autorise! | ok |
+| 5 | 1 | 2 | 3 | 4 | ESCAPE SUCCESS! | ok |
+| 6 | 2 | 2 | 3 | 1 | Invalide ! | ok |
+
+### site
+
+| id_site | nom_site | adresse | actif |
+|---|---|---|---|
+| 1 | IUT de Nîmes | Place Gabriel Péri, 30000 Nîmes | 1 |
+
+### salle
+
+| id_salle | id_site | nom_salle | capacite | actif |
+|---|---|---|---|---|
+| 1 | 1 | Salle DomEscape | 4 | 1 |
 
 ### utilisateur
 
@@ -996,7 +1022,7 @@ Plusieurs choix de conception structurants ressortent du projet :
 
 La modélisation retenue permet d'obtenir un système à la fois robuste, extensible et analysable. Elle ouvre la voie à des évolutions concrètes : étapes chronométrées, embranchements de scénario, validations multi-conditions, exécution différée des actions physiques, et déploiement multi-salles.
 
-Le passage à un modèle basé sur `scenario_version` constitue une évolution structurante : elle permettrait de déployer simultanément plusieurs variantes d'un même scénario dans des salles différentes, d'effectuer des mises à jour sans interrompre les sessions en cours, et d'assurer une traçabilité complète des modifications de contenu. Cette évolution, préparée mais non activée en Phase 1, représente le principal levier d'industrialisation de la plateforme.
+Le modèle basé sur `scenario_version` est désormais intégré au système et permet de figer une version de scénario au démarrage de chaque session, garantissant la reproductibilité et la traçabilité des parcours. Ce couplage assure une **invariance temporelle** du système : une session n'est jamais impactée par une modification ultérieure du scénario. Il permet en outre de déployer simultanément plusieurs variantes d'un même scénario dans des salles différentes et d'effectuer des mises à jour sans interrompre les sessions en cours.
 
 La chaîne complète a été validée sur hardware réel : capteurs Z-Wave → Domoticz → dzVents → handle_event.php → GameEngine → base de données. Plusieurs sessions ont été jouées et remportées sur le Raspberry Pi de production, confirmant la robustesse du système en conditions réelles.
 

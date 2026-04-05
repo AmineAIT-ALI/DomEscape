@@ -84,13 +84,21 @@ $statutLabel = [
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tableau de bord — DomEscape</title>
-  <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
     a { color: #00ff88; text-decoration: none; }
 
     .db-wrap    { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* Grid helpers (remplacement Bootstrap) */
+    .db-grid-4   { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .db-grid-3   { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+    .db-grid-2-1 { display: grid; grid-template-columns: 2fr 1fr;        gap: 12px; margin-bottom: 24px; }
+    @media (max-width: 768px) {
+      .db-grid-4   { grid-template-columns: repeat(2, 1fr); }
+      .db-grid-3, .db-grid-2-1 { grid-template-columns: 1fr; }
+    }
 
     /* Header page */
     .db-header  { margin-bottom: 40px; padding-bottom: 28px; border-bottom: 1px solid #111; }
@@ -205,56 +213,42 @@ $statutLabel = [
 
     <!-- Stats plateforme -->
     <div class="db-section-label">Vue plateforme</div>
-    <div class="row g-3 mb-4">
-      <div class="col-6 col-md-3">
-        <div class="db-stat">
-          <div class="db-stat-val"><?= $statsAdmin['nb_utilisateurs'] ?></div>
-          <div class="db-stat-lab">Utilisateurs</div>
-        </div>
+    <div class="db-grid-4">
+      <div class="db-stat">
+        <div class="db-stat-val"><?= $statsAdmin['nb_utilisateurs'] ?></div>
+        <div class="db-stat-lab">Utilisateurs</div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="db-stat">
-          <div class="db-stat-val"><?= $statsAdmin['nb_scenarios'] ?></div>
-          <div class="db-stat-lab">Scénarios actifs</div>
-        </div>
+      <div class="db-stat">
+        <div class="db-stat-val"><?= $statsAdmin['nb_scenarios'] ?></div>
+        <div class="db-stat-lab">Scénarios actifs</div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="db-stat">
-          <div class="db-stat-val"><?= $statsAdmin['nb_sessions_today'] ?></div>
-          <div class="db-stat-lab">Sessions aujourd'hui</div>
-        </div>
+      <div class="db-stat">
+        <div class="db-stat-val"><?= $statsAdmin['nb_sessions_today'] ?></div>
+        <div class="db-stat-lab">Sessions aujourd'hui</div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="db-stat">
-          <div class="db-stat-val"><?= $statsAdmin['nb_sessions_total'] ?></div>
-          <div class="db-stat-lab">Sessions totales</div>
-        </div>
+      <div class="db-stat">
+        <div class="db-stat-val"><?= $statsAdmin['nb_sessions_total'] ?></div>
+        <div class="db-stat-lab">Sessions totales</div>
       </div>
     </div>
 
     <!-- Accès rapides admin -->
     <div class="db-section-label">Administration</div>
-    <div class="row g-3 mb-5">
-      <div class="col-md-4">
-        <div class="db-card">
-          <div class="db-card-icon" style="color:#a78bfa;"><i data-lucide="settings"></i></div>
-          <div class="db-card-title"><a href="/domescape/admin/dashboard.php" style="color:#a78bfa;">Dashboard admin</a></div>
-          <p class="db-card-text">Scénarios configurés, historique des sessions, état global de la plateforme.</p>
-        </div>
+    <div class="db-grid-3">
+      <div class="db-card">
+        <div class="db-card-icon" style="color:#a78bfa;"><i data-lucide="settings"></i></div>
+        <div class="db-card-title"><a href="/domescape/admin/dashboard.php" style="color:#a78bfa;">Dashboard admin</a></div>
+        <p class="db-card-text">Scénarios configurés, historique des sessions, état global de la plateforme.</p>
       </div>
-      <div class="col-md-4">
-        <div class="db-card">
-          <div class="db-card-icon" style="color:#a78bfa;"><i data-lucide="users"></i></div>
-          <div class="db-card-title"><a href="/domescape/admin/utilisateurs.php" style="color:#a78bfa;">Utilisateurs</a></div>
-          <p class="db-card-text">Gérer les comptes, modifier les rôles, activer ou désactiver des accès.</p>
-        </div>
+      <div class="db-card">
+        <div class="db-card-icon" style="color:#a78bfa;"><i data-lucide="users"></i></div>
+        <div class="db-card-title"><a href="/domescape/admin/utilisateurs.php" style="color:#a78bfa;">Utilisateurs</a></div>
+        <p class="db-card-text">Gérer les comptes, modifier les rôles, activer ou désactiver des accès.</p>
       </div>
-      <div class="col-md-4">
-        <div class="db-card">
-          <div class="db-card-icon" style="color:#60a5fa;"><i data-lucide="monitor"></i></div>
-          <div class="db-card-title"><a href="/domescape/public/gamemaster.php" style="color:#60a5fa;">Supervision</a></div>
-          <p class="db-card-text">Centre de contrôle temps réel des sessions en cours.</p>
-        </div>
+      <div class="db-card">
+        <div class="db-card-icon" style="color:#60a5fa;"><i data-lucide="monitor"></i></div>
+        <div class="db-card-title"><a href="/domescape/public/gamemaster.php" style="color:#60a5fa;">Supervision</a></div>
+        <p class="db-card-text">Centre de contrôle temps réel des sessions en cours.</p>
       </div>
     </div>
 
@@ -319,27 +313,23 @@ $statutLabel = [
 
     <!-- Centre de supervision -->
     <div class="db-section-label">Centre de pilotage</div>
-    <div class="row g-3 mb-4">
-      <div class="col-md-8">
-        <div class="db-supervision">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
-            <div>
-              <div class="db-supervision-label">Supervision temps réel</div>
-              <div style="font-size:1rem; font-weight:600; color:#e0e0e0; margin-top:4px;">Centre de contrôle Game Master</div>
-            </div>
-            <a href="/domescape/public/gamemaster.php" class="db-btn-blue">Accéder →</a>
+    <div class="db-grid-2-1">
+      <div class="db-supervision">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
+          <div>
+            <div class="db-supervision-label">Supervision temps réel</div>
+            <div style="font-size:1rem; font-weight:600; color:#e0e0e0; margin-top:4px;">Centre de contrôle Game Master</div>
           </div>
-          <p style="font-size:.82rem; color:#444; line-height:1.7; margin:0;">
-            Suivez la progression des équipes en temps réel, consultez les événements capteurs, visualisez l'étape courante et réinitialisez la session si nécessaire.
-          </p>
+          <a href="/domescape/public/gamemaster.php" class="db-btn-blue">Accéder →</a>
         </div>
+        <p style="font-size:.82rem; color:#444; line-height:1.7; margin:0;">
+          Suivez la progression des équipes en temps réel, consultez les événements capteurs, visualisez l'étape courante et réinitialisez la session si nécessaire.
+        </p>
       </div>
-      <div class="col-md-4">
-        <div class="db-card h-100">
-          <div class="db-card-icon" style="color:#60a5fa;"><i data-lucide="play"></i></div>
-          <div class="db-card-title"><a href="/domescape/public/index.php">Lancer une partie</a></div>
-          <p class="db-card-text">Démarrez une nouvelle session depuis la sélection de scénario.</p>
-        </div>
+      <div class="db-card" style="display:flex; flex-direction:column; justify-content:center;">
+        <div class="db-card-icon" style="color:#60a5fa;"><i data-lucide="play"></i></div>
+        <div class="db-card-title"><a href="/domescape/public/index.php">Lancer une partie</a></div>
+        <p class="db-card-text">Démarrez une nouvelle session depuis la sélection de scénario.</p>
       </div>
     </div>
 
@@ -364,63 +354,47 @@ $statutLabel = [
     <?php endif; ?>
 
     <!-- Stats joueur -->
-    <div class="row g-3 mb-4">
-      <div class="col-6 col-md-3">
-        <div class="db-stat">
-          <div class="db-stat-val"><?= $nbSessions ?></div>
-          <div class="db-stat-lab">Sessions jouées</div>
-        </div>
+    <div class="db-grid-4">
+      <div class="db-stat">
+        <div class="db-stat-val"><?= $nbSessions ?></div>
+        <div class="db-stat-lab">Sessions jouées</div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="db-stat">
-          <div class="db-stat-val"><?= $meilleurScore ?></div>
-          <div class="db-stat-lab">Meilleur score</div>
-        </div>
+      <div class="db-stat">
+        <div class="db-stat-val"><?= $meilleurScore ?></div>
+        <div class="db-stat-lab">Meilleur score</div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="db-stat">
-          <?php $nbGagnees = count(array_filter($derniersSessions, fn($s) => $s['statut_session'] === 'gagnee')); ?>
-          <div class="db-stat-val"><?= $nbGagnees ?></div>
-          <div class="db-stat-lab">Parties gagnées</div>
-        </div>
+      <div class="db-stat">
+        <?php $nbGagnees = count(array_filter($derniersSessions, fn($s) => $s['statut_session'] === 'gagnee')); ?>
+        <div class="db-stat-val"><?= $nbGagnees ?></div>
+        <div class="db-stat-lab">Parties gagnées</div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="db-stat">
-          <?php
-            $totalErreurs = array_sum(array_column($derniersSessions, 'nb_erreurs'));
-          ?>
-          <div class="db-stat-val"><?= $totalErreurs ?></div>
-          <div class="db-stat-lab">Erreurs totales</div>
-        </div>
+      <div class="db-stat">
+        <?php $totalErreurs = array_sum(array_column($derniersSessions, 'nb_erreurs')); ?>
+        <div class="db-stat-val"><?= $totalErreurs ?></div>
+        <div class="db-stat-lab">Erreurs totales</div>
       </div>
     </div>
 
     <!-- Actions principales -->
     <div class="db-section-label">Actions</div>
-    <div class="row g-3 mb-5">
-      <div class="col-md-4">
-        <div class="db-card" style="border-color:rgba(0,255,136,.15);">
-          <div class="db-card-icon" style="color:#00ff88;"><i data-lucide="play"></i></div>
-          <div class="db-card-title" style="margin-bottom:12px;">Lancer une session</div>
-          <p class="db-card-text" style="margin-bottom:20px;">Choisissez un scénario disponible et commencez une nouvelle partie.</p>
-          <a href="/domescape/public/index.php" class="db-btn-primary">Voir les scénarios →</a>
-        </div>
+    <div class="db-grid-3">
+      <div class="db-card" style="border-color:rgba(0,255,136,.15);">
+        <div class="db-card-icon" style="color:#00ff88;"><i data-lucide="play"></i></div>
+        <div class="db-card-title" style="margin-bottom:12px;">Lancer une session</div>
+        <p class="db-card-text" style="margin-bottom:20px;">Choisissez un scénario disponible et commencez une nouvelle partie.</p>
+        <a href="/domescape/public/index.php" class="db-btn-primary">Voir les scénarios →</a>
       </div>
-      <div class="col-md-4">
-        <div class="db-card">
-          <div class="db-card-icon" style="color:#888;"><i data-lucide="clipboard-list"></i></div>
-          <div class="db-card-title" style="margin-bottom:12px;">Mes sessions</div>
-          <p class="db-card-text" style="margin-bottom:20px;">Consultez l'historique complet de vos parties passées.</p>
-          <a href="/domescape/public/mes-sessions.php" class="db-btn-outline">Voir l'historique</a>
-        </div>
+      <div class="db-card">
+        <div class="db-card-icon" style="color:#888;"><i data-lucide="clipboard-list"></i></div>
+        <div class="db-card-title" style="margin-bottom:12px;">Mes sessions</div>
+        <p class="db-card-text" style="margin-bottom:20px;">Consultez l'historique complet de vos parties passées.</p>
+        <a href="/domescape/public/mes-sessions.php" class="db-btn-outline">Voir l'historique</a>
       </div>
-      <div class="col-md-4">
-        <div class="db-card">
-          <div class="db-card-icon" style="color:#888;"><i data-lucide="user"></i></div>
-          <div class="db-card-title" style="margin-bottom:12px;">Mon profil</div>
-          <p class="db-card-text" style="margin-bottom:20px;">Vos informations, vos rôles et vos accès.</p>
-          <a href="/domescape/public/profil.php" class="db-btn-outline">Voir le profil</a>
-        </div>
+      <div class="db-card">
+        <div class="db-card-icon" style="color:#888;"><i data-lucide="user"></i></div>
+        <div class="db-card-title" style="margin-bottom:12px;">Mon profil</div>
+        <p class="db-card-text" style="margin-bottom:20px;">Vos informations, vos rôles et vos accès.</p>
+        <a href="/domescape/public/profil.php" class="db-btn-outline">Voir le profil</a>
       </div>
     </div>
 

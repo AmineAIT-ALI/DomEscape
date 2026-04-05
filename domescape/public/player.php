@@ -284,6 +284,20 @@ RoleGuard::requireLogin();
             color: #ff4444;
         }
         .btn-replay-red:hover { background: #ff4444; color: #080810; }
+        .btn-quit {
+            display: inline-block;
+            background: transparent;
+            border: 1px solid #333;
+            color: #555;
+            font-family: 'Courier New', monospace;
+            font-size: .78rem;
+            padding: 10px 28px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: border-color .15s, color .15s;
+        }
+        .btn-quit:hover { border-color: #666; color: #aaa; }
+        .end-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
         /* ── Pulse animation on current step ── */
         @keyframes pulse-glow {
@@ -351,7 +365,10 @@ RoleGuard::requireLogin();
     <div class="end-title">ESCAPE SUCCESSFUL</div>
     <div class="end-subtitle" id="winSubtitle"></div>
     <div class="end-stats" id="winStats"></div>
-    <a href="/domescape/public/index.php" class="btn-replay">Rejouer →</a>
+    <div class="end-actions">
+        <a href="/domescape/public/index.php" class="btn-replay">Rejouer →</a>
+        <a href="/domescape/public/index.php" id="btnQuit" class="btn-quit">Quitter la session</a>
+    </div>
 </div>
 
 <!-- Défaite -->
@@ -404,6 +421,7 @@ function buildProgress(currentNum, total, titles) {
 
 function showEndScreen(type, data) {
     clearInterval(timerInterval);
+    timerInterval = null;
     document.getElementById('gameView').style.display = 'none';
 
     const mins = Math.floor(data.elapsed_seconds / 60);

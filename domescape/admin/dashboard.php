@@ -42,7 +42,6 @@ $sessions = $pdo->query("
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Administration — DomEscape</title>
-    <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
         a { color: #00ff88; }

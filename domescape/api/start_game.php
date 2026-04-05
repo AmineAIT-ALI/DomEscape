@@ -42,6 +42,17 @@ GameEngine::resetActiveSession();
 
 $pdo = getDB();
 
+// Résoudre la version active du scénario
+$stmtVer = $pdo->prepare("
+    SELECT id_scenario_version
+    FROM scenario_version
+    WHERE id_scenario = ? AND statut_version = 'active'
+    LIMIT 1
+");
+$stmtVer->execute([$idScenario]);
+$versionRow = $stmtVer->fetch();
+$idScenarioVersion = $versionRow ? (int)$versionRow['id_scenario_version'] : null;
+
 // Récupérer l'utilisateur connecté pour lier le joueur
 $authUser   = Auth::user();
 $idUtilisateur = $authUser ? $authUser['id'] : null;
@@ -65,11 +76,12 @@ if ($joueur) {
 }
 
 try {
-    $idSession = GameEngine::startSession($idScenario, $idJoueur, $idSalle);
+    $idSession = GameEngine::startSession($idScenario, $idJoueur, $idSalle, $idScenarioVersion);
     echo json_encode([
-        'status'     => 'ok',
-        'id_session' => $idSession,
-        'message'    => 'Partie démarrée.',
+        'status'              => 'ok',
+        'id_session'          => $idSession,
+        'id_scenario_version' => $idScenarioVersion,
+        'message'             => 'Partie démarrée.',
     ]);
 } catch (RuntimeException $e) {
     http_response_code(500);

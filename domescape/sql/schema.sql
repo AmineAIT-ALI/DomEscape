@@ -1,5 +1,5 @@
 -- =============================================================
--- DomEscape — Schéma SQL complet (BDD v3 — VERSION GELÉE)
+-- DomEscape — Schéma SQL complet (BDD v4)
 -- 20 tables : 13 métier + 3 auth/RBAC + 4 extension multi-sites
 -- Base de données : domescape
 -- SGBD : MariaDB 10.5+ / MySQL 8.0+
@@ -132,18 +132,21 @@ CREATE TABLE scenario (
 
 -- -------------------------------------------------------------
 -- ETAPE — Une étape / puzzle d'un scénario, dans l'ordre
+-- id_scenario_version : NULL tant que la version n'est pas créée
+--   → FK ajoutée via ALTER TABLE après CREATE TABLE scenario_version
 -- -------------------------------------------------------------
 CREATE TABLE etape (
-    id_etape          INT AUTO_INCREMENT PRIMARY KEY,
-    id_scenario       INT          NOT NULL,
-    numero_etape      INT          NOT NULL,
-    titre_etape       VARCHAR(150) NOT NULL,
-    description_etape TEXT,
-    message_succes    TEXT,
-    message_echec     TEXT,
-    indice            TEXT,
-    points            INT          DEFAULT 100,
-    finale            BOOLEAN      DEFAULT FALSE,
+    id_etape            INT AUTO_INCREMENT PRIMARY KEY,
+    id_scenario         INT          NOT NULL,
+    id_scenario_version INT          NULL,
+    numero_etape        INT          NOT NULL,
+    titre_etape         VARCHAR(150) NOT NULL,
+    description_etape   TEXT,
+    message_succes      TEXT,
+    message_echec       TEXT,
+    indice              TEXT,
+    points              INT          DEFAULT 100,
+    finale              BOOLEAN      DEFAULT FALSE,
     CONSTRAINT fk_etape_scenario
         FOREIGN KEY (id_scenario) REFERENCES scenario(id_scenario)
         ON DELETE CASCADE
@@ -165,6 +168,12 @@ CREATE TABLE scenario_version (
         FOREIGN KEY (id_scenario) REFERENCES scenario(id_scenario)
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- FK etape → scenario_version (ajoutée après création de la table)
+ALTER TABLE etape
+    ADD CONSTRAINT fk_etape_scenver
+    FOREIGN KEY (id_scenario_version) REFERENCES scenario_version(id_scenario_version)
+    ON DELETE SET NULL;
 
 -- =============================================================
 -- 5. ASSOCIATION SALLE ↔ VERSION DE SCÉNARIO
@@ -295,23 +304,27 @@ CREATE TABLE joueur (
 -- -------------------------------------------------------------
 -- SESSION — Une exécution réelle d'un scénario dans une salle
 -- statut_session : en_attente | en_cours | gagnee | perdue | abandonnee
--- id_salle : NULL en Phase 1 (mono-salle), NOT NULL en Phase 4
+-- id_scenario_version : version du scénario figée au démarrage
 -- -------------------------------------------------------------
 CREATE TABLE session (
-    id_session        INT AUTO_INCREMENT PRIMARY KEY,
-    id_scenario       INT          NOT NULL,
-    id_joueur         INT          NOT NULL,
-    id_etape_courante INT          NULL,
-    statut_session    VARCHAR(20)  NOT NULL DEFAULT 'en_attente',
-    date_debut        DATETIME,
-    date_fin          DATETIME,
-    score             INT          DEFAULT 0,
-    nb_erreurs        INT          DEFAULT 0,
-    nb_indices        INT          DEFAULT 0,
-    duree_secondes    INT,
-    id_salle          INT          NOT NULL,
+    id_session          INT AUTO_INCREMENT PRIMARY KEY,
+    id_scenario         INT          NOT NULL,
+    id_scenario_version INT          NULL,
+    id_joueur           INT          NOT NULL,
+    id_etape_courante   INT          NULL,
+    statut_session      VARCHAR(20)  NOT NULL DEFAULT 'en_attente',
+    date_debut          DATETIME,
+    date_fin            DATETIME,
+    score               INT          DEFAULT 0,
+    nb_erreurs          INT          DEFAULT 0,
+    nb_indices          INT          DEFAULT 0,
+    duree_secondes      INT,
+    id_salle            INT          NOT NULL,
     CONSTRAINT fk_session_scenario
         FOREIGN KEY (id_scenario) REFERENCES scenario(id_scenario),
+    CONSTRAINT fk_session_scenver
+        FOREIGN KEY (id_scenario_version) REFERENCES scenario_version(id_scenario_version)
+        ON DELETE SET NULL,
     CONSTRAINT fk_session_joueur
         FOREIGN KEY (id_joueur) REFERENCES joueur(id_joueur),
     CONSTRAINT fk_session_etape
@@ -466,27 +479,27 @@ INSERT INTO scenario (nom_scenario, description, theme) VALUES
 INSERT INTO scenario_version (id_scenario, numero_version, statut_version, commentaire) VALUES
 (1, 'v1.0', 'active', 'Version initiale — démo Raspberry Pi');
 
--- Étapes (id_scenario = 1)
-INSERT INTO etape (id_scenario, numero_etape, titre_etape, description_etape, message_succes, message_echec, indice, points, finale) VALUES
-(1, 1, 'Boot Sequence',
+-- Étapes (id_scenario = 1, id_scenario_version = 1)
+INSERT INTO etape (id_scenario, id_scenario_version, numero_etape, titre_etape, description_etape, message_succes, message_echec, indice, points, finale) VALUES
+(1, 1, 1, 'Boot Sequence',
     'Appuyez sur le bouton pour démarrer le système.',
     'Système en ligne. Continuez.',
     'Action incorrecte. Réessayez.',
     'Il y a un bouton sur le bureau.',
     100, FALSE),
-(1, 2, 'Secret Door',
+(1, 1, 2, 'Secret Door',
     'Ouvrez la porte pour accéder à la zone sécurisée.',
     'Accès autorisé.',
     'Action incorrecte.',
     'La porte est la seule issue.',
     150, FALSE),
-(1, 3, 'Motion Scan',
+(1, 1, 3, 'Motion Scan',
     'Traversez la zone de détection.',
     'Scan validé. Accès final débloqué.',
     'Hors zone. Réessayez.',
     'Passez devant le capteur central.',
     200, FALSE),
-(1, 4, 'Final Code',
+(1, 1, 4, 'Final Code',
     'Appuyez deux fois sur le bouton pour sceller le laboratoire.',
     'Félicitations ! Escape réussi.',
     'Action incorrecte. Double appui requis.',

@@ -34,7 +34,6 @@ if ($authUser) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Jouer — DomEscape</title>
-    <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
 
@@ -192,34 +191,69 @@ if ($authUser) {
         }
         .empty-state p { font-size: .85rem; margin-top: 12px; }
 
-        /* Modal */
-        .modal-content {
-            background: #0f0f18;
+        /* Modal custom */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.7);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #0d0d1a;
             border: 1px solid #1a1a2e;
-            color: #e0e0e0;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 460px;
             font-family: 'Courier New', monospace;
+            animation: modal-in .15s ease;
         }
-        .modal-header { border-bottom: 1px solid #111; }
-        .modal-footer { border-top: 1px solid #111; }
-        .modal-title { color: #00ff88; font-size: .95rem; }
-        .modal-scenario-name {
-            font-size: .82rem;
-            color: #555;
-            margin-bottom: 20px;
+        @keyframes modal-in { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px;
+            border-bottom: 1px solid #111827;
         }
-        .form-label { font-size: .78rem; color: #888; }
-        .form-control {
+        .modal-head-title { font-size: .9rem; font-weight: 700; color: #00ff88; }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: #444;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            transition: color .15s;
+        }
+        .modal-close:hover { color: #e0e0e0; }
+        .modal-body { padding: 22px; }
+        .modal-scenario-name { font-size: .78rem; color: #555; margin-bottom: 18px; }
+        .modal-field label { display: block; font-size: .7rem; color: #666; margin-bottom: 6px; letter-spacing: .03em; }
+        .modal-field input {
+            width: 100%;
+            padding: 10px 12px;
             background: #080810;
             border: 1px solid #1a1a2e;
+            border-radius: 4px;
             color: #e0e0e0;
             font-family: 'Courier New', monospace;
             font-size: .875rem;
+            outline: none;
+            transition: border-color .15s;
         }
-        .form-control:focus {
-            background: #080810;
-            border-color: #00ff88;
-            color: #e0e0e0;
-            box-shadow: none;
+        .modal-field input:focus { border-color: #00ff88; }
+        .modal-foot {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 14px 22px;
+            border-top: 1px solid #111827;
         }
         .btn-modal-cancel {
             background: transparent;
@@ -227,21 +261,27 @@ if ($authUser) {
             color: #888;
             font-size: .8rem;
             font-family: 'Courier New', monospace;
-            padding: 7px 18px;
+            padding: 8px 18px;
             border-radius: 4px;
+            cursor: pointer;
+            transition: border-color .15s, color .15s;
         }
+        .btn-modal-cancel:hover { border-color: #444; color: #e0e0e0; }
         .btn-modal-start {
             background: #00ff88;
             color: #080810;
             font-weight: 700;
             font-size: .8rem;
             font-family: 'Courier New', monospace;
-            padding: 7px 18px;
+            padding: 8px 18px;
             border: none;
             border-radius: 4px;
+            cursor: pointer;
+            transition: background .15s;
         }
         .btn-modal-start:hover { background: #00cc6a; }
         .error-inline {
+            display: none;
             background: rgba(255,68,68,.08);
             border: 1px solid rgba(255,68,68,.3);
             color: #ff6666;
@@ -320,45 +360,38 @@ if ($authUser) {
 </div>
 
 <!-- Modal démarrage -->
-<div class="modal fade" id="startModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Démarrer une partie</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<div class="modal-overlay" id="startModal" onclick="closeModalOnOverlay(event)">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span class="modal-head-title">Démarrer une partie</span>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div id="modalScenarioName" class="modal-scenario-name"></div>
+            <input type="hidden" id="selectedScenarioId">
+            <input type="hidden" id="selectedSalleId" value="1">
+            <div class="modal-field">
+                <label for="nomJoueur">Nom de votre équipe</label>
+                <input type="text" id="nomJoueur" placeholder="ex : Équipe Alpha" maxlength="100">
             </div>
-            <div class="modal-body">
-                <div id="modalScenarioName" class="modal-scenario-name"></div>
-                <input type="hidden" id="selectedScenarioId">
-                <input type="hidden" id="selectedSalleId" value="1">
-                <div class="mb-0">
-                    <label class="form-label" for="nomJoueur">Nom de votre équipe</label>
-                    <input type="text" id="nomJoueur" class="form-control"
-                           placeholder="ex : Équipe Alpha" maxlength="100" autofocus>
-                </div>
-                <div id="startError" class="error-inline d-none"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn-modal-start" onclick="startGame()">Lancer la partie →</button>
-            </div>
+            <div id="startError" class="error-inline"></div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-modal-cancel" onclick="closeModal()">Annuler</button>
+            <button class="btn-modal-start" onclick="startGame()">Lancer la partie →</button>
         </div>
     </div>
 </div>
 
 <script src="/domescape/assets/vendor/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
-<script src="/domescape/assets/vendor/bootstrap.bundle.min.js"></script>
 <script>
-let startModal;
-
 document.addEventListener('DOMContentLoaded', () => {
-    startModal = new bootstrap.Modal(document.getElementById('startModal'));
-    document.getElementById('startModal').addEventListener('shown.bs.modal', () => {
-        document.getElementById('nomJoueur').focus();
-    });
     document.getElementById('nomJoueur').addEventListener('keydown', e => {
         if (e.key === 'Enter') startGame();
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
     });
 });
 
@@ -366,8 +399,17 @@ function openStartModal(idScenario, titre) {
     document.getElementById('selectedScenarioId').value = idScenario;
     document.getElementById('modalScenarioName').textContent = titre;
     document.getElementById('nomJoueur').value = '';
-    document.getElementById('startError').classList.add('d-none');
-    startModal.show();
+    document.getElementById('startError').style.display = 'none';
+    document.getElementById('startModal').classList.add('open');
+    setTimeout(() => document.getElementById('nomJoueur').focus(), 50);
+}
+
+function closeModal() {
+    document.getElementById('startModal').classList.remove('open');
+}
+
+function closeModalOnOverlay(e) {
+    if (e.target === document.getElementById('startModal')) closeModal();
 }
 
 function startGame() {
@@ -377,7 +419,7 @@ function startGame() {
 
     if (!nomJoueur) {
         errEl.textContent = 'Veuillez entrer un nom d\'équipe.';
-        errEl.classList.remove('d-none');
+        errEl.style.display = 'block';
         return;
     }
 
@@ -399,14 +441,14 @@ function startGame() {
                 window.location.href = '/domescape/public/player.php';
             } else {
                 errEl.textContent = data.message || 'Erreur serveur.';
-                errEl.classList.remove('d-none');
+                errEl.style.display = 'block';
                 btn.textContent = 'Lancer la partie →';
                 btn.disabled = false;
             }
         })
         .catch(() => {
             errEl.textContent = 'Impossible de joindre le serveur.';
-            errEl.classList.remove('d-none');
+            errEl.style.display = 'block';
             btn.textContent = 'Lancer la partie →';
             btn.disabled = false;
         });

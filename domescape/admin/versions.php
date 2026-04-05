@@ -55,6 +55,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = 'Version supprimée.';
         }
     }
+
+    if ($action === 'clone') {
+        $idSource = (int)($_POST['id_scenario_version'] ?? 0);
+
+        // Récupérer la version source
+        $stmtSrc = $pdo->prepare("SELECT * FROM scenario_version WHERE id_scenario_version = ?");
+        $stmtSrc->execute([$idSource]);
+        $source = $stmtSrc->fetch();
+
+        if (!$source) {
+            $error = 'Version source introuvable.';
+        } else {
+            $pdo->beginTransaction();
+            try {
+                // 1. Créer la nouvelle version (draft)
+                $pdo->prepare("
+                    INSERT INTO scenario_version (id_scenario, numero_version, statut_version, commentaire)
+                    VALUES (?, ?, 'draft', ?)
+                ")->execute([
+                    $source['id_scenario'],
+                    $source['numero_version'] . '-copy',
+                    'Copie de ' . $source['numero_version'],
+                ]);
+                $idNouvelle = (int)$pdo->lastInsertId();
+
+                // 2. Récupérer les étapes de la version source
+                $etapes = $pdo->prepare("SELECT * FROM etape WHERE id_scenario_version = ?");
+                $etapes->execute([$idSource]);
+
+                foreach ($etapes->fetchAll() as $etape) {
+                    // 3. Copier l'étape avec la nouvelle version
+                    $pdo->prepare("
+                        INSERT INTO etape
+                            (id_scenario, id_scenario_version, numero_etape, titre_etape,
+                             description_etape, message_succes, message_echec,
+                             indice, points, finale)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ")->execute([
+                        $etape['id_scenario'],
+                        $idNouvelle,
+                        $etape['numero_etape'],
+                        $etape['titre_etape'],
+                        $etape['description_etape'],
+                        $etape['message_succes'],
+                        $etape['message_echec'],
+                        $etape['indice'],
+                        $etape['points'],
+                        $etape['finale'],
+                    ]);
+                    $idNouvelleEtape = (int)$pdo->lastInsertId();
+                    $idAncienneEtape = (int)$etape['id_etape'];
+
+                    // 4. Copier etape_attend
+                    $attend = $pdo->prepare("SELECT * FROM etape_attend WHERE id_etape = ?");
+                    $attend->execute([$idAncienneEtape]);
+                    foreach ($attend->fetchAll() as $a) {
+                        $pdo->prepare("
+                            INSERT IGNORE INTO etape_attend (id_etape, id_capteur, id_type_evenement, obligatoire)
+                            VALUES (?, ?, ?, ?)
+                        ")->execute([$idNouvelleEtape, $a['id_capteur'], $a['id_type_evenement'], $a['obligatoire']]);
+                    }
+
+                    // 5. Copier etape_declenche
+                    $declenche = $pdo->prepare("SELECT * FROM etape_declenche WHERE id_etape = ?");
+                    $declenche->execute([$idAncienneEtape]);
+                    foreach ($declenche->fetchAll() as $d) {
+                        $pdo->prepare("
+                            INSERT INTO etape_declenche
+                                (id_etape, id_actionneur, id_type_action, ordre_action, valeur_action, moment_declenchement)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        ")->execute([
+                            $idNouvelleEtape,
+                            $d['id_actionneur'],
+                            $d['id_type_action'],
+                            $d['ordre_action'],
+                            $d['valeur_action'],
+                            $d['moment_declenchement'],
+                        ]);
+                    }
+                }
+
+                $pdo->commit();
+                $success = 'Version « ' . htmlspecialchars($source['numero_version'], ENT_QUOTES, 'UTF-8') . ' » clonée en draft.';
+
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+                $error = 'Erreur lors du clonage : ' . $e->getMessage();
+            }
+        }
+    }
 }
 
 $scenarios = $pdo->query("SELECT id_scenario, nom_scenario FROM scenario WHERE actif = 1 ORDER BY nom_scenario")->fetchAll();
@@ -242,6 +332,13 @@ $statutLabels = [
                                 <button type="submit" class="btn-action btn-archive">Archiver</button>
                             </form>
                             <?php endif; ?>
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="clone">
+                                <input type="hidden" name="id_scenario_version" value="<?= (int)$v['id_scenario_version'] ?>">
+                                <button type="submit" class="btn-action btn-archive" title="Dupliquer cette version en brouillon">
+                                    <i data-lucide="copy" style="width:11px;height:11px;"></i> Dupliquer
+                                </button>
+                            </form>
                             <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cette version ?');">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id_scenario_version" value="<?= (int)$v['id_scenario_version'] ?>">
