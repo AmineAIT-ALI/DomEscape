@@ -173,7 +173,7 @@ En complément du moteur de jeu, DomEscape intègre une couche applicative d'aut
 
 | Rôle | Accès |
 |---|---|
-| **joueur** | Interface de jeu, suivi de sa progression, historique personnel |
+| **participant** | Interface de jeu, suivi de sa progression, historique personnel |
 | **superviseur** | Lancement / reset de session, suivi temps réel, délivrance d'indices |
 | **administrateur** | Gestion complète : utilisateurs, scénarios, configuration |
 
@@ -200,13 +200,12 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 | `/public/tableau-de-bord.php` | Hub central adapté au rôle de l'utilisateur |
 | `/public/player.php` | Interface joueur : étape courante, progression, indice, abandon |
 | `/public/gamemaster.php` | Interface superviseur : suivi temps réel, indices, reset |
+| `/public/demandes.php` | Gestion des demandes de rejoindre une session (superviseur) |
 | `/public/mes-sessions.php` | Historique personnel des parties |
 | `/admin/dashboard.php` | Tableau de bord administrateur |
 | `/admin/scenarios.php` | Gestion des scénarios (création, activation, suppression) |
 | `/admin/scenario_edit.php` | Édition d'un scénario et de ses étapes (CRUD complet) |
 | `/admin/utilisateurs.php` | Gestion des comptes et des rôles |
-| `/admin/sites.php` | Gestion des sites physiques |
-| `/admin/salles.php` | Gestion des salles par site |
 | `/admin/versions.php` | Gestion des versions de scénario (draft / active / archived) |
 | `/public/historique.php` | Chronologie détaillée des événements et actions d'une session (superviseur) |
 | `/public/stats.php` | Indicateurs globaux : taux de victoire, meilleur temps, difficulté par étape |
@@ -222,6 +221,9 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 | `/api/send_hint.php` | POST | Envoi de l'indice de l'étape courante (superviseur) |
 | `/api/reset_game.php` | POST | Réinitialisation (superviseur) |
 | `/api/abandon_game.php` | POST | Abandon de partie |
+| `/api/join_session.php` | POST | Rejoindre directement une session en_attente |
+| `/api/request_join_session.php` | POST | Envoyer une demande pour rejoindre une session |
+| `/api/handle_join_request.php` | POST | Accepter ou refuser une demande (superviseur) |
 | `/api/debug_event.php` | POST / GET | Simulation d'un événement capteur sans matériel réel |
 | `/api/gamemaster_status.php` | GET | Données temps réel pour le gamemaster : session, événements, actions |
 | `/api/healthcheck.php` | GET | État du système (BDD, Domoticz, LCD) |
@@ -323,6 +325,9 @@ Stocke les relevés télémétriques périodiques des capteurs environnementaux 
 | nom_scenario | VARCHAR(150) | NOT NULL | Titre du scénario |
 | description | TEXT | — | Descriptif narratif |
 | theme | VARCHAR(100) | — | Thème (ex : Laboratoire, Espionnage…) |
+| nb_joueurs_min | INT | NULL | Nombre minimum de joueurs pour démarrer la session |
+| nb_joueurs_max | INT | NULL | Nombre maximum de joueurs autorisés |
+| duree_max_secondes | INT | NULL | Durée limite en secondes (NULL = illimitée) |
 | actif | BOOLEAN | DEFAULT TRUE | Scénario jouable ou archivé |
 | cree_le | TIMESTAMP | DEFAULT NOW() | Date de création |
 
@@ -371,15 +376,27 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 
 ### Tables de session (runtime)
 
-#### Table : joueur
+#### Table : equipe
+
+Représente une équipe créée pour jouer une session. Elle est identifiée par son nom et rattachée à l'utilisateur qui l'a créée.
 
 | Attribut | Type | Contrainte | Description |
 |---|---|---|---|
-| id_joueur | INT | PK, AUTO_INCREMENT | Identifiant du joueur |
-| nom_joueur | VARCHAR(100) | NOT NULL | Nom ou pseudonyme |
-| type_joueur | VARCHAR(50) | DEFAULT 'equipe' | `equipe`, `individuel`, `jury` |
+| id_equipe | INT | PK, AUTO_INCREMENT | Identifiant de l'équipe |
+| nom_equipe | VARCHAR(100) | NOT NULL | Nom de l'équipe |
+| type_equipe | VARCHAR(50) | DEFAULT 'equipe' | `equipe`, `individuel`, `jury` |
+| id_utilisateur | INT UNSIGNED | FK → utilisateur, NULL | Utilisateur à l'origine de la création (référence optionnelle) |
 | cree_le | TIMESTAMP | DEFAULT NOW() | Date de création |
-| id_utilisateur | INT UNSIGNED | FK → utilisateur, NULL | Lien optionnel vers un compte utilisateur |
+
+#### Table : equipe_utilisateur *(association)*
+
+Lie les utilisateurs à leur équipe. Sans hiérarchie métier : tous les membres sont équivalents.
+
+| Attribut | Type | Contrainte | Description |
+|---|---|---|---|
+| id_equipe | INT | PK, FK → equipe | Équipe concernée |
+| id_utilisateur | INT UNSIGNED | PK, FK → utilisateur | Utilisateur membre |
+| rejoint_le | DATETIME | DEFAULT NOW() | Date d'adhésion |
 
 #### Table : session
 
@@ -388,16 +405,43 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 | id_session | INT | PK, AUTO_INCREMENT | Identifiant de la session |
 | id_scenario | INT | FK → scenario | Scénario joué |
 | id_scenario_version | INT | FK → scenario_version, NULL | Version du scénario figée au démarrage de la session |
-| id_joueur | INT | FK → joueur | Joueur ou équipe |
+| id_equipe | INT | FK → equipe | Équipe participante |
+| id_utilisateur_createur | INT UNSIGNED | FK → utilisateur, NULL | Utilisateur ayant lancé la session |
 | id_etape_courante | INT | FK → etape, NULL | Étape en cours (NULL en fin de partie) |
 | statut_session | VARCHAR(20) | NOT NULL | `en_attente`, `en_cours`, `gagnee`, `perdue`, `abandonnee` |
-| date_debut | DATETIME | — | Horodatage du démarrage |
+| date_debut | DATETIME | — | Horodatage du démarrage (NULL si en_attente) |
 | date_fin | DATETIME | — | Horodatage de la fin |
 | score | INT | DEFAULT 0 | Score cumulé |
 | nb_erreurs | INT | DEFAULT 0 | Nombre d'erreurs commises |
 | nb_indices | INT | DEFAULT 0 | Nombre d'indices demandés |
 | duree_secondes | INT | — | Durée totale en secondes (calculée à la fin) |
-| id_salle | INT | FK → salle, NOT NULL | Salle d'exécution |
+
+> **Statut `en_attente` :** Quand `nb_joueurs_min > 1`, la session est créée en `en_attente` et `date_debut` reste NULL. Le moteur (`tryLaunchSession`) surveille le nombre de participants dans `session_utilisateur` et déclenche automatiquement la transition vers `en_cours` dès que le minimum est atteint.
+
+#### Table : session_utilisateur *(association)*
+
+Lie les utilisateurs participants à une session. Le créateur est tracé dans `session.id_utilisateur_createur`.
+
+| Attribut | Type | Contrainte | Description |
+|---|---|---|---|
+| id_session | INT | PK, FK → session | Session concernée |
+| id_utilisateur | INT UNSIGNED | PK, FK → utilisateur | Participant |
+| rejoint_le | DATETIME | DEFAULT NOW() | Date de participation |
+
+#### Table : demande_rejoindre_session
+
+Enregistre les demandes d'un utilisateur pour rejoindre une session existante. Contrainte UNIQUE sur `(id_session, id_utilisateur, statut_demande)` pour éviter les doublons de demandes en attente.
+
+| Attribut | Type | Contrainte | Description |
+|---|---|---|---|
+| id_demande | INT | PK, AUTO_INCREMENT | Identifiant de la demande |
+| id_session | INT | FK → session | Session visée |
+| id_utilisateur | INT UNSIGNED | FK → utilisateur | Demandeur |
+| statut_demande | ENUM | NOT NULL | `en_attente`, `acceptee`, `refusee` |
+| message_demande | TEXT | — | Message optionnel du demandeur |
+| id_traiteur | INT UNSIGNED | FK → utilisateur, NULL | Superviseur ayant traité la demande |
+| demande_le | DATETIME | DEFAULT NOW() | Date de la demande |
+| traitee_le | DATETIME | — | Date de traitement |
 
 #### Table : evenement_session
 
@@ -449,7 +493,7 @@ Définit quelles actions exécuter sur quels actionneurs selon le moment du cycl
 | Attribut | Type | Contrainte | Description |
 |---|---|---|---|
 | id | INT UNSIGNED | PK, AUTO_INCREMENT | Identifiant du rôle |
-| nom | VARCHAR(50) | NOT NULL, UNIQUE | `joueur`, `superviseur`, `administrateur` |
+| nom | VARCHAR(50) | NOT NULL, UNIQUE | `participant`, `superviseur`, `administrateur` |
 
 #### Table : utilisateur_role
 
@@ -562,14 +606,15 @@ La table `salle_scenario` n'est pas encore utilisée dans le moteur d'exécution
                                                   └───────────────────┘
 
 ┌───────────────────┐    ┌───────────────────┐
-│     JOUEUR        │    │     SESSION        │
+│     EQUIPE        │    │     SESSION        │
 │───────────────────│    │───────────────────│
-│ # id_joueur       │    │ # id_session      │
-│   nom_joueur      │    │   statut_session  │
-│   type_joueur     │    │   date_debut      │
+│ # id_equipe       │    │ # id_session      │
+│   nom_equipe      │    │   statut_session  │
+│   type_equipe     │    │   date_debut      │
 └───────────────────┘    │   date_fin        │
                          │   score           │
                          │   nb_erreurs      │
+                         │   nb_joueurs_min  │
                          │   duree_secondes  │
                          └───────────────────┘
 
@@ -592,16 +637,14 @@ SCENARIO ──(1,n)── SCENARIO_VERSION ──(1,n)── ETAPE
    (1,n)               (0,n)          ┌──────────┴────────────┐
     │                    │            │                        │
   SESSION ──────────────┘          ATTEND               DECLENCHE
-    │                           (ternaire)             (ternaire)
-  /   \                         /          \           /          \
-(1,n)(1,n)               CAPTEUR   EVENEMENT_TYPE   ACTIONNEUR  ACTION_TYPE
+    │    └──(n,n)── UTILISATEUR    (ternaire)           (ternaire)
+  /   \        [via session_utilisateur]  /       \    /          \
+(1,n)(1,n)                        CAPTEUR  EVENT_TYPE  ACTIONNEUR  ACTION_TYPE
   │     │
-JOUEUR  ETAPE
-    │
-   (0,1)
-    │
-UTILISATEUR ──(n,n)── ROLE
-          [via utilisateur_role]
+EQUIPE  ETAPE
+  │
+(n,n)── UTILISATEUR ──(n,n)── ROLE
+[via equipe_utilisateur]   [via utilisateur_role]
 ```
 
 ### Description des associations
@@ -612,14 +655,16 @@ UTILISATEUR ──(n,n)── ROLE
 | version_de | SCENARIO_VERSION — ETAPE | 1,n — 1,1 | Une version regroupe les étapes qui lui appartiennent |
 | fige | SESSION — SCENARIO_VERSION | n,0..1 | Une session est liée à la version active au moment de son démarrage |
 | joue | SESSION — SCENARIO | n,1 | Une session correspond à l'exécution d'un scénario précis |
-| appartient_à | SESSION — JOUEUR | n,1 | Une session est associée à un joueur ou une équipe |
+| appartient_à | SESSION — EQUIPE | n,1 | Une session est associée à une équipe |
 | est_à | SESSION — ETAPE | n,0..1 | Une session pointe vers l'étape active (NULL en fin de partie) |
 | attend | ETAPE — CAPTEUR — EVENEMENT_TYPE | ternaire | Définit l'événement à recevoir sur quel capteur pour valider l'étape |
 | déclenche | ETAPE — ACTIONNEUR — ACTION_TYPE | ternaire | Définit les actions à exécuter selon le moment (on_enter, on_success…) |
 | génère | SESSION — EVENEMENT_SESSION | 1,n | Chaque signal capté durant une session est tracé |
 | produit | SESSION — ACTION_EXECUTEE | 1,n | Chaque action physique déclenchée est tracée |
-| est | JOUEUR — UTILISATEUR | 0..1,1 | Un joueur peut être lié à un compte utilisateur (optionnel) |
+| composée_de | EQUIPE — UTILISATEUR | n,n | Une équipe regroupe plusieurs utilisateurs (via equipe_utilisateur) |
+| participe_à | SESSION — UTILISATEUR | n,n | Les participants d'une session sont tracés dans session_utilisateur |
 | possède | UTILISATEUR — ROLE | n,n | Un utilisateur peut avoir plusieurs rôles |
+| demande | UTILISATEUR — SESSION | n,n | Un utilisateur peut envoyer une demande pour rejoindre une session (via demande_rejoindre_session) |
 
 ### Justification des associations ternaires
 
@@ -685,6 +730,9 @@ scenario (
     nom_scenario,
     description,
     theme,
+    nb_joueurs_min,
+    nb_joueurs_max,
+    duree_max_secondes,
     actif,
     cree_le
 )
@@ -703,19 +751,26 @@ etape (
     finale
 )
 
-joueur (
-    <u>id_joueur</u>,
-    nom_joueur,
-    type_joueur,
+equipe (
+    <u>id_equipe</u>,
+    nom_equipe,
+    type_equipe,
     cree_le,
     _id_utilisateur_ → utilisateur(id)
+)
+
+equipe_utilisateur (
+    <u>id_equipe</u> → equipe(id_equipe),
+    <u>id_utilisateur</u> → utilisateur(id),
+    rejoint_le
 )
 
 session (
     <u>id_session</u>,
     _id_scenario_ → scenario(id_scenario),
     _id_scenario_version_ → scenario_version(id_scenario_version),
-    _id_joueur_ → joueur(id_joueur),
+    _id_equipe_ → equipe(id_equipe),
+    _id_utilisateur_createur_ → utilisateur(id),
     _id_etape_courante_ → etape(id_etape),
     statut_session,
     date_debut,
@@ -723,8 +778,24 @@ session (
     score,
     nb_erreurs,
     nb_indices,
-    duree_secondes,
-    _id_salle_ → salle(id_salle)
+    duree_secondes
+)
+
+session_utilisateur (
+    <u>id_session</u> → session(id_session),
+    <u>id_utilisateur</u> → utilisateur(id),
+    rejoint_le
+)
+
+demande_rejoindre_session (
+    <u>id_demande</u>,
+    _id_session_ → session(id_session),
+    _id_utilisateur_ → utilisateur(id),
+    statut_demande,
+    message_demande,
+    _id_traiteur_ → utilisateur(id),
+    demande_le,
+    traitee_le
 )
 
 etape_attend (
@@ -877,11 +948,11 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 ### scenario
 
-| id_scenario | nom_scenario | theme | actif |
-|---|---|---|---|
-| 1 | DomEscape Lab 01 | Laboratoire sécurisé | 1 |
-| 2 | Mission Infiltration | Espionnage | 1 |
-| 3 | L'Héritage du Savant | Mystère | 0 |
+| id_scenario | nom_scenario | theme | nb_joueurs_min | nb_joueurs_max | duree_max_secondes | actif |
+|---|---|---|---|---|---|---|
+| 1 | DomEscape Lab 01 | Laboratoire sécurisé | 1 | 6 | 3600 | 1 |
+| 2 | Mission Infiltration | Espionnage | 2 | 4 | 2700 | 1 |
+| 3 | L'Héritage du Savant | Mystère | NULL | NULL | NULL | 0 |
 
 > **Note :** Le scénario `DomEscape Lab 01` est le seul déployé et testé sur hardware réel. Les scénarios 2 et 3 sont des exemples illustratifs du modèle multi-scénarios.
 
@@ -917,27 +988,50 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 4 | 1 | 2 | 3 | 1 | Invalide ! | on_failure |
 | 5 | 2 | 2 | 3 | 1 | Zone restreinte | on_enter |
 
-### joueur
+### equipe
 
-| id_joueur | nom_joueur | type_joueur | id_utilisateur |
+| id_equipe | nom_equipe | type_equipe | id_utilisateur |
 |---|---|---|---|
-| 1 | Équipe Alpha | equipe | NULL |
-| 2 | Équipe Beta | equipe | NULL |
-| 3 | Marie Dupont | individuel | 2 |
-| 4 | Thomas Martin | individuel | 3 |
-| 5 | Jury IUT | jury | NULL |
+| 1 | Équipe Alpha | equipe | 2 |
+| 2 | Équipe Beta | equipe | 3 |
+| 3 | Jury IUT | jury | NULL |
+
+### equipe_utilisateur
+
+| id_equipe | id_utilisateur | rejoint_le |
+|---|---|---|
+| 1 | 2 | 2026-03-21 10:00:00 |
+| 1 | 3 | 2026-03-21 10:05:00 |
+| 2 | 4 | 2026-03-21 12:00:00 |
 
 ### session
 
-| id_session | id_scenario | id_scenario_version | id_joueur | statut_session | score | nb_erreurs | duree_secondes | id_salle |
+| id_session | id_scenario | id_scenario_version | id_equipe | id_utilisateur_createur | statut_session | score | nb_erreurs | duree_secondes |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 1 | 1 | 1 | gagnee | 750 | 2 | 1842 | 1 |
-| 2 | 1 | 1 | 2 | perdue | 250 | 8 | 3600 | 1 |
-| 3 | 1 | 2 | 3 | gagnee | 750 | 0 | 194 | 1 |
-| 4 | 2 | NULL | 4 | abandonnee | 100 | 1 | NULL | 1 |
-| 5 | 1 | 2 | 5 | gagnee | 750 | 0 | 27 | 1 |
+| 1 | 1 | 1 | 1 | 2 | gagnee | 750 | 2 | 1842 |
+| 2 | 1 | 1 | 2 | 3 | perdue | 250 | 8 | 3600 |
+| 3 | 1 | 2 | 1 | 2 | gagnee | 750 | 0 | 194 |
+| 4 | 2 | NULL | 2 | 4 | abandonnee | 100 | 1 | NULL |
+| 5 | 1 | 2 | 1 | 2 | en_attente | 0 | 0 | NULL |
 
 > **Note :** `id_scenario_version` est renseigné dès le démarrage de la session et reste figé pour toute sa durée, garantissant la reproductibilité et la traçabilité du parcours joué. Les sessions antérieures à l'intégration du versionnage conservent leur version d'origine via le backfill de migration.
+
+### session_utilisateur
+
+| id_session | id_utilisateur | rejoint_le |
+|---|---|---|
+| 1 | 2 | 2026-03-21 10:00:00 |
+| 1 | 3 | 2026-03-21 10:02:00 |
+| 2 | 3 | 2026-03-21 14:00:00 |
+| 5 | 2 | 2026-04-06 09:00:00 |
+
+### demande_rejoindre_session
+
+| id_demande | id_session | id_utilisateur | statut_demande | id_traiteur | demande_le |
+|---|---|---|---|---|---|
+| 1 | 1 | 4 | acceptee | 1 | 2026-03-21 10:01:00 |
+| 2 | 2 | 5 | refusee | 1 | 2026-03-21 14:05:00 |
+| 3 | 5 | 3 | en_attente | NULL | 2026-04-06 09:01:00 |
 
 ### evenement_session
 
@@ -989,7 +1083,7 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 | id | nom |
 |---|---|
-| 1 | joueur |
+| 1 | participant |
 | 2 | superviseur |
 | 3 | administrateur |
 
@@ -1025,6 +1119,8 @@ La modélisation retenue permet d'obtenir un système à la fois robuste, extens
 Le modèle basé sur `scenario_version` est désormais intégré au système et permet de figer une version de scénario au démarrage de chaque session, garantissant la reproductibilité et la traçabilité des parcours. Ce couplage assure une **invariance temporelle** du système : une session n'est jamais impactée par une modification ultérieure du scénario. Il permet en outre de déployer simultanément plusieurs variantes d'un même scénario dans des salles différentes et d'effectuer des mises à jour sans interrompre les sessions en cours.
 
 La chaîne complète a été validée sur hardware réel : capteurs Z-Wave → Domoticz → dzVents → handle_event.php → GameEngine → base de données. Plusieurs sessions ont été jouées et remportées sur le Raspberry Pi de production, confirmant la robustesse du système en conditions réelles.
+
+La Phase 6 du projet a consolidé la gestion multi-joueurs : les contraintes `nb_joueurs_min`, `nb_joueurs_max` et `duree_max_secondes` sont désormais enforced par le moteur (lobby `en_attente`, blocage au-delà du maximum, défaite automatique à expiration). Le flow de demande (`demande_rejoindre_session`) permet aux superviseurs de contrôler les accès via une interface dédiée (`demandes.php`). La table `joueur` a été remplacée par `equipe` + `equipe_utilisateur` + `session_utilisateur`, offrant un modèle de participation propre sans redondance de rôle.
 
 Si DomEscape est aujourd'hui démontré à travers un escape game domotique sur Raspberry Pi mono-salle, l'architecture conçue dépasse ce seul cadre. Le moteur de scénarios événementiels, la double intégration Domoticz (dzVents temps réel + API REST), et le modèle de données extensible constituent les fondations d'une plateforme générique de scénarios physiques interactifs. Les tables d'extension multi-sites (`site`, `salle`, `scenario_version`, `salle_scenario`) posent les bases d'un déploiement industrialisé, applicable à la formation, à la simulation ou à tout environnement instrumenté par capteurs.
 
