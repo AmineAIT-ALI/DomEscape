@@ -361,6 +361,8 @@ Stocke les relevés télémétriques périodiques des capteurs environnementaux 
 
 > **Versionnage des étapes :** `etape.id_scenario_version` rattache chaque étape à une version précise du scénario. Le moteur (`GameEngine`) charge les étapes via `id_scenario_version` quand celui-ci est renseigné, garantissant qu'une session exécute toujours la version figée au moment de son démarrage. Un fallback sur `id_scenario` assure la compatibilité descendante avec les sessions antérieures à l'intégration du versionnage.
 
+> **Compatibilité descendante — double rattachement :** la présence simultanée de `id_scenario` et `id_scenario_version` correspond à une phase de transition maîtrisée. Les étapes historiques restent rattachées directement au scénario, tandis que les nouvelles étapes versionnées sont rattachées à `scenario_version`. La cohérence est garantie au niveau applicatif par le moteur, qui privilégie toujours `id_scenario_version` lorsque ce champ est renseigné.
+
 #### Table : etape_attend *(association ternaire)*
 
 Définit quel événement sur quel capteur doit être reçu pour valider une étape.
@@ -396,7 +398,7 @@ Représente une équipe créée pour jouer une session. Elle est identifiée par
 |---|---|---|---|
 | id_equipe | INT | PK, AUTO_INCREMENT | Identifiant de l'équipe |
 | nom_equipe | VARCHAR(100) | NOT NULL | Nom de l'équipe |
-| type_equipe | VARCHAR(50) | DEFAULT 'equipe' | `equipe`, `individuel`, `jury` |
+| type_equipe | VARCHAR(50) | DEFAULT 'equipe' | `equipe`, `individuel`, `jury` — distingue une équipe classique, une session individuelle et une session de démonstration/jury, sans modifier le modèle relationnel |
 | id_utilisateur | INT UNSIGNED | FK → utilisateur, NULL | Utilisateur à l'origine de la création (référence optionnelle) |
 | cree_le | TIMESTAMP | DEFAULT NOW() | Date de création |
 
@@ -534,6 +536,8 @@ Permet de gérer plusieurs versions d'un même scénario sans impacter les sessi
 ## 6. Modélisation Entité-Association (MCD)
 
 > **Note :** Le schéma MCD présenté ci-dessous est une représentation textuelle des entités et associations. Un diagramme Merise complet (draw.io / diagrams.net) est disponible en complément.
+
+> **Note de lecture :** le MCD ci-dessous présente le cœur métier du système. Pour préserver la lisibilité, les entités d'historisation et de gestion opérationnelle (`evenement_session`, `action_executee`, `session_utilisateur`, `demande_rejoindre_session`) ne sont pas détaillées graphiquement ici, mais elles figurent bien dans le schéma relationnel (MLD) et dans le dictionnaire des données.
 
 ### Entités principales
 
@@ -1042,6 +1046,6 @@ La chaîne complète a été validée sur hardware réel : capteurs Z-Wave → D
 
 La Phase 6 du projet a consolidé la gestion multi-joueurs : les contraintes `nb_joueurs_min`, `nb_joueurs_max` et `duree_max_secondes` sont désormais enforced par le moteur (lobby `en_attente`, blocage au-delà du maximum, défaite automatique à expiration). Le flow de demande (`demande_rejoindre_session`) permet aux superviseurs de contrôler les accès via une interface dédiée (`demandes.php`). La table `joueur` a été remplacée par `equipe` + `equipe_utilisateur` + `session_utilisateur`, offrant un modèle de participation propre sans redondance de rôle.
 
-Si DomEscape est aujourd'hui démontré à travers un escape game domotique sur Raspberry Pi mono-salle, l'architecture conçue dépasse ce seul cadre. Le moteur de scénarios événementiels, la double intégration Domoticz (dzVents temps réel + API REST), et le modèle de données extensible constituent les fondations d'une plateforme générique de scénarios physiques interactifs. La modélisation retenue — moteur stateless, versionnage des scénarios, RBAC en base, gestion multi-joueurs avec lobby — constitue les fondations d'une plateforme générique de scénarios physiques interactifs, extensible vers un déploiement multi-salles ou multi-sites.
+Si DomEscape est aujourd'hui démontré à travers un escape game domotique sur Raspberry Pi mono-salle, l'architecture conçue dépasse ce seul cadre. Le moteur de scénarios événementiels, la double intégration Domoticz (dzVents temps réel + API REST), et le modèle de données extensible constituent les fondations d'une plateforme générique de scénarios physiques interactifs. La modélisation retenue — moteur stateless, versionnage des scénarios, RBAC en base, gestion multi-joueurs avec lobby — constitue les fondations d'une plateforme générique de scénarios physiques interactifs, extensible, au prix de l'introduction d'entités supplémentaires dédiées au déploiement physique (site, salle, affectation des scénarios), vers un futur fonctionnement multi-salles ou multi-sites.
 
 DomEscape illustre ainsi comment une modélisation rigoureuse et une architecture orientée événements permettent de construire un système interactif physique cohérent, configurable et robuste — à l'interface entre logiciel, base de données et environnement réel.
