@@ -196,7 +196,7 @@ Elle permet l'authentification, le lancement des sessions, le suivi du jeu en te
 | Page | Rôle |
 |---|---|
 | `/public/connexion.php` | Authentification des utilisateurs |
-| `/public/inscription.php` | Création de compte joueur |
+| `/public/inscription.php` | Création de compte (rôle participant par défaut) |
 | `/public/tableau-de-bord.php` | Hub central adapté au rôle de l'utilisateur |
 | `/public/player.php` | Interface joueur : étape courante, progression, indice, abandon |
 | `/public/gamemaster.php` | Interface superviseur : suivi temps réel, indices, reset |
@@ -256,7 +256,7 @@ La base est également utilisée dans les outils de simulation, ce qui permet de
 
 ## 5. Dictionnaire des Données (DD)
 
-La base de données de DomEscape est composée de **13 tables métier** dédiées au moteur de jeu, **3 tables applicatives** pour l'authentification et la gestion des rôles, et **4 tables d'extension** pour le déploiement multi-sites, soit **20 tables au total**.
+La base de données de DomEscape est composée de **20 tables** réparties en six groupes fonctionnels : 2 catalogues, 2 tables de référence physique, 5 tables de configuration de scénario, 3 tables d'authentification/RBAC, 7 tables runtime (participants, session, historique) et 1 table de télémétrie. L'architecture est strictement mono-salle : aucune table multi-sites ou multi-salles n'est présente dans ce schéma.
 
 ### Tables de référence (catalogues)
 
@@ -266,11 +266,10 @@ La base de données de DomEscape est composée de **13 tables métier** dédiée
 |---|---|---|---|
 | id_capteur | INT | PK, AUTO_INCREMENT | Identifiant unique du capteur |
 | nom_capteur | VARCHAR(100) | NOT NULL | Nom descriptif du capteur |
-| type_capteur | VARCHAR(50) | NOT NULL | Famille : `door_sensor`, `button`, `button_double`, `motion_sensor` |
+| type_capteur | VARCHAR(50) | NOT NULL | Famille : `door_sensor`, `button`, `motion_sensor` |
 | domoticz_idx | INT | NOT NULL, UNIQUE | Identifiant Domoticz du device |
 | emplacement | VARCHAR(100) | — | Localisation physique dans la pièce |
 | actif | BOOLEAN | DEFAULT TRUE | Indique si le capteur est en service |
-| id_salle | INT | FK → salle, NOT NULL | Salle physique associée |
 
 #### Table : actionneur
 
@@ -282,7 +281,6 @@ La base de données de DomEscape est composée de **13 tables métier** dédiée
 | domoticz_idx | INT | UNIQUE, NULL | Identifiant Domoticz (NULL pour le LCD, géré hors Domoticz) |
 | emplacement | VARCHAR(100) | — | Localisation physique |
 | actif | BOOLEAN | DEFAULT TRUE | Indique si l'actionneur est opérationnel |
-| id_salle | INT | FK → salle, NOT NULL | Salle physique associée |
 
 #### Table : mesure_capteur
 
@@ -325,10 +323,10 @@ Stocke les relevés télémétriques périodiques des capteurs environnementaux 
 | nom_scenario | VARCHAR(150) | NOT NULL | Titre du scénario |
 | description | TEXT | — | Descriptif narratif |
 | theme | VARCHAR(100) | — | Thème (ex : Laboratoire, Espionnage…) |
+| actif | BOOLEAN | DEFAULT TRUE | Scénario jouable ou archivé |
 | nb_joueurs_min | INT | NULL | Nombre minimum de joueurs pour démarrer la session |
 | nb_joueurs_max | INT | NULL | Nombre maximum de joueurs autorisés |
 | duree_max_secondes | INT | NULL | Durée limite en secondes (NULL = illimitée) |
-| actif | BOOLEAN | DEFAULT TRUE | Scénario jouable ou archivé |
 | cree_le | TIMESTAMP | DEFAULT NOW() | Date de création |
 
 #### Table : etape
@@ -430,18 +428,18 @@ Lie les utilisateurs participants à une session. Le créateur est tracé dans `
 
 #### Table : demande_rejoindre_session
 
-Enregistre les demandes d'un utilisateur pour rejoindre une session existante. Contrainte UNIQUE sur `(id_session, id_utilisateur, statut_demande)` pour éviter les doublons de demandes en attente.
+Enregistre les demandes d'un utilisateur pour rejoindre une session existante. Contrainte UNIQUE sur `(id_session, id_utilisateur, statut_demande)` pour bloquer les doublons de demandes en attente.
 
 | Attribut | Type | Contrainte | Description |
 |---|---|---|---|
 | id_demande | INT | PK, AUTO_INCREMENT | Identifiant de la demande |
 | id_session | INT | FK → session | Session visée |
 | id_utilisateur | INT UNSIGNED | FK → utilisateur | Demandeur |
-| statut_demande | ENUM | NOT NULL | `en_attente`, `acceptee`, `refusee` |
 | message_demande | TEXT | — | Message optionnel du demandeur |
-| id_traiteur | INT UNSIGNED | FK → utilisateur, NULL | Superviseur ayant traité la demande |
+| statut_demande | VARCHAR(20) | NOT NULL, DEFAULT 'en_attente' | `en_attente`, `acceptee`, `refusee`, `annulee` |
 | demande_le | DATETIME | DEFAULT NOW() | Date de la demande |
 | traitee_le | DATETIME | — | Date de traitement |
+| traitee_par | INT UNSIGNED | FK → utilisateur, NULL | Superviseur ou administrateur ayant traité la demande |
 
 #### Table : evenement_session
 
@@ -454,10 +452,8 @@ Enregistre les demandes d'un utilisateur pour rejoindre une session existante. C
 | id_etape | INT | FK → etape, NULL | Étape active au moment de la réception |
 | date_evenement | DATETIME | NOT NULL | Horodatage précis |
 | valeur_brute | TEXT | — | Payload JSON brut reçu de Domoticz |
-| evenement_attendu | BOOLEAN | — | Indique si l'événement reçu correspondait à l'attendu défini pour l'étape courante. |
-| valide | BOOLEAN | — | Indique si l'événement a été retenu comme exploitable par le moteur dans le contexte de la session courante. |
-| raison_rejet | TEXT | — | Motif de rejet si l'événement n'est pas retenu (ex : hors séquence, doublon, session terminée). |
-| traite_le | DATETIME | — | Horodatage du traitement effectif par le moteur (permet de mesurer la latence de traitement). |
+| evenement_attendu | BOOLEAN | — | TRUE si l'événement correspondait à l'attendu de l'étape |
+| valide | BOOLEAN | — | TRUE si l'événement a été retenu comme exploitable par le moteur |
 
 #### Table : action_executee
 
@@ -471,8 +467,6 @@ Enregistre les demandes d'un utilisateur pour rejoindre une session existante. C
 | date_execution | DATETIME | NOT NULL | Horodatage de l'exécution |
 | valeur_action | TEXT | — | Paramètre utilisé (ex : message LCD) |
 | statut_execution | VARCHAR(20) | DEFAULT 'ok' | `ok`, `erreur`, `simulation` |
-| message_erreur | TEXT | — | Détail de l'erreur si `statut_execution = 'erreur'` (ex : timeout, réponse HTTP non-200). |
-| duree_ms | INT | — | Durée d'exécution de l'action en millisecondes (utile pour détecter les actionneurs lents). |
 
 ### Tables d'authentification
 
@@ -502,36 +496,11 @@ Enregistre les demandes d'un utilisateur pour rejoindre une session existante. C
 | id_utilisateur | INT UNSIGNED | PK, FK → utilisateur | Utilisateur concerné |
 | id_role | INT UNSIGNED | PK, FK → role | Rôle attribué |
 
-### Extension multi-sites et multi-salles
-
-Le modèle actuel de DomEscape est conçu pour fonctionner dans une configuration mono-salle, où l'ensemble des capteurs et actionneurs est implicitement rattaché à un unique environnement physique. Toutefois, afin de permettre un déploiement à plus grande échelle (centres d'escape game, formation multi-sites, environnements industriels), une extension du modèle de données est nécessaire.
-
-#### Table : site
-
-| Attribut | Type | Contrainte | Description |
-|---|---|---|---|
-| id_site | INT | PK, AUTO_INCREMENT | Identifiant du site |
-| nom_site | VARCHAR(100) | NOT NULL | Nom du site |
-| description | TEXT | — | Description du site |
-| adresse | VARCHAR(255) | — | Adresse physique |
-| actif | BOOLEAN | DEFAULT TRUE | Site exploité ou non |
-| cree_le | DATETIME | DEFAULT NOW() | Date de création |
-
-#### Table : salle
-
-| Attribut | Type | Contrainte | Description |
-|---|---|---|---|
-| id_salle | INT | PK, AUTO_INCREMENT | Identifiant de la salle |
-| id_site | INT | FK → site | Site auquel appartient la salle |
-| nom_salle | VARCHAR(100) | NOT NULL | Nom de la salle |
-| description | TEXT | — | Description de la salle |
-| capacite | INT | — | Nombre maximum de participants |
-| actif | BOOLEAN | DEFAULT TRUE | Salle active ou non |
-| cree_le | DATETIME | DEFAULT NOW() | Date de création |
+### Table de versionnage
 
 #### Table : scenario_version
 
-Permet de gérer plusieurs versions d'un même scénario sans impacter les sessions en cours ou l'historique existant.
+Permet de gérer plusieurs versions d'un même scénario sans impacter les sessions en cours ou l'historique existant. Élément central du moteur : au démarrage, `start_game.php` résout la version active et initialise `session.id_scenario_version`.
 
 | Attribut | Type | Contrainte | Description |
 |---|---|---|---|
@@ -542,28 +511,7 @@ Permet de gérer plusieurs versions d'un même scénario sans impacter les sessi
 | commentaire | TEXT | — | Notes de version |
 | cree_le | DATETIME | DEFAULT NOW() | Date de création |
 
-#### Table : salle_scenario
-
-Association entre une salle physique et une version de scénario déployée. Permet de paramétrer localement le comportement d'un scénario selon la salle.
-
-| Attribut | Type | Contrainte | Description |
-|---|---|---|---|
-| id_salle_scenario | INT | PK, AUTO_INCREMENT | Identifiant du déploiement |
-| id_salle | INT | FK → salle | Salle concernée |
-| id_scenario_version | INT | FK → scenario_version | Version de scénario déployée |
-| actif | BOOLEAN | DEFAULT TRUE | Déploiement actif |
-| date_activation | DATETIME | — | Date d'activation |
-| configuration_locale | TEXT | — | Paramétrage JSON propre à la salle (idx locaux, messages adaptés…) |
-
-**Justification de l'extension**
-
-Cette extension permet :
-- de gérer plusieurs salles physiques indépendantes au sein d'un ou plusieurs sites ;
-- de déployer différentes versions d'un scénario sans écraser l'historique existant ;
-- de mutualiser les scénarios entre plusieurs environnements physiques ;
-- de préparer une industrialisation du système vers une plateforme multi-tenants.
-
-La table `salle_scenario` n'est pas encore utilisée dans le moteur d'exécution, mais elle permettrait d'associer dynamiquement une version de scénario à une salle physique, ouvrant la voie à un déploiement multi-salles avec configurations spécifiques par salle. Dans la configuration actuelle (Raspberry Pi mono-salle), ces tables constituent la fondation de l'évolution naturelle de l'architecture vers une plateforme multi-tenants.
+> **Note mono-salle :** DomEscape fonctionne sur un Raspberry Pi unique sans notion de site ou de salle. Les tables multi-sites (`site`, `salle`, `salle_scenario`) ne font pas partie du schéma actuel ; elles constituent une piste d'évolution future hors scope de ce projet.
 
 ---
 
@@ -594,16 +542,17 @@ La table `salle_scenario` n'est pas encore utilisée dans le moteur d'exécution
 │   type_capteur    │    │   description     │
 └───────────────────┘    └───────────────────┘
 
-┌───────────────────┐    ┌───────────────────┐    ┌───────────────────┐
-│    SCENARIO       │    │ SCENARIO_VERSION   │    │      ETAPE         │
-│───────────────────│    │───────────────────│    │───────────────────│
-│ # id_scenario     │    │ # id_scen_version │    │ # id_etape        │
-│   nom_scenario    │    │   numero_version  │    │   numero_etape    │
-│   description     │    │   statut_version  │    │   titre_etape     │
-│   theme           │    │   commentaire     │    │   description_etape │
-│   actif           │    └───────────────────┘    │   points          │
-└───────────────────┘                             │   finale          │
-                                                  └───────────────────┘
+┌─────────────────────┐    ┌───────────────────┐    ┌───────────────────┐
+│      SCENARIO       │    │ SCENARIO_VERSION   │    │      ETAPE         │
+│─────────────────────│    │───────────────────│    │───────────────────│
+│ # id_scenario       │    │ # id_scen_version │    │ # id_etape        │
+│   nom_scenario      │    │   numero_version  │    │   numero_etape    │
+│   theme             │    │   statut_version  │    │   titre_etape     │
+│   actif             │    │   commentaire     │    │   description_etape │
+│   nb_joueurs_min    │    └───────────────────┘    │   points          │
+│   nb_joueurs_max    │                             │   finale          │
+│   duree_max_secondes│                             └───────────────────┘
+└─────────────────────┘
 
 ┌───────────────────┐    ┌───────────────────┐
 │     EQUIPE        │    │     SESSION        │
@@ -614,7 +563,6 @@ La table `salle_scenario` n'est pas encore utilisée dans le moteur d'exécution
 └───────────────────┘    │   date_fin        │
                          │   score           │
                          │   nb_erreurs      │
-                         │   nb_joueurs_min  │
                          │   duree_secondes  │
                          └───────────────────┘
 
@@ -688,8 +636,7 @@ capteur (
     type_capteur,
     domoticz_idx,
     emplacement,
-    actif,
-    _id_salle_ → salle(id_salle)
+    actif
 )
 
 actionneur (
@@ -698,8 +645,7 @@ actionneur (
     type_actionneur,
     domoticz_idx,
     emplacement,
-    actif,
-    _id_salle_ → salle(id_salle)
+    actif
 )
 
 mesure_capteur (
@@ -730,10 +676,19 @@ scenario (
     nom_scenario,
     description,
     theme,
+    actif,
     nb_joueurs_min,
     nb_joueurs_max,
     duree_max_secondes,
-    actif,
+    cree_le
+)
+
+scenario_version (
+    <u>id_scenario_version</u>,
+    _id_scenario_ → scenario(id_scenario),
+    numero_version,
+    statut_version,
+    commentaire,
     cree_le
 )
 
@@ -791,11 +746,11 @@ demande_rejoindre_session (
     <u>id_demande</u>,
     _id_session_ → session(id_session),
     _id_utilisateur_ → utilisateur(id),
-    statut_demande,
     message_demande,
-    _id_traiteur_ → utilisateur(id),
+    statut_demande,
     demande_le,
-    traitee_le
+    traitee_le,
+    _traitee_par_ → utilisateur(id)
 )
 
 etape_attend (
@@ -824,9 +779,7 @@ evenement_session (
     date_evenement,
     valeur_brute,
     evenement_attendu,
-    valide,
-    raison_rejet,
-    traite_le
+    valide
 )
 
 action_executee (
@@ -837,9 +790,7 @@ action_executee (
     _id_etape_ → etape(id_etape),
     date_execution,
     valeur_action,
-    statut_execution,
-    message_erreur,
-    duree_ms
+    statut_execution
 )
 
 utilisateur (
@@ -862,42 +813,6 @@ utilisateur_role (
     <u>id_role</u> → role(id)
 )
 
-site (
-    <u>id_site</u>,
-    nom_site,
-    description,
-    adresse,
-    actif,
-    cree_le
-)
-
-salle (
-    <u>id_salle</u>,
-    _id_site_ → site(id_site),
-    nom_salle,
-    description,
-    capacite,
-    actif,
-    cree_le
-)
-
-scenario_version (
-    <u>id_scenario_version</u>,
-    _id_scenario_ → scenario(id_scenario),
-    numero_version,
-    statut_version,
-    commentaire,
-    cree_le
-)
-
-salle_scenario (
-    <u>id_salle_scenario</u>,
-    _id_salle_ → salle(id_salle),
-    _id_scenario_version_ → scenario_version(id_scenario_version),
-    actif,
-    date_activation,
-    configuration_locale
-)
 ```
 
 ---
@@ -908,21 +823,21 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 ### capteur
 
-| id_capteur | nom_capteur | type_capteur | domoticz_idx | emplacement | actif | id_salle |
-|---|---|---|---|---|---|---|
-| 1 | Button | button | 9 | Bureau | 1 | 1 |
-| 2 | Porte | door_sensor | 25 | Porte principale | 1 | 1 |
-| 3 | Multisensor | motion_sensor | 7 | Centre pièce | 1 | 1 |
-| 4 | Button Double | button_double | 30 | Bureau | 1 | 1 |
+| id_capteur | nom_capteur | type_capteur | domoticz_idx | emplacement | actif |
+|---|---|---|---|---|---|
+| 1 | Button | button | 9 | Bureau | 1 |
+| 2 | Porte | door_sensor | 25 | Porte principale | 1 |
+| 3 | Multisensor | motion_sensor | 7 | Centre pièce | 1 |
+| 4 | Button Double | button | 30 | Bureau | 1 |
 
-> **Note :** Le Fibaro Button FGPB-101 crée un device Domoticz distinct (`idx 30`, nommé `double_press`) pour le double appui. Le simple appui est traité sur `idx 9`. Cette particularité du protocole Z-Wave impose deux entrées capteur distinctes dans le modèle.
+> **Note :** Le Fibaro Button FGPB-101 crée un device Domoticz distinct (`idx 30`) pour le double appui et partage le même type `button` que le capteur `idx 9`. Cette particularité du protocole Z-Wave impose deux entrées capteur distinctes dans le modèle.
 
 ### actionneur
 
-| id_actionneur | nom_actionneur | type_actionneur | domoticz_idx | emplacement | actif | id_salle |
-|---|---|---|---|---|---|---|
-| 1 | Wall Plug | plug | 13 | Bureau | 1 | 1 |
-| 2 | LCD PiFace | lcd | NULL | Bureau | 1 | 1 |
+| id_actionneur | nom_actionneur | type_actionneur | domoticz_idx | emplacement | actif |
+|---|---|---|---|---|---|
+| 1 | Wall Plug | plug | 13 | Bureau | 1 |
+| 2 | LCD PiFace | lcd | NULL | Bureau | 1 |
 
 ### evenement_type
 
@@ -960,10 +875,10 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 | id_etape | id_scenario | id_scenario_version | numero_etape | titre_etape | points | finale |
 |---|---|---|---|---|---|---|
-| 1 | 1 | 2 | 1 | Boot Sequence | 100 | 0 |
-| 2 | 1 | 2 | 2 | Secret Door | 150 | 0 |
-| 3 | 1 | 2 | 3 | Motion Scan | 200 | 0 |
-| 4 | 1 | 2 | 4 | Final Code | 300 | 1 |
+| 1 | 1 | 1 | 1 | Boot Sequence | 100 | 0 |
+| 2 | 1 | 1 | 2 | Secret Door | 150 | 0 |
+| 3 | 1 | 1 | 3 | Motion Scan | 200 | 0 |
+| 4 | 1 | 1 | 4 | Final Code | 300 | 1 |
 | 5 | 2 | NULL | 1 | Neutraliser l'alarme | 100 | 0 |
 
 ### etape_attend
@@ -1014,7 +929,7 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 4 | 2 | NULL | 2 | 4 | abandonnee | 100 | 1 | NULL |
 | 5 | 1 | 2 | 1 | 2 | en_attente | 0 | 0 | NULL |
 
-> **Note :** `id_scenario_version` est renseigné dès le démarrage de la session et reste figé pour toute sa durée, garantissant la reproductibilité et la traçabilité du parcours joué. Les sessions antérieures à l'intégration du versionnage conservent leur version d'origine via le backfill de migration.
+> **Note :** `id_scenario_version` est renseigné dès le démarrage dès lors que le scénario dispose d'une version active. Les sessions antérieures à l'intégration du versionnage, ou pour des scénarios sans version définie, conservent `NULL` dans ce champ.
 
 ### session_utilisateur
 
@@ -1027,7 +942,7 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 
 ### demande_rejoindre_session
 
-| id_demande | id_session | id_utilisateur | statut_demande | id_traiteur | demande_le |
+| id_demande | id_session | id_utilisateur | statut_demande | traitee_par | demande_le |
 |---|---|---|---|---|---|
 | 1 | 1 | 4 | acceptee | 1 | 2026-03-21 10:01:00 |
 | 2 | 2 | 5 | refusee | 1 | 2026-03-21 14:05:00 |
@@ -1056,18 +971,6 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 4 | 1 | 2 | 3 | 2 | Acces autorise! | ok |
 | 5 | 1 | 2 | 3 | 4 | ESCAPE SUCCESS! | ok |
 | 6 | 2 | 2 | 3 | 1 | Invalide ! | ok |
-
-### site
-
-| id_site | nom_site | adresse | actif |
-|---|---|---|---|
-| 1 | IUT de Nîmes | Place Gabriel Péri, 30000 Nîmes | 1 |
-
-### salle
-
-| id_salle | id_site | nom_salle | capacite | actif |
-|---|---|---|---|---|
-| 1 | 1 | Salle DomEscape | 4 | 1 |
 
 ### utilisateur
 
@@ -1122,6 +1025,6 @@ La chaîne complète a été validée sur hardware réel : capteurs Z-Wave → D
 
 La Phase 6 du projet a consolidé la gestion multi-joueurs : les contraintes `nb_joueurs_min`, `nb_joueurs_max` et `duree_max_secondes` sont désormais enforced par le moteur (lobby `en_attente`, blocage au-delà du maximum, défaite automatique à expiration). Le flow de demande (`demande_rejoindre_session`) permet aux superviseurs de contrôler les accès via une interface dédiée (`demandes.php`). La table `joueur` a été remplacée par `equipe` + `equipe_utilisateur` + `session_utilisateur`, offrant un modèle de participation propre sans redondance de rôle.
 
-Si DomEscape est aujourd'hui démontré à travers un escape game domotique sur Raspberry Pi mono-salle, l'architecture conçue dépasse ce seul cadre. Le moteur de scénarios événementiels, la double intégration Domoticz (dzVents temps réel + API REST), et le modèle de données extensible constituent les fondations d'une plateforme générique de scénarios physiques interactifs. Les tables d'extension multi-sites (`site`, `salle`, `scenario_version`, `salle_scenario`) posent les bases d'un déploiement industrialisé, applicable à la formation, à la simulation ou à tout environnement instrumenté par capteurs.
+Si DomEscape est aujourd'hui démontré à travers un escape game domotique sur Raspberry Pi mono-salle, l'architecture conçue dépasse ce seul cadre. Le moteur de scénarios événementiels, la double intégration Domoticz (dzVents temps réel + API REST), et le modèle de données extensible constituent les fondations d'une plateforme générique de scénarios physiques interactifs. La modélisation retenue — moteur stateless, versionnage des scénarios, RBAC en base, gestion multi-joueurs avec lobby — constitue les fondations d'une plateforme générique de scénarios physiques interactifs, extensible vers un déploiement multi-salles ou multi-sites.
 
 DomEscape illustre ainsi comment une modélisation rigoureuse et une architecture orientée événements permettent de construire un système interactif physique cohérent, configurable et robuste — à l'interface entre logiciel, base de données et environnement réel.
