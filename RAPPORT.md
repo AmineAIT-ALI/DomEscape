@@ -169,7 +169,7 @@ Lors du démarrage d'une session, `start_game.php` résout la version active du 
 
 En complément du moteur de jeu, DomEscape intègre une couche applicative d'authentification et de gestion des rôles. Celle-ci permet de distinguer les accès joueur, supervision et administration à travers un modèle RBAC (Role-Based Access Control) stocké en base, sans configuration statique dans le code.
 
-> **Vocabulaire :** dans ce rapport, le mot *joueur* est utilisé dans son sens métier naturel (la personne physique qui joue). Le terme *participant* désigne le **rôle technique** RBAC attribué en base (`role.nom = 'participant'`). Un compte utilisateur avec le rôle `participant` peut démarrer ou rejoindre une session ; les rôles `superviseur` et `administrateur` disposent de droits supplémentaires par héritage hiérarchique.
+> **Vocabulaire :** dans ce rapport, le mot *joueur* est utilisé dans son sens métier naturel (la personne physique qui joue). Le terme *participant* désigne le **rôle technique** RBAC attribué en base (`role.nom = 'participant'`). Un compte utilisateur avec le rôle `participant` peut démarrer ou rejoindre une session ; les rôles `superviseur` et `administrateur` disposent de droits applicatifs plus étendus.
 
 ### 3.6. Rôles utilisateurs
 
@@ -323,7 +323,7 @@ Stocke les relevés télémétriques périodiques des capteurs environnementaux 
 | Attribut | Type | Contrainte | Description |
 |---|---|---|---|
 | id_type_action | INT | PK, AUTO_INCREMENT | Identifiant du type d'action |
-| code_action | VARCHAR(50) | NOT NULL, UNIQUE | Code métier : `LAMP_ON`, `LCD_MESSAGE`… |
+| code_action | VARCHAR(50) | NOT NULL, UNIQUE | Code métier : `PLUG_ON`, `LCD_MESSAGE`… |
 | libelle_action | VARCHAR(100) | NOT NULL | Libellé lisible |
 | description | TEXT | — | Description de l'effet physique |
 
@@ -1040,11 +1040,11 @@ Plusieurs choix de conception structurants ressortent du projet :
 
 La modélisation retenue permet d'obtenir un système à la fois robuste, extensible et analysable. Elle ouvre la voie à des évolutions concrètes : étapes chronométrées, embranchements de scénario, validations multi-conditions, exécution différée des actions physiques, et déploiement multi-salles.
 
-Le modèle basé sur `scenario_version` est désormais intégré au système et permet de figer une version de scénario au démarrage de chaque session, garantissant la reproductibilité et la traçabilité des parcours. Ce couplage assure une **invariance temporelle** du système : une session n'est jamais impactée par une modification ultérieure du scénario. Il permet en outre de déployer simultanément plusieurs variantes d'un même scénario dans des salles différentes et d'effectuer des mises à jour sans interrompre les sessions en cours.
+Le modèle basé sur `scenario_version` est désormais intégré au système et permet de figer une version de scénario au démarrage de chaque session, garantissant la reproductibilité et la traçabilité des parcours. Ce couplage assure une **invariance temporelle** du système : une session n'est jamais impactée par une modification ultérieure du scénario. Il permet en outre d'exécuter simultanément plusieurs variantes d'un même scénario, et d'effectuer des mises à jour de contenu sans interrompre les sessions en cours.
 
 La chaîne complète a été validée sur hardware réel : capteurs Z-Wave → Domoticz → dzVents → handle_event.php → GameEngine → base de données. Plusieurs sessions ont été jouées et remportées sur le Raspberry Pi de production, confirmant la robustesse du système en conditions réelles.
 
-La Phase 6 du projet a consolidé la gestion multi-joueurs : les contraintes `nb_joueurs_min`, `nb_joueurs_max` et `duree_max_secondes` sont désormais enforced par le moteur (lobby `en_attente`, blocage au-delà du maximum, défaite automatique à expiration). Le flow de demande (`demande_rejoindre_session`) permet aux superviseurs de contrôler les accès via une interface dédiée (`demandes.php`). La table `joueur` a été remplacée par `equipe` + `equipe_utilisateur` + `session_utilisateur`, offrant un modèle de participation propre sans redondance de rôle.
+La Phase 6 du projet a consolidé la gestion multi-joueurs : les contraintes `nb_joueurs_min`, `nb_joueurs_max` et `duree_max_secondes` sont désormais enforced par le moteur (lobby `en_attente`, blocage au-delà du maximum, défaite automatique à expiration). Le flow de demande (`demande_rejoindre_session`) permet aux superviseurs de contrôler les accès via une interface dédiée (`demandes.php`). Le modèle initial centré sur `joueur` a été remplacé par `equipe`, `equipe_utilisateur` et `session_utilisateur`, afin de mieux distinguer l'appartenance à une équipe et la participation effective à une session.
 
 Si DomEscape est aujourd'hui démontré à travers un escape game domotique sur Raspberry Pi mono-salle, l'architecture conçue dépasse ce seul cadre. Le moteur de scénarios événementiels, la double intégration Domoticz (dzVents temps réel + API REST), et le modèle de données extensible constituent les fondations d'une plateforme générique de scénarios physiques interactifs. La modélisation retenue — moteur stateless, versionnage des scénarios, RBAC en base, gestion multi-joueurs avec lobby — constitue les fondations d'une plateforme générique de scénarios physiques interactifs, extensible, au prix de l'introduction d'entités supplémentaires dédiées au déploiement physique (site, salle, affectation des scénarios), vers un futur fonctionnement multi-salles ou multi-sites.
 
