@@ -169,6 +169,8 @@ Lors du démarrage d'une session, `start_game.php` résout la version active du 
 
 En complément du moteur de jeu, DomEscape intègre une couche applicative d'authentification et de gestion des rôles. Celle-ci permet de distinguer les accès joueur, supervision et administration à travers un modèle RBAC (Role-Based Access Control) stocké en base, sans configuration statique dans le code.
 
+> **Vocabulaire :** dans ce rapport, le mot *joueur* est utilisé dans son sens métier naturel (la personne physique qui joue). Le terme *participant* désigne le **rôle technique** RBAC attribué en base (`role.nom = 'participant'`). Un compte utilisateur avec le rôle `participant` peut démarrer ou rejoindre une session ; les rôles `superviseur` et `administrateur` disposent de droits supplémentaires par héritage hiérarchique.
+
 ### 3.6. Rôles utilisateurs
 
 | Rôle | Accès |
@@ -256,7 +258,19 @@ La base est également utilisée dans les outils de simulation, ce qui permet de
 
 ## 5. Dictionnaire des Données (DD)
 
-La base de données de DomEscape est composée de **20 tables** réparties en six groupes fonctionnels : 2 catalogues, 2 tables de référence physique, 5 tables de configuration de scénario, 3 tables d'authentification/RBAC, 7 tables runtime (participants, session, historique) et 1 table de télémétrie. L'architecture est strictement mono-salle : aucune table multi-sites ou multi-salles n'est présente dans ce schéma.
+La base de données de DomEscape est composée de **20 tables** réparties en sept groupes fonctionnels, conformément à l'ordre de création du schéma SQL :
+
+| Groupe | Tables | Nb |
+|---|---|---|
+| Catalogues | `evenement_type`, `action_type` | 2 |
+| Référentiels physiques | `capteur`, `actionneur` | 2 |
+| Configuration de scénario | `scenario`, `scenario_version`, `etape` | 3 |
+| Associations ternaires | `etape_attend`, `etape_declenche` | 2 |
+| Auth / RBAC | `utilisateur`, `role`, `utilisateur_role` | 3 |
+| Runtime | `equipe`, `equipe_utilisateur`, `session`, `session_utilisateur`, `demande_rejoindre_session`, `evenement_session`, `action_executee` | 7 |
+| Télémétrie | `mesure_capteur` | 1 |
+
+L'architecture est strictement mono-salle : aucune table multi-sites ou multi-salles n'est présente dans ce schéma. Le déploiement multi-salles constitue une évolution future hors scope ; le modèle actuel ne contient aucune abstraction de salle.
 
 ### Tables de référence (catalogues)
 
@@ -414,6 +428,8 @@ Lie les utilisateurs à leur équipe. Sans hiérarchie métier : tous les membre
 | nb_indices | INT | DEFAULT 0 | Nombre d'indices demandés |
 | duree_secondes | INT | — | Durée totale en secondes (calculée à la fin) |
 
+> **Redondance assumée — `id_scenario` vs `id_scenario_version` :** `session.id_scenario` est techniquement dérivable via `scenario_version.id_scenario`. Cette redondance est conservée délibérément pour deux raisons : (1) les sessions legacy antérieures au versionnage ont `id_scenario_version = NULL` et nécessitent un accès direct au scénario ; (2) cela évite une jointure supplémentaire dans le chemin critique du moteur (`GameEngine::process()`), où chaque milliseconde compte sur Raspberry Pi.
+
 > **Statut `en_attente` :** Quand `nb_joueurs_min > 1`, la session est créée en `en_attente` et `date_debut` reste NULL. Le moteur (`tryLaunchSession`) surveille le nombre de participants dans `session_utilisateur` et déclenche automatiquement la transition vers `en_cours` dès que le minimum est atteint.
 
 #### Table : session_utilisateur *(association)*
@@ -542,16 +558,16 @@ Permet de gérer plusieurs versions d'un même scénario sans impacter les sessi
 │   type_capteur    │    │   description     │
 └───────────────────┘    └───────────────────┘
 
-┌─────────────────────┐    ┌───────────────────┐    ┌───────────────────┐
-│      SCENARIO       │    │ SCENARIO_VERSION   │    │      ETAPE         │
-│─────────────────────│    │───────────────────│    │───────────────────│
-│ # id_scenario       │    │ # id_scen_version │    │ # id_etape        │
-│   nom_scenario      │    │   numero_version  │    │   numero_etape    │
-│   theme             │    │   statut_version  │    │   titre_etape     │
-│   actif             │    │   commentaire     │    │   description_etape │
-│   nb_joueurs_min    │    └───────────────────┘    │   points          │
-│   nb_joueurs_max    │                             │   finale          │
-│   duree_max_secondes│                             └───────────────────┘
+┌─────────────────────┐    ┌─────────────────────┐    ┌───────────────────┐
+│      SCENARIO       │    │  SCENARIO_VERSION    │    │      ETAPE         │
+│─────────────────────│    │─────────────────────│    │───────────────────│
+│ # id_scenario       │    │ # id_scenario_version│    │ # id_etape        │
+│   nom_scenario      │    │   numero_version    │    │   numero_etape    │
+│   theme             │    │   statut_version    │    │   titre_etape     │
+│   actif             │    │   commentaire       │    │   description_etape │
+│   nb_joueurs_min    │    └─────────────────────┘    │   points          │
+│   nb_joueurs_max    │                               │   finale          │
+│   duree_max_secondes│                               └───────────────────┘
 └─────────────────────┘
 
 ┌───────────────────┐    ┌───────────────────┐
@@ -582,9 +598,9 @@ Permet de gérer plusieurs versions d'un même scénario sans impacter les sessi
 ```
 SCENARIO ──(1,n)── SCENARIO_VERSION ──(1,n)── ETAPE
     │                    │                        │
-   (1,n)               (0,n)          ┌──────────┴────────────┐
+   (1,n)               (1,n)          ┌──────────┴────────────┐
     │                    │            │                        │
-  SESSION ──────────────┘          ATTEND               DECLENCHE
+  SESSION ──(0,1)────────┘          ATTEND               DECLENCHE
     │    └──(n,n)── UTILISATEUR    (ternaire)           (ternaire)
   /   \        [via session_utilisateur]  /       \    /          \
 (1,n)(1,n)                        CAPTEUR  EVENT_TYPE  ACTIONNEUR  ACTION_TYPE
@@ -601,7 +617,7 @@ EQUIPE  ETAPE
 |---|---|---|---|
 | contient | SCENARIO — SCENARIO_VERSION | 1,n — 1,1 | Un scénario peut avoir plusieurs versions (draft / active / archived) |
 | version_de | SCENARIO_VERSION — ETAPE | 1,n — 1,1 | Une version regroupe les étapes qui lui appartiennent |
-| fige | SESSION — SCENARIO_VERSION | n,0..1 | Une session est liée à la version active au moment de son démarrage |
+| fige | SESSION — SCENARIO_VERSION | n,0..1 | Une session peut être figée sur au plus une version (0..1 côté SESSION, 1..n côté VERSION) |
 | joue | SESSION — SCENARIO | n,1 | Une session correspond à l'exécution d'un scénario précis |
 | appartient_à | SESSION — EQUIPE | n,1 | Une session est associée à une équipe |
 | est_à | SESSION — ETAPE | n,0..1 | Une session pointe vers l'étape active (NULL en fin de partie) |
@@ -750,7 +766,8 @@ demande_rejoindre_session (
     statut_demande,
     demande_le,
     traitee_le,
-    _traitee_par_ → utilisateur(id)
+    _traitee_par_ → utilisateur(id),
+    UNIQUE (id_session, id_utilisateur, statut_demande)
 )
 
 etape_attend (
@@ -925,9 +942,9 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 |---|---|---|---|---|---|---|---|---|
 | 1 | 1 | 1 | 1 | 2 | gagnee | 750 | 2 | 1842 |
 | 2 | 1 | 1 | 2 | 3 | perdue | 250 | 8 | 3600 |
-| 3 | 1 | 2 | 1 | 2 | gagnee | 750 | 0 | 194 |
+| 3 | 1 | 1 | 1 | 2 | gagnee | 750 | 0 | 194 |
 | 4 | 2 | NULL | 2 | 4 | abandonnee | 100 | 1 | NULL |
-| 5 | 1 | 2 | 1 | 2 | en_attente | 0 | 0 | NULL |
+| 5 | 1 | 1 | 1 | 2 | en_attente | 0 | 0 | NULL |
 
 > **Note :** `id_scenario_version` est renseigné dès le démarrage dès lors que le scénario dispose d'une version active. Les sessions antérieures à l'intégration du versionnage, ou pour des scénarios sans version définie, conservent `NULL` dans ce champ.
 
