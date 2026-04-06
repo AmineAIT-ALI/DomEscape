@@ -149,7 +149,7 @@ class UserRepository
     }
 
     // ----------------------------------------------------------
-    // Sessions liées à l'utilisateur (via joueur.id_utilisateur)
+    // Sessions liées à l'utilisateur (via equipe.id_utilisateur)
     // ----------------------------------------------------------
 
     public function getSessionsForUser(int $userId): array
@@ -163,11 +163,11 @@ class UserRepository
                     s.nb_erreurs,
                     s.duree_secondes,
                     sc.nom_scenario AS scenario_nom,
-                    j.nom_joueur    AS joueur_nom
+                    e.nom_equipe    AS joueur_nom
              FROM session s
-             JOIN joueur   j  ON j.id_joueur   = s.id_joueur
+             JOIN equipe   e  ON e.id_equipe   = s.id_equipe
              JOIN scenario sc ON sc.id_scenario = s.id_scenario
-             WHERE j.id_utilisateur = ?
+             WHERE e.id_utilisateur = ?
              ORDER BY s.date_debut DESC'
         );
         $stmt->execute([$userId]);

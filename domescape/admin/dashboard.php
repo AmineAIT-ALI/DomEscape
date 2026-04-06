@@ -28,10 +28,11 @@ $scenarios = $pdo->query("
 
 // Dernières sessions
 $sessions = $pdo->query("
-    SELECT se.*, j.nom_joueur, sc.nom_scenario
+    SELECT se.*, e.nom_equipe, sc.nom_scenario, u.nom AS nom_createur
     FROM session se
-    JOIN joueur   j  ON se.id_joueur   = j.id_joueur
-    JOIN scenario sc ON se.id_scenario = sc.id_scenario
+    JOIN equipe   e  ON se.id_equipe              = e.id_equipe
+    JOIN scenario sc ON se.id_scenario             = sc.id_scenario
+    LEFT JOIN utilisateur u ON se.id_utilisateur_createur = u.id
     ORDER BY se.date_debut DESC
     LIMIT 12
 ")->fetchAll();
@@ -249,12 +250,6 @@ $sessions = $pdo->query("
         <a href="/domescape/admin/versions.php" class="qa-btn">
             <i data-lucide="git-branch" style="width:13px;height:13px;opacity:.6;"></i> Versions
         </a>
-        <a href="/domescape/admin/sites.php" class="qa-btn">
-            <i data-lucide="map-pin" style="width:13px;height:13px;opacity:.6;"></i> Sites
-        </a>
-        <a href="/domescape/admin/salles.php" class="qa-btn">
-            <i data-lucide="door-open" style="width:13px;height:13px;opacity:.6;"></i> Salles
-        </a>
         <a href="/domescape/admin/utilisateurs.php" class="qa-btn">
             <i data-lucide="users" style="width:13px;height:13px;opacity:.6;"></i> Utilisateurs
         </a>
@@ -342,8 +337,9 @@ $sessions = $pdo->query("
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Joueur</th>
+                    <th>Équipe</th>
                     <th>Scénario</th>
+                    <th>Créateur</th>
                     <th>Statut</th>
                     <th>Score</th>
                     <th>Erreurs</th>
@@ -374,8 +370,9 @@ $sessions = $pdo->query("
             ?>
                 <tr>
                     <td style="color:#333;"><?= (int)$s['id_session'] ?></td>
-                    <td style="color:#ccc;"><?= htmlspecialchars($s['nom_joueur'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#ccc;"><?= htmlspecialchars($s['nom_equipe'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td style="color:#888;"><?= htmlspecialchars($s['nom_scenario'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#555;font-size:.72rem;"><?= $s['nom_createur'] ? htmlspecialchars($s['nom_createur'], ENT_QUOTES, 'UTF-8') : '<span style="color:#333;">—</span>' ?></td>
                     <td>
                         <span class="sb <?= $sbClass ?>">
                             <span class="sb-dot"></span><?= $statLabel ?>

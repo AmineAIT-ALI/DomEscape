@@ -275,7 +275,7 @@ function updateSessionUI(data) {
     const [cls, label] = statusMap[data.status] || ['idle', data.status];
     setStatusPill(cls, label);
 
-    teamEl.textContent  = data.joueur     || '—';
+    teamEl.textContent  = data.equipe     || '—';
     scoreEl.textContent = data.score      ?? '—';
     errEl.textContent   = data.nb_erreurs ?? '—';
     totalEl.textContent = data.total_etapes ? `/ ${data.total_etapes}` : '';

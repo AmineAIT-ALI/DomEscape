@@ -30,9 +30,11 @@ class GameEngine
         try {
             // 1. Récupérer et verrouiller la session active (évite la race condition)
             $stmt = $pdo->query("
-                SELECT * FROM session
-                WHERE statut_session = 'en_cours'
-                ORDER BY date_debut DESC
+                SELECT s.*, sc.duree_max_secondes
+                FROM session s
+                JOIN scenario sc ON s.id_scenario = sc.id_scenario
+                WHERE s.statut_session = 'en_cours'
+                ORDER BY s.date_debut DESC
                 LIMIT 1
                 FOR UPDATE
             ");
@@ -43,6 +45,23 @@ class GameEngine
                 error_log('[GameEngine] Aucune session active — événement ignoré.');
                 $pdo->commit();
                 return;
+            }
+
+            // 1b. Vérifier la durée maximale
+            if ($session['duree_max_secondes'] !== null && $session['date_debut'] !== null) {
+                $elapsed = time() - strtotime($session['date_debut']);
+                if ($elapsed > (int)$session['duree_max_secondes']) {
+                    $pdo->prepare("
+                        UPDATE session
+                        SET statut_session = 'perdue',
+                            date_fin       = NOW(),
+                            duree_secondes = ?
+                        WHERE id_session = ?
+                    ")->execute([$elapsed, $session['id_session']]);
+                    error_log("[GameEngine] Session {$session['id_session']} — temps écoulé ({$elapsed}s > {$session['duree_max_secondes']}s). Défaite automatique.");
+                    $pdo->commit();
+                    return;
+                }
             }
 
             $idEtape = $session['id_etape_courante'];
@@ -229,10 +248,15 @@ class GameEngine
     }
 
     /**
-     * Démarre une nouvelle session pour un scénario et un joueur.
+     * Démarre une nouvelle session pour un scénario et une équipe.
      * Exécute les actions on_enter de la première étape.
      */
-    public static function startSession(int $idScenario, int $idJoueur, int $idSalle, ?int $idScenarioVersion = null): int
+    /**
+     * Démarre une nouvelle session.
+     * Si $minJoueurs > 1, la session est créée en_attente (lobby) et
+     * passera en_cours automatiquement quand le seuil sera atteint via tryLaunchSession().
+     */
+    public static function startSession(int $idScenario, int $idEquipe, ?int $idScenarioVersion = null, ?int $idUtilisateurCreateur = null, int $minJoueurs = 1): int
     {
         $pdo = getDB();
 
@@ -260,20 +284,78 @@ class GameEngine
             throw new RuntimeException("Aucune étape trouvée pour le scénario $idScenario.");
         }
 
-        $now = date('Y-m-d H:i:s');
+        // Si min > 1 : lobby (en_attente), date_debut fixée au lancement réel
+        $statutInitial = ($minJoueurs > 1) ? 'en_attente' : 'en_cours';
+        $dateDebut     = ($minJoueurs > 1) ? null : date('Y-m-d H:i:s');
+
         $pdo->prepare("
             INSERT INTO session
-                (id_scenario, id_scenario_version, id_joueur, statut_session, date_debut, id_etape_courante, id_salle)
-            VALUES (?, ?, ?, 'en_cours', ?, ?, ?)
-        ")->execute([$idScenario, $idScenarioVersion, $idJoueur, $now, $premiereEtape['id_etape'], $idSalle]);
+                (id_scenario, id_scenario_version, id_equipe, id_utilisateur_createur,
+                 statut_session, date_debut, id_etape_courante)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ")->execute([$idScenario, $idScenarioVersion, $idEquipe, $idUtilisateurCreateur, $statutInitial, $dateDebut, $premiereEtape['id_etape']]);
 
         $idSession = (int)$pdo->lastInsertId();
 
-        ActionManager::executeForEtape($premiereEtape['id_etape'], 'on_enter', $idSession);
+        // on_enter déclenché seulement au démarrage réel
+        if ($statutInitial === 'en_cours') {
+            ActionManager::executeForEtape($premiereEtape['id_etape'], 'on_enter', $idSession);
+        }
 
-        error_log("[GameEngine] Session $idSession démarrée — scénario $idScenario, version $idScenarioVersion, joueur $idJoueur, salle $idSalle.");
+        error_log("[GameEngine] Session $idSession créée ($statutInitial) — scénario $idScenario, version $idScenarioVersion, équipe $idEquipe.");
 
         return $idSession;
+    }
+
+    /**
+     * Vérifie si une session en_attente peut passer en_cours.
+     * Déclenche on_enter de la première étape si le seuil est atteint.
+     * Retourne true si la session a été lancée.
+     */
+    public static function tryLaunchSession(int $idSession): bool
+    {
+        $pdo = getDB();
+
+        $stmt = $pdo->prepare("
+            SELECT s.id_session, s.statut_session, s.id_etape_courante, sc.nb_joueurs_min
+            FROM session s
+            JOIN scenario sc ON s.id_scenario = sc.id_scenario
+            WHERE s.id_session = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idSession]);
+        $session = $stmt->fetch();
+
+        if (!$session || $session['statut_session'] !== 'en_attente') {
+            return false;
+        }
+
+        $minJoueurs = max(1, (int)($session['nb_joueurs_min'] ?? 1));
+
+        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM session_utilisateur WHERE id_session = ?");
+        $stmtCount->execute([$idSession]);
+        $nbActuels = (int)$stmtCount->fetchColumn();
+
+        if ($nbActuels < $minJoueurs) {
+            return false;
+        }
+
+        // Transition vers en_cours
+        $pdo->prepare("
+            UPDATE session
+            SET statut_session = 'en_cours',
+                date_debut     = NOW()
+            WHERE id_session = ?
+        ")->execute([$idSession]);
+
+        // Déclencher on_enter de la première étape
+        if ($session['id_etape_courante']) {
+            ActionManager::executeForEtape((int)$session['id_etape_courante'], 'on_enter', $idSession);
+        }
+
+        error_log("[GameEngine] Session $idSession lancée ($nbActuels/$minJoueurs joueurs).");
+
+        return true;
     }
 
     /**

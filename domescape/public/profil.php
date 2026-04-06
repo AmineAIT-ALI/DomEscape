@@ -21,8 +21,8 @@ $stats = $pdo->prepare("
         COALESCE(SUM(nb_erreurs), 0)           AS total_erreurs,
         COALESCE(MIN(duree_secondes), 0)       AS meilleur_temps
     FROM session se
-    JOIN joueur j ON se.id_joueur = j.id_joueur
-    WHERE j.id_utilisateur = ?
+    JOIN equipe e ON se.id_equipe = e.id_equipe
+    WHERE e.id_utilisateur = ?
 ");
 $stats->execute([$user['id']]);
 $st = $stats->fetch();
@@ -162,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
         border: 1px solid;
         margin-right: 6px;
     }
-    .badge-joueur        { color: #00ff88; border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
+    .badge-participant   { color: #00ff88; border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
     .badge-superviseur   { color: #60a5fa; border-color: rgba(96,165,250,.3); background: rgba(96,165,250,.06); }
     .badge-administrateur{ color: #a78bfa; border-color: rgba(167,139,250,.3); background: rgba(167,139,250,.06); }
 

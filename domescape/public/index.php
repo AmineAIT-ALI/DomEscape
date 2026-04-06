@@ -10,22 +10,45 @@ $pdo = getDB();
 // Scénarios actifs avec compte d'étapes
 $scenarios = ScenarioRepository::getActive();
 
-// Session active de ce joueur (via utilisateur)
-$authUser   = Auth::user();
-$authRoles  = Auth::buildHierarchy(Auth::roles());
-$activeSession = null;
-if ($authUser) {
-    $stmt = $pdo->prepare("
-        SELECT se.*, sc.nom_scenario
-        FROM session se
-        JOIN joueur j ON se.id_joueur = j.id_joueur
-        JOIN scenario sc ON se.id_scenario = sc.id_scenario
-        WHERE j.id_utilisateur = ? AND se.statut_session = 'en_cours'
-        ORDER BY se.date_debut DESC
-        LIMIT 1
+$authUser  = Auth::user();
+$authRoles = Auth::buildHierarchy(Auth::roles());
+
+// Session mono-salle : une seule session active (en_attente ou en_cours)
+$activeSession  = null;
+$isMembre       = false;      // l'utilisateur est déjà dans session_utilisateur
+$hasPending     = false;      // l'utilisateur a une demande en_attente
+
+$stmtActive = $pdo->query("
+    SELECT se.*, sc.nom_scenario
+    FROM session se
+    JOIN scenario sc ON se.id_scenario = sc.id_scenario
+    WHERE se.statut_session IN ('en_attente', 'en_cours')
+    ORDER BY se.date_debut DESC
+    LIMIT 1
+");
+$activeSession = $stmtActive->fetch() ?: null;
+
+if ($activeSession && $authUser) {
+    $idUser = (int)$authUser['id'];
+
+    // L'utilisateur est-il déjà membre ?
+    $stmtM = $pdo->prepare("
+        SELECT 1 FROM session_utilisateur
+        WHERE id_session = ? AND id_utilisateur = ? LIMIT 1
     ");
-    $stmt->execute([$authUser['id']]);
-    $activeSession = $stmt->fetch() ?: null;
+    $stmtM->execute([$activeSession['id_session'], $idUser]);
+    $isMembre = (bool)$stmtM->fetch();
+
+    // A-t-il une demande en_attente ?
+    if (!$isMembre) {
+        $stmtP = $pdo->prepare("
+            SELECT 1 FROM demande_rejoindre_session
+            WHERE id_session = ? AND id_utilisateur = ? AND statut_demande = 'en_attente'
+            LIMIT 1
+        ");
+        $stmtP->execute([$activeSession['id_session'], $idUser]);
+        $hasPending = (bool)$stmtP->fetch();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -95,8 +118,40 @@ if ($authUser) {
             text-decoration: none;
             white-space: nowrap;
             transition: background .15s;
+            cursor: pointer;
         }
         .btn-resume:hover { background: #00cc6a; color: #080810; }
+        .btn-join {
+            background: transparent;
+            color: #00ff88;
+            font-weight: 700;
+            font-size: .78rem;
+            padding: 8px 18px;
+            border: 1px solid rgba(0,255,136,.4);
+            border-radius: 4px;
+            white-space: nowrap;
+            transition: background .15s, color .15s;
+            cursor: pointer;
+        }
+        .btn-join:hover { background: rgba(0,255,136,.1); }
+        .btn-pending {
+            font-size: .75rem;
+            color: #f0c040;
+            border: 1px solid rgba(240,192,64,.3);
+            background: rgba(240,192,64,.05);
+            padding: 8px 18px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .session-banner-status {
+            font-size: .65rem;
+            padding: 2px 7px;
+            border-radius: 3px;
+            border: 1px solid;
+            margin-left: 8px;
+        }
+        .status-en-attente { color: #f0c040; border-color: rgba(240,192,64,.3); background: rgba(240,192,64,.06); }
+        .status-en-cours   { color: #00ff88; border-color: rgba(0,255,136,.3);  background: rgba(0,255,136,.06); }
 
         /* Scenario grid */
         .section-label {
@@ -308,14 +363,38 @@ if ($authUser) {
         <div class="session-banner">
             <div class="session-banner-dot"></div>
             <div class="session-banner-text">
-                <strong>Session en cours</strong> &nbsp;—&nbsp;
-                <span><?= htmlspecialchars($activeSession['nom_scenario'], ENT_QUOTES, 'UTF-8') ?></span>
+                <?php
+                    $statut = $activeSession['statut_session'];
+                    $labelStatut = $statut === 'en_attente' ? 'En attente' : 'En cours';
+                    $cssStatut   = $statut === 'en_attente' ? 'status-en-attente' : 'status-en-cours';
+                ?>
+                <strong><?= htmlspecialchars($activeSession['nom_scenario'], ENT_QUOTES, 'UTF-8') ?></strong>
+                <span class="session-banner-status <?= $cssStatut ?>"><?= $labelStatut ?></span>
             </div>
-            <a href="/domescape/public/player.php" class="btn-resume">Reprendre →</a>
+
+            <?php if ($isMembre): ?>
+                <a href="/domescape/public/player.php" class="btn-resume">Reprendre →</a>
+
+            <?php elseif ($statut === 'en_attente'): ?>
+                <button class="btn-join" onclick="joinSession(<?= (int)$activeSession['id_session'] ?>)">
+                    Rejoindre la session
+                </button>
+
+            <?php elseif ($hasPending): ?>
+                <span class="btn-pending">⏳ Demande en attente</span>
+
+            <?php else: ?>
+                <button class="btn-join" onclick="openRequestModal(<?= (int)$activeSession['id_session'] ?>)">
+                    Demander à rejoindre
+                </button>
+            <?php endif; ?>
         </div>
         <?php endif; ?>
 
-        <?php if (empty($scenarios)): ?>
+        <?php if ($activeSession): ?>
+            <!-- Session active → impossible de créer une nouvelle partie -->
+
+        <?php elseif (empty($scenarios)): ?>
             <div class="empty-state">
                 <div style="opacity:.2;"><i data-lucide="inbox" style="width:2.5rem;height:2.5rem;"></i></div>
                 <p>Aucun scénario disponible pour le moment.</p>
@@ -345,9 +424,30 @@ if ($authUser) {
                         <div class="meta-item">
                             <i data-lucide="layers" style="width:12px;height:12px;"></i> <span><?= (int)$s['nb_etapes'] ?> énigme<?= $s['nb_etapes'] > 1 ? 's' : '' ?></span>
                         </div>
+                        <?php if ($s['nb_joueurs_min'] !== null || $s['nb_joueurs_max'] !== null): ?>
                         <div class="meta-item">
-                            <i data-lucide="radio" style="width:12px;height:12px;"></i> <span>Z-Wave</span>
+                            <i data-lucide="users" style="width:12px;height:12px;"></i>
+                            <span>
+                            <?php
+                                $min = $s['nb_joueurs_min'];
+                                $max = $s['nb_joueurs_max'];
+                                if ($min !== null && $max !== null) {
+                                    echo $min === $max ? $min . ' joueur' . ($min > 1 ? 's' : '') : $min . '–' . $max . ' joueurs';
+                                } elseif ($max !== null) {
+                                    echo 'max ' . $max . ' joueurs';
+                                } else {
+                                    echo 'min ' . $min . ' joueur' . ($min > 1 ? 's' : '');
+                                }
+                            ?>
+                            </span>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($s['duree_max_secondes'] !== null): ?>
+                        <div class="meta-item">
+                            <i data-lucide="clock" style="width:12px;height:12px;"></i>
+                            <span><?= floor($s['duree_max_secondes'] / 60) ?>min</span>
+                        </div>
+                        <?php endif; ?>
                     </div>
 
                     <button class="btn-play">Jouer ce scénario →</button>
@@ -369,7 +469,6 @@ if ($authUser) {
         <div class="modal-body">
             <div id="modalScenarioName" class="modal-scenario-name"></div>
             <input type="hidden" id="selectedScenarioId">
-            <input type="hidden" id="selectedSalleId" value="1">
             <div class="modal-field">
                 <label for="nomJoueur">Nom de votre équipe</label>
                 <input type="text" id="nomJoueur" placeholder="ex : Équipe Alpha" maxlength="100">
@@ -383,6 +482,29 @@ if ($authUser) {
     </div>
 </div>
 
+<!-- Modal demande rejoindre -->
+<div class="modal-overlay" id="requestModal" onclick="closeRequestModalOnOverlay(event)">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span class="modal-head-title">Demander à rejoindre</span>
+            <button class="modal-close" onclick="closeRequestModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-scenario-name" style="margin-bottom:14px;">La partie est en cours. Envoyez une demande au superviseur.</div>
+            <input type="hidden" id="requestSessionId">
+            <div class="modal-field">
+                <label for="requestMessage">Message (optionnel)</label>
+                <input type="text" id="requestMessage" placeholder="ex : Je suis en retard, je peux rejoindre ?" maxlength="200">
+            </div>
+            <div id="requestError" class="error-inline"></div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-modal-cancel" onclick="closeRequestModal()">Annuler</button>
+            <button class="btn-modal-start" onclick="submitRequest()">Envoyer la demande →</button>
+        </div>
+    </div>
+</div>
+
 <script src="/domescape/assets/vendor/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
 <script>
@@ -391,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') startGame();
     });
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeModal();
+        if (e.key === 'Escape') { closeModal(); closeRequestModal(); }
     });
 });
 
@@ -427,12 +549,9 @@ function startGame() {
     btn.textContent = 'Démarrage…';
     btn.disabled = true;
 
-    const idSalle = document.getElementById('selectedSalleId').value;
-
     const fd = new FormData();
     fd.append('id_scenario', idScenario);
     fd.append('nom_joueur',  nomJoueur);
-    fd.append('id_salle',    idSalle);
 
     fetch('/domescape/api/start_game.php', { method: 'POST', body: fd })
         .then(r => r.json())
@@ -450,6 +569,73 @@ function startGame() {
             errEl.textContent = 'Impossible de joindre le serveur.';
             errEl.style.display = 'block';
             btn.textContent = 'Lancer la partie →';
+            btn.disabled = false;
+        });
+}
+
+// --- Rejoindre directement (session en_attente) ---
+function joinSession(idSession) {
+    const fd = new FormData();
+    fd.append('id_session', idSession);
+    fetch('/domescape/api/join_session.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                window.location.href = '/domescape/public/player.php';
+            } else {
+                alert(data.message || 'Erreur lors de la tentative de rejoindre.');
+            }
+        })
+        .catch(() => alert('Impossible de joindre le serveur.'));
+}
+
+// --- Modal demande rejoindre (session en_cours) ---
+function openRequestModal(idSession) {
+    document.getElementById('requestSessionId').value = idSession;
+    document.getElementById('requestMessage').value   = '';
+    document.getElementById('requestError').style.display = 'none';
+    document.getElementById('requestModal').classList.add('open');
+    setTimeout(() => document.getElementById('requestMessage').focus(), 50);
+}
+
+function closeRequestModal() {
+    document.getElementById('requestModal').classList.remove('open');
+}
+
+function closeRequestModalOnOverlay(e) {
+    if (e.target === document.getElementById('requestModal')) closeRequestModal();
+}
+
+function submitRequest() {
+    const idSession = document.getElementById('requestSessionId').value;
+    const message   = document.getElementById('requestMessage').value.trim();
+    const errEl     = document.getElementById('requestError');
+    const btn       = document.querySelector('#requestModal .btn-modal-start');
+
+    btn.textContent = 'Envoi…';
+    btn.disabled = true;
+
+    const fd = new FormData();
+    fd.append('id_session',      idSession);
+    fd.append('message_demande', message);
+
+    fetch('/domescape/api/request_join_session.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                closeRequestModal();
+                location.reload();
+            } else {
+                errEl.textContent = data.message || 'Erreur serveur.';
+                errEl.style.display = 'block';
+                btn.textContent = 'Envoyer la demande →';
+                btn.disabled = false;
+            }
+        })
+        .catch(() => {
+            errEl.textContent = 'Impossible de joindre le serveur.';
+            errEl.style.display = 'block';
+            btn.textContent = 'Envoyer la demande →';
             btn.disabled = false;
         });
 }

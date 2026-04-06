@@ -18,12 +18,12 @@ if (!Auth::check()) {
 $pdo    = getDB();
 $userId = Auth::user()['id'];
 
-// Trouver la session en cours appartenant à ce joueur
+// Trouver la session en cours appartenant à cette équipe
 $stmt = $pdo->prepare("
     SELECT se.id_session
     FROM session se
-    JOIN joueur j ON j.id_joueur = se.id_joueur
-    WHERE j.id_utilisateur = ? AND se.statut_session = 'en_cours'
+    JOIN equipe e ON e.id_equipe = se.id_equipe
+    WHERE e.id_utilisateur = ? AND se.statut_session = 'en_cours'
     LIMIT 1
 ");
 $stmt->execute([$userId]);

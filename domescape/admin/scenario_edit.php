@@ -31,16 +31,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Mettre à jour scénario
     if ($action === 'update_scenario') {
-        $nom   = trim($_POST['nom_scenario'] ?? '');
-        $desc  = trim($_POST['description']  ?? '');
-        $theme = trim($_POST['theme']        ?? '');
-        $actif = isset($_POST['actif']) ? 1 : 0;
+        $nom         = trim($_POST['nom_scenario']        ?? '');
+        $desc        = trim($_POST['description']         ?? '');
+        $theme       = trim($_POST['theme']               ?? '');
+        $actif       = isset($_POST['actif']) ? 1 : 0;
+        $jouMin      = $_POST['nb_joueurs_min']      !== '' ? (int)$_POST['nb_joueurs_min']      : null;
+        $jouMax      = $_POST['nb_joueurs_max']      !== '' ? (int)$_POST['nb_joueurs_max']      : null;
+        $dureeMax    = $_POST['duree_max_secondes']  !== '' ? (int)$_POST['duree_max_secondes']  : null;
 
         if ($nom === '') {
             $error = 'Le nom est requis.';
         } else {
-            $pdo->prepare("UPDATE scenario SET nom_scenario=?, description=?, theme=?, actif=? WHERE id_scenario=?")
-                ->execute([$nom, $desc ?: null, $theme ?: null, $actif, $id]);
+            $pdo->prepare("UPDATE scenario SET nom_scenario=?, description=?, theme=?, actif=?, nb_joueurs_min=?, nb_joueurs_max=?, duree_max_secondes=? WHERE id_scenario=?")
+                ->execute([$nom, $desc ?: null, $theme ?: null, $actif, $jouMin, $jouMax, $dureeMax, $id]);
             $success = 'Scénario mis à jour.';
             $stmt = $pdo->prepare("SELECT * FROM scenario WHERE id_scenario = ? LIMIT 1");
             $stmt->execute([$id]);
@@ -229,6 +232,26 @@ if (isset($_GET['edit_etape'])) {
             <div class="form-group">
                 <label>Description</label>
                 <textarea name="description" class="form-input"><?= htmlspecialchars($scenario['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+            </div>
+            <div class="form-grid-2" style="margin-top:4px;">
+                <div class="form-group">
+                    <label>Joueurs min</label>
+                    <input type="number" name="nb_joueurs_min" class="form-input" min="1" max="99"
+                           value="<?= $scenario['nb_joueurs_min'] !== null ? (int)$scenario['nb_joueurs_min'] : '' ?>"
+                           placeholder="—">
+                </div>
+                <div class="form-group">
+                    <label>Joueurs max</label>
+                    <input type="number" name="nb_joueurs_max" class="form-input" min="1" max="99"
+                           value="<?= $scenario['nb_joueurs_max'] !== null ? (int)$scenario['nb_joueurs_max'] : '' ?>"
+                           placeholder="—">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Durée limite (secondes) — laisser vide = illimitée</label>
+                <input type="number" name="duree_max_secondes" class="form-input" min="60" max="86400"
+                       value="<?= $scenario['duree_max_secondes'] !== null ? (int)$scenario['duree_max_secondes'] : '' ?>"
+                       placeholder="ex : 3600">
             </div>
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:8px;">
                 <div class="cb-row">

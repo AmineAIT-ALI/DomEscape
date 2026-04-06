@@ -51,6 +51,7 @@
       <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--green); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px;">Conception (Statique)</div>
       <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
         <span class="tag tag-green" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">scenario</span>
+        <span class="tag tag-green" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">scenario_version</span>
         <span class="tag tag-green" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">etape</span>
         <span class="tag tag-green" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">capteur</span>
         <span class="tag tag-green" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">actionneur</span>
@@ -58,6 +59,7 @@
         <span class="tag tag-green" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">action_type</span>
         <span class="tag tag-green" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">etape_attend</span>
         <span class="tag tag-green" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">etape_declenche</span>
+        <span class="tag tag-green" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">role</span>
       </div>
       <p style="font-size: 0.825rem; color: var(--text-muted);">Configuré avant le démarrage du jeu. Définit les règles.</p>
     </div>
@@ -65,10 +67,16 @@
     <div style="background: rgba(124,58,237,0.04); border: 1px solid rgba(124,58,237,0.2); border-radius: var(--radius-lg); padding: 28px;">
       <div style="font-family: var(--font-mono); font-size: 0.7rem; color: #a78bfa; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px;">Runtime (Dynamique)</div>
       <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-        <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">joueur</span>
+        <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">utilisateur</span>
+        <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">utilisateur_role</span>
+        <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">equipe</span>
+        <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">equipe_utilisateur</span>
         <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">session</span>
+        <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">session_utilisateur</span>
+        <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">demande_rejoindre_session</span>
         <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">evenement_session</span>
         <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">action_executee</span>
+        <span class="tag tag-purple" style="font-family: var(--font-mono); font-size: 0.75rem; display: inline-block; width: fit-content;">indice_utilise</span>
       </div>
       <p style="font-size: 0.825rem; color: var(--text-muted);">Écrit pendant le jeu. Enregistre ce qui s'est passé.</p>
     </div>
@@ -80,12 +88,33 @@
   <div class="section">
     <div class="section-header animate-fade-up">
       <div class="section-label">SCHÉMA</div>
-      <h2 class="section-title">12 tables. Traçabilité totale.</h2>
+      <h2 class="section-title">20 tables. Traçabilité totale.</h2>
     </div>
 
     <div style="margin-bottom: 16px;" class="animate-fade-up delay-1">
       <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 16px;">Tables de conception</div>
       <div class="grid-3" style="gap: 16px;">
+
+        <div class="er-block">
+          <div class="er-block-header">scenario</div>
+          <div class="er-block-row"><span>id_scenario</span><span class="er-pk">PK</span></div>
+          <div class="er-block-row"><span>nom_scenario</span><span class="er-type">VARCHAR</span></div>
+          <div class="er-block-row"><span>theme</span><span class="er-type">VARCHAR</span></div>
+          <div class="er-block-row"><span>nb_joueurs_min</span><span class="er-type">INT</span></div>
+          <div class="er-block-row"><span>nb_joueurs_max</span><span class="er-type">INT</span></div>
+          <div class="er-block-row"><span>duree_max_secondes</span><span class="er-type">INT</span></div>
+          <div class="er-block-row"><span>actif</span><span class="er-type">TINYINT</span></div>
+          <div class="er-block-row"><span>cree_le</span><span class="er-type">DATETIME</span></div>
+        </div>
+
+        <div class="er-block">
+          <div class="er-block-header">scenario_version</div>
+          <div class="er-block-row"><span>id_scenario_version</span><span class="er-pk">PK</span></div>
+          <div class="er-block-row"><span>id_scenario</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>nom_version</span><span class="er-type">VARCHAR</span></div>
+          <div class="er-block-row"><span>actif</span><span class="er-type">TINYINT</span></div>
+          <div class="er-block-row"><span>cree_le</span><span class="er-type">DATETIME</span></div>
+        </div>
 
         <div class="er-block">
           <div class="er-block-header">capteur</div>
@@ -145,10 +174,11 @@
       <div class="grid-3" style="gap: 16px;">
 
         <div class="er-block" style="border-color: rgba(124,58,237,0.25);">
-          <div class="er-block-header" style="background: var(--purple-dim); border-color: rgba(124,58,237,0.25); color: #a78bfa;">joueur</div>
-          <div class="er-block-row"><span>id_joueur</span><span class="er-pk">PK</span></div>
-          <div class="er-block-row"><span>nom_joueur</span><span class="er-type">VARCHAR</span></div>
-          <div class="er-block-row"><span>type_joueur</span><span class="er-type">VARCHAR</span></div>
+          <div class="er-block-header" style="background: var(--purple-dim); border-color: rgba(124,58,237,0.25); color: #a78bfa;">equipe</div>
+          <div class="er-block-row"><span>id_equipe</span><span class="er-pk">PK</span></div>
+          <div class="er-block-row"><span>nom_equipe</span><span class="er-type">VARCHAR</span></div>
+          <div class="er-block-row"><span>type_equipe</span><span class="er-type">VARCHAR</span></div>
+          <div class="er-block-row"><span>id_utilisateur</span><span class="er-fk">FK</span></div>
           <div class="er-block-row"><span>cree_le</span><span class="er-type">DATETIME</span></div>
         </div>
 
@@ -156,10 +186,14 @@
           <div class="er-block-header" style="background: var(--purple-dim); border-color: rgba(124,58,237,0.25); color: #a78bfa;">session</div>
           <div class="er-block-row"><span>id_session</span><span class="er-pk">PK</span></div>
           <div class="er-block-row"><span>id_scenario</span><span class="er-fk">FK</span></div>
-          <div class="er-block-row"><span>id_joueur</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>id_scenario_version</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>id_equipe</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>id_utilisateur_createur</span><span class="er-fk">FK</span></div>
           <div class="er-block-row"><span>statut_session</span><span class="er-type">ENUM</span></div>
+          <div class="er-block-row" style="font-size:0.65rem; color:#555; padding-left:16px;">en_attente · en_cours · gagnee · perdue · abandonnee</div>
           <div class="er-block-row"><span>score</span><span class="er-type">INT</span></div>
           <div class="er-block-row"><span>nb_erreurs</span><span class="er-type">INT</span></div>
+          <div class="er-block-row"><span>nb_indices</span><span class="er-type">INT</span></div>
           <div class="er-block-row"><span>date_debut</span><span class="er-type">DATETIME</span></div>
           <div class="er-block-row"><span>date_fin</span><span class="er-type">DATETIME</span></div>
           <div class="er-block-row"><span>duree_secondes</span><span class="er-type">INT</span></div>
@@ -184,6 +218,44 @@
           <div class="er-block-row"><span>id_type_action</span><span class="er-fk">FK</span></div>
           <div class="er-block-row"><span>date_execution</span><span class="er-type">DATETIME</span></div>
           <div class="er-block-row"><span>statut_execution</span><span class="er-type">ENUM</span></div>
+        </div>
+
+        <div class="er-block" style="border-color: rgba(124,58,237,0.25);">
+          <div class="er-block-header" style="background: var(--purple-dim); border-color: rgba(124,58,237,0.25); color: #a78bfa;">utilisateur</div>
+          <div class="er-block-row"><span>id</span><span class="er-pk">PK</span></div>
+          <div class="er-block-row"><span>nom</span><span class="er-type">VARCHAR</span></div>
+          <div class="er-block-row"><span>email</span><span class="er-type">UNIQUE</span></div>
+          <div class="er-block-row"><span>mot_de_passe</span><span class="er-type">VARCHAR</span></div>
+          <div class="er-block-row"><span>actif</span><span class="er-type">TINYINT</span></div>
+          <div class="er-block-row"><span>cree_le</span><span class="er-type">DATETIME</span></div>
+        </div>
+
+        <div class="er-block" style="border-color: rgba(124,58,237,0.25);">
+          <div class="er-block-header" style="background: var(--purple-dim); border-color: rgba(124,58,237,0.25); color: #a78bfa;">session_utilisateur</div>
+          <div class="er-block-row"><span>id_session</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>id_utilisateur</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>rejoint_le</span><span class="er-type">DATETIME</span></div>
+        </div>
+
+        <div class="er-block" style="border-color: rgba(124,58,237,0.25);">
+          <div class="er-block-header" style="background: var(--purple-dim); border-color: rgba(124,58,237,0.25); color: #a78bfa;">demande_rejoindre_session</div>
+          <div class="er-block-row"><span>id_demande</span><span class="er-pk">PK</span></div>
+          <div class="er-block-row"><span>id_session</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>id_utilisateur</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>statut_demande</span><span class="er-type">ENUM</span></div>
+          <div class="er-block-row" style="font-size:0.65rem; color:#555; padding-left:16px;">en_attente · acceptee · refusee</div>
+          <div class="er-block-row"><span>message_demande</span><span class="er-type">TEXT</span></div>
+          <div class="er-block-row"><span>traitee_par</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>demande_le</span><span class="er-type">DATETIME</span></div>
+          <div class="er-block-row"><span>traitee_le</span><span class="er-type">DATETIME</span></div>
+        </div>
+
+        <div class="er-block" style="border-color: rgba(124,58,237,0.25);">
+          <div class="er-block-header" style="background: var(--purple-dim); border-color: rgba(124,58,237,0.25); color: #a78bfa;">indice_utilise</div>
+          <div class="er-block-row"><span>id_indice</span><span class="er-pk">PK</span></div>
+          <div class="er-block-row"><span>id_session</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>id_etape</span><span class="er-fk">FK</span></div>
+          <div class="er-block-row"><span>demande_le</span><span class="er-type">DATETIME</span></div>
         </div>
 
       </div>

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../core/RoleGuard.php';
 RoleGuard::requireRole(ROLE_SUPERVISEUR);
 ?>
@@ -16,34 +17,7 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
             color: #e0e0e0;
             font-family: 'Courier New', monospace;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
-
-        /* ── Top bar ── */
-        .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            height: 52px;
-            background: #0a0a14;
-            border-bottom: 1px solid #111827;
-            flex-shrink: 0;
-        }
-        .topbar-brand { font-size: .78rem; font-weight: 700; color: #00ff88; letter-spacing: .1em; text-decoration: none; }
-        .topbar-title { font-size: .72rem; color: #444; letter-spacing: .08em; text-transform: uppercase; }
-        .topbar-links { display: flex; gap: 16px; }
-        .topbar-link {
-            font-size: .72rem;
-            color: #444;
-            text-decoration: none;
-            padding: 4px 10px;
-            border: 1px solid #1f2937;
-            border-radius: 3px;
-            transition: color .15s, border-color .15s;
-        }
-        .topbar-link:hover { color: #e0e0e0; border-color: #374151; }
 
         /* ── Layout ── */
         .layout {
@@ -51,7 +25,8 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
             grid-template-columns: 1fr 320px;
             gap: 16px;
             padding: 20px;
-            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         @media (max-width: 900px) {
             .layout { grid-template-columns: 1fr; }
@@ -202,14 +177,7 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
 </head>
 <body>
 
-<div class="topbar">
-    <a href="/domescape/public/index.php" class="topbar-brand">&#9632; DomEscape</a>
-    <div class="topbar-title">Game Master</div>
-    <div class="topbar-links">
-        <a href="/domescape/public/player.php" class="topbar-link" target="_blank">Vue joueur ↗</a>
-        <a href="/domescape/admin/dashboard.php" class="topbar-link">Admin</a>
-    </div>
-</div>
+<?php require_once __DIR__ . '/../partials/nav.php'; ?>
 
 <div class="layout">
 
@@ -402,7 +370,7 @@ function poll() {
 
             setBadge(data.status);
 
-            document.getElementById('gmTeam').textContent  = data.joueur;
+            document.getElementById('gmTeam').textContent  = data.equipe;
             document.getElementById('gmGame').textContent  = data.scenario;
             document.getElementById('gmScore').textContent = data.score;
             document.getElementById('gmMistakes').textContent = data.nb_erreurs;
@@ -434,7 +402,7 @@ function poll() {
             if (lastSessionId !== data.session_id) {
                 lastSessionId = data.session_id;
                 startTime = null;
-                addLocalLog('Session #' + data.session_id + ' — ' + data.joueur, 'ok');
+                addLocalLog('Session #' + data.session_id + ' — ' + data.equipe, 'ok');
             }
 
             // Événements + actions depuis BDD

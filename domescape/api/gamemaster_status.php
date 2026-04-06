@@ -50,10 +50,10 @@ if ($session['id_etape_courante']) {
     $etape = $s->fetch();
 }
 
-// Joueur + scénario
-$joueurStmt = $pdo->prepare('SELECT * FROM joueur WHERE id_joueur = ? LIMIT 1');
-$joueurStmt->execute([$session['id_joueur']]);
-$joueur = $joueurStmt->fetch();
+// Équipe + scénario
+$equipeStmt = $pdo->prepare('SELECT * FROM equipe WHERE id_equipe = ? LIMIT 1');
+$equipeStmt->execute([$session['id_equipe']]);
+$equipe = $equipeStmt->fetch();
 
 $scenarioStmt = $pdo->prepare('SELECT * FROM scenario WHERE id_scenario = ? LIMIT 1');
 $scenarioStmt->execute([$session['id_scenario']]);
@@ -113,7 +113,7 @@ $actions = $actStmt->fetchAll(PDO::FETCH_ASSOC);
 echo json_encode([
     'status'          => $session['statut_session'],
     'session_id'      => $session['id_session'],
-    'joueur'          => $joueur['nom_joueur']    ?? 'Équipe inconnue',
+    'equipe'          => $equipe['nom_equipe']    ?? 'Équipe inconnue',
     'scenario'        => $scenario['nom_scenario'] ?? '',
     'score'           => $session['score'],
     'nb_erreurs'      => $session['nb_erreurs'],

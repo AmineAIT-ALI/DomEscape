@@ -305,6 +305,83 @@ RoleGuard::requireLogin();
             50%       { box-shadow: 0 0 20px rgba(0,255,136,.8); }
         }
         .step-current { animation: pulse-glow 2s infinite; }
+
+        /* ── Lobby (en_attente) ── */
+        .lobby-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 48px 24px;
+            text-align: center;
+        }
+        .lobby-screen.active { display: flex; }
+        .lobby-icon {
+            font-size: 2.4rem;
+            margin-bottom: 24px;
+            color: #f0c040;
+            text-shadow: 0 0 30px rgba(240,192,64,.4);
+        }
+        .lobby-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+        .lobby-subtitle {
+            font-size: .82rem;
+            color: #555;
+            margin-bottom: 36px;
+        }
+        .lobby-counter {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+        .lobby-count-current {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #f0c040;
+            line-height: 1;
+        }
+        .lobby-count-sep { font-size: 1.4rem; color: #333; }
+        .lobby-count-min { font-size: 1.8rem; color: #333; }
+        .lobby-count-label {
+            font-size: .65rem;
+            color: #444;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+        }
+        .lobby-dots {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 40px;
+        }
+        .lobby-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid #1f2937;
+            background: transparent;
+            transition: background .3s, border-color .3s;
+        }
+        .lobby-dot.filled {
+            background: #f0c040;
+            border-color: #f0c040;
+            box-shadow: 0 0 6px rgba(240,192,64,.5);
+        }
+        .lobby-info {
+            font-size: .75rem;
+            color: #333;
+        }
+        @keyframes lobby-pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: .3; }
+        }
+        .lobby-waiting { animation: lobby-pulse 1.8s infinite; }
     </style>
 </head>
 <body>
@@ -321,6 +398,21 @@ RoleGuard::requireLogin();
 <!-- Network error -->
 <div class="net-error" id="networkError">
     Connexion perdue — nouvelle tentative en cours…
+</div>
+
+<!-- Lobby en_attente -->
+<div class="lobby-screen" id="lobbyScreen">
+    <div class="lobby-icon lobby-waiting">⧖</div>
+    <div class="lobby-title">En attente de joueurs</div>
+    <div class="lobby-subtitle" id="lobbySubtitle"></div>
+    <div class="lobby-counter">
+        <span class="lobby-count-current" id="lobbyCountCurrent">1</span>
+        <span class="lobby-count-sep">/</span>
+        <span class="lobby-count-min" id="lobbyCountMin">?</span>
+    </div>
+    <div class="lobby-count-label">joueurs connectés / requis pour démarrer</div>
+    <div class="lobby-dots" id="lobbyDots"></div>
+    <div class="lobby-info">La partie démarrera automatiquement dès que le minimum sera atteint.</div>
 </div>
 
 <!-- Main -->
@@ -387,6 +479,36 @@ let startTime     = null;
 let timerInterval = null;
 let lastStatus    = null;
 
+function showLobby(data) {
+    document.getElementById('lobbyScreen').classList.add('active');
+    document.getElementById('gameView').style.display   = 'none';
+    document.getElementById('abandonBtn').style.display = 'inline-block';
+    document.getElementById('teamDisplay').textContent  = data.equipe + ' — ' + data.scenario;
+
+    document.getElementById('lobbySubtitle').textContent =
+        data.equipe + ' · ' + data.scenario;
+
+    const current = data.nb_joueurs_actuel || 1;
+    const min     = data.nb_joueurs_min    || '?';
+    document.getElementById('lobbyCountCurrent').textContent = current;
+    document.getElementById('lobbyCountMin').textContent     = min;
+
+    // Points visuels
+    const dotsEl = document.getElementById('lobbyDots');
+    dotsEl.innerHTML = '';
+    const total = typeof min === 'number' ? min : current + 1;
+    for (let i = 0; i < total; i++) {
+        const d = document.createElement('div');
+        d.className = 'lobby-dot' + (i < current ? ' filled' : '');
+        dotsEl.appendChild(d);
+    }
+}
+
+function hideLobby() {
+    document.getElementById('lobbyScreen').classList.remove('active');
+    document.getElementById('gameView').style.display = '';
+}
+
 function fmt(s) {
     return String(Math.floor(s / 60)).padStart(2,'0') + ':' + String(s % 60).padStart(2,'0');
 }
@@ -429,7 +551,7 @@ function showEndScreen(type, data) {
 
     if (type === 'win') {
         document.getElementById('winSubtitle').textContent =
-            data.scenario + ' — ' + data.joueur;
+            data.scenario + ' — ' + data.equipe;
         document.getElementById('winStats').innerHTML =
             `<div class="stat-item"><div class="end-stat-value">${mins}m ${secs}s</div><div class="end-stat-label">Temps</div></div>` +
             `<div class="stat-item"><div class="end-stat-value">${data.score}</div><div class="end-stat-label">Points</div></div>` +
@@ -437,7 +559,7 @@ function showEndScreen(type, data) {
         document.getElementById('winScreen').classList.add('active');
     } else {
         document.getElementById('loseSubtitle').textContent =
-            data.scenario + ' — ' + data.joueur;
+            data.scenario + ' — ' + data.equipe;
         document.getElementById('loseStats').innerHTML =
             `<div class="stat-item"><div class="end-stat-value">${data.score}</div><div class="end-stat-label">Points</div></div>` +
             `<div class="stat-item"><div class="end-stat-value">${data.nb_erreurs}</div><div class="end-stat-label">Erreurs</div></div>`;
@@ -459,13 +581,27 @@ function poll() {
                 document.getElementById('noSession').style.display = 'block';
                 document.getElementById('puzzleCard').style.display = 'none';
                 document.getElementById('progressTrack').innerHTML = '';
+                hideLobby();
                 return;
+            }
+
+            // Lobby : session en attente de joueurs
+            if (data.status === 'en_attente') {
+                showLobby(data);
+                lastStatus = 'en_attente';
+                return;
+            }
+
+            // Transition lobby → jeu
+            if (lastStatus === 'en_attente') {
+                hideLobby();
+                startTime = null; // réinitialiser le timer
             }
 
             document.getElementById('noSession').style.display  = 'none';
             document.getElementById('puzzleCard').style.display = 'block';
             document.getElementById('abandonBtn').style.display = 'inline-block';
-            document.getElementById('teamDisplay').textContent  = data.joueur + ' — ' + data.scenario;
+            document.getElementById('teamDisplay').textContent  = data.equipe + ' — ' + data.scenario;
             document.getElementById('score').textContent    = data.score;
             document.getElementById('mistakes').textContent = data.nb_erreurs;
             totalPuzzles = data.total_etapes;

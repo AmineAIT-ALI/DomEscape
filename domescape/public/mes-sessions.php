@@ -192,7 +192,7 @@ $sessions = $repo->getSessionsForUser($user['id']);
           <tr>
             <th>#</th>
             <th>Scénario</th>
-            <th>Profil joueur</th>
+            <th>Équipe</th>
             <th>Score</th>
             <th>Erreurs</th>
             <th>Statut</th>

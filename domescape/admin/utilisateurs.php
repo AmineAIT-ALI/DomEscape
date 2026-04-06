@@ -9,7 +9,7 @@ $repo  = new UserRepository();
 $users = $repo->listAll();
 
 // Compteurs par rôle
-$countByRole = ['joueur' => 0, 'superviseur' => 0, 'administrateur' => 0];
+$countByRole = ['participant' => 0, 'superviseur' => 0, 'administrateur' => 0];
 $countActive = 0;
 foreach ($users as $u) {
     if ($u['actif']) $countActive++;
@@ -75,7 +75,7 @@ foreach ($users as $u) {
     }
     .chip-total   { color: #e0e0e0; border-color: #222; background: rgba(255,255,255,.03); }
     .chip-active  { color: #00ff88; border-color: rgba(0,255,136,.2); background: rgba(0,255,136,.04); }
-    .chip-joueur  { color: #00ff88; border-color: rgba(0,255,136,.2); background: rgba(0,255,136,.04); }
+    .chip-participant { color: #00ff88; border-color: rgba(0,255,136,.2); background: rgba(0,255,136,.04); }
     .chip-superv  { color: #60a5fa; border-color: rgba(96,165,250,.2); background: rgba(96,165,250,.04); }
     .chip-admin   { color: #a78bfa; border-color: rgba(167,139,250,.2); background: rgba(167,139,250,.04); }
 
@@ -135,7 +135,7 @@ foreach ($users as $u) {
         border: 1px solid;
         margin-right: 3px;
     }
-    .badge-joueur        { color: #00ff88; border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
+    .badge-participant   { color: #00ff88; border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
     .badge-superviseur   { color: #60a5fa; border-color: rgba(96,165,250,.3); background: rgba(96,165,250,.06); }
     .badge-administrateur{ color: #a78bfa; border-color: rgba(167,139,250,.3); background: rgba(167,139,250,.06); }
 
@@ -193,7 +193,7 @@ foreach ($users as $u) {
   <div class="summary-chips">
     <span class="chip chip-total">&#9632; <?= count($users) ?> total</span>
     <span class="chip chip-active">● <?= $countActive ?> actif<?= $countActive > 1 ? 's' : '' ?></span>
-    <span class="chip chip-joueur">joueur · <?= $countByRole['joueur'] ?></span>
+    <span class="chip chip-participant">participant · <?= $countByRole['participant'] ?></span>
     <span class="chip chip-superv">superviseur · <?= $countByRole['superviseur'] ?></span>
     <span class="chip chip-admin">administrateur · <?= $countByRole['administrateur'] ?></span>
   </div>

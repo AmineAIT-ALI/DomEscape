@@ -46,10 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'delete') {
         $id = (int)($_POST['id_scenario_version'] ?? 0);
-        $used = $pdo->prepare("SELECT COUNT(*) FROM salle_scenario WHERE id_scenario_version = ?");
+        // Vérifier qu'aucune session n'utilise cette version
+        $used = $pdo->prepare("SELECT COUNT(*) FROM session WHERE id_scenario_version = ?");
         $used->execute([$id]);
         if ((int)$used->fetchColumn() > 0) {
-            $error = 'Impossible de supprimer : cette version est déployée dans une ou plusieurs salles.';
+            $error = 'Impossible de supprimer : des sessions utilisent cette version.';
         } else {
             $pdo->prepare("DELETE FROM scenario_version WHERE id_scenario_version = ?")->execute([$id]);
             $success = 'Version supprimée.';
@@ -150,12 +151,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $scenarios = $pdo->query("SELECT id_scenario, nom_scenario FROM scenario WHERE actif = 1 ORDER BY nom_scenario")->fetchAll();
 
 $versions = $pdo->query("
-    SELECT sv.*, sc.nom_scenario,
-           COUNT(ss.id_salle_scenario) AS nb_salles
+    SELECT sv.*, sc.nom_scenario
     FROM scenario_version sv
     JOIN scenario sc ON sc.id_scenario = sv.id_scenario
-    LEFT JOIN salle_scenario ss ON ss.id_scenario_version = sv.id_scenario_version
-    GROUP BY sv.id_scenario_version
     ORDER BY sc.nom_scenario, sv.cree_le DESC
 ")->fetchAll();
 
@@ -223,7 +221,7 @@ $statutLabels = [
     <div class="admin-header">
         <div>
             <h1>Versions de scénario</h1>
-            <p>Gérer les versions de scénarios déployables dans les salles</p>
+            <p>Gérer les versions de scénarios (draft → active → archived)</p>
         </div>
         <a href="/domescape/admin/dashboard.php" style="font-size:.78rem; color:#444; text-decoration:none;">← Dashboard</a>
     </div>
@@ -281,7 +279,6 @@ $statutLabels = [
                     <th>Scénario</th>
                     <th>Version</th>
                     <th>Statut</th>
-                    <th>Salles</th>
                     <th>Commentaire</th>
                     <th>Créé le</th>
                     <th style="text-align:right;">Actions</th>
@@ -307,9 +304,6 @@ $statutLabels = [
                             <span class="dot" style="background:<?= $color ?>;"></span>
                             <span style="color:<?= $color ?>;"><?= $label ?></span>
                         </span>
-                    </td>
-                    <td style="color:<?= $v['nb_salles'] > 0 ? '#e0e0e0' : '#444' ?>;">
-                        <?= (int)$v['nb_salles'] ?> salle<?= $v['nb_salles'] != 1 ? 's' : '' ?>
                     </td>
                     <td style="color:#555; font-size:.72rem;">
                         <?= $v['commentaire'] ? htmlspecialchars(mb_strimwidth($v['commentaire'], 0, 50, '…'), ENT_QUOTES, 'UTF-8') : '<span style="color:#333;">—</span>' ?>

@@ -29,9 +29,9 @@ if (!$isAdmin && !$isSuperv) {
         SELECT s.id_session, s.statut_session, s.score, s.nb_erreurs,
                s.date_debut, s.duree_secondes, sc.nom_scenario
         FROM session s
-        JOIN joueur j   ON j.id_joueur   = s.id_joueur
+        JOIN equipe e   ON e.id_equipe   = s.id_equipe
         JOIN scenario sc ON sc.id_scenario = s.id_scenario
-        WHERE j.id_utilisateur = ?
+        WHERE e.id_utilisateur = ?
         ORDER BY s.date_debut DESC
         LIMIT 5
     ");
@@ -55,9 +55,9 @@ if ($isAdmin) {
 
     $stmt = $pdo->query("
         SELECT s.id_session, s.statut_session, s.score, s.date_debut,
-               j.nom_joueur, sc.nom_scenario
+               e.nom_equipe, sc.nom_scenario
         FROM session s
-        JOIN joueur j    ON j.id_joueur    = s.id_joueur
+        JOIN equipe e    ON e.id_equipe    = s.id_equipe
         JOIN scenario sc ON sc.id_scenario = s.id_scenario
         ORDER BY s.date_debut DESC
         LIMIT 6
@@ -106,7 +106,7 @@ $statutLabel = [
     .db-sub     { font-size: .82rem; color: #444; }
     .db-badges  { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
     .db-badge   { font-size: .68rem; padding: 3px 10px; border-radius: 3px; border: 1px solid; }
-    .db-badge-joueur        { color: #00ff88; border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
+    .db-badge-participant   { color: #00ff88; border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
     .db-badge-superviseur   { color: #60a5fa; border-color: rgba(96,165,250,.3); background: rgba(96,165,250,.06); }
     .db-badge-administrateur{ color: #a78bfa; border-color: rgba(167,139,250,.3); background: rgba(167,139,250,.06); }
 
@@ -269,7 +269,7 @@ $statutLabel = [
           ?>
           <tr>
             <td style="color:#333;"><?= (int)$s['id_session'] ?></td>
-            <td><?= htmlspecialchars($s['nom_joueur'],   ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($s['nom_equipe'],   ENT_QUOTES, 'UTF-8') ?></td>
             <td style="color:#888;"><?= htmlspecialchars($s['nom_scenario'], ENT_QUOTES, 'UTF-8') ?></td>
             <td><span style="color:<?= $sc ?>;font-size:.75rem;"><?= $sl ?></span></td>
             <td style="color:#00ff88;"><?= (int)$s['score'] ?></td>

@@ -14,15 +14,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'create') {
-        $nom   = trim($_POST['nom_scenario'] ?? '');
-        $desc  = trim($_POST['description']  ?? '');
-        $theme = trim($_POST['theme']        ?? '');
+        $nom      = trim($_POST['nom_scenario']       ?? '');
+        $desc     = trim($_POST['description']        ?? '');
+        $theme    = trim($_POST['theme']              ?? '');
+        $jouMin   = $_POST['nb_joueurs_min']     !== '' ? (int)$_POST['nb_joueurs_min']     : null;
+        $jouMax   = $_POST['nb_joueurs_max']     !== '' ? (int)$_POST['nb_joueurs_max']     : null;
+        $dureeMax = $_POST['duree_max_secondes'] !== '' ? (int)$_POST['duree_max_secondes'] : null;
 
         if ($nom === '') {
             $error = 'Le nom du scénario est requis.';
         } else {
-            $pdo->prepare("INSERT INTO scenario (nom_scenario, description, theme, actif) VALUES (?, ?, ?, 1)")
-                ->execute([$nom, $desc ?: null, $theme ?: null]);
+            $pdo->prepare("INSERT INTO scenario (nom_scenario, description, theme, actif, nb_joueurs_min, nb_joueurs_max, duree_max_secondes) VALUES (?, ?, ?, 1, ?, ?, ?)")
+                ->execute([$nom, $desc ?: null, $theme ?: null, $jouMin, $jouMax, $dureeMax]);
             $success = "Scénario « " . htmlspecialchars($nom, ENT_QUOTES, 'UTF-8') . " » créé.";
         }
     }
@@ -100,6 +103,7 @@ $scenarios = $pdo->query("
         .create-panel { background: #0a0a14; border: 1px solid #111; border-radius: 6px; padding: 24px; margin-bottom: 28px; }
         .create-panel h2 { font-size: .85rem; font-weight: 700; color: #ccc; margin: 0 0 20px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        .form-row-5 { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
         .form-group label { font-size: .68rem; color: #555; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
         .form-group input, .form-group textarea {
             width: 100%; background: #080810; border: 1px solid #1a1a2e; color: #e0e0e0;
@@ -142,19 +146,31 @@ $scenarios = $pdo->query("
         <h2>Nouveau scénario</h2>
         <form method="POST">
             <input type="hidden" name="action" value="create">
-            <div class="form-row">
+            <div class="form-row-5">
                 <div class="form-group">
                     <label>Nom *</label>
                     <input type="text" name="nom_scenario" placeholder="ex : DomEscape Lab 02" maxlength="150" required>
                 </div>
                 <div class="form-group">
                     <label>Thème</label>
-                    <input type="text" name="theme" placeholder="ex : Cybersécurité" maxlength="100">
+                    <input type="text" name="theme" placeholder="Cybersécurité" maxlength="100">
                 </div>
                 <div class="form-group">
-                    <label>Description</label>
-                    <input type="text" name="description" placeholder="Courte description…" maxlength="500">
+                    <label>Joueurs min</label>
+                    <input type="number" name="nb_joueurs_min" placeholder="—" min="1" max="99">
                 </div>
+                <div class="form-group">
+                    <label>Joueurs max</label>
+                    <input type="number" name="nb_joueurs_max" placeholder="—" min="1" max="99">
+                </div>
+                <div class="form-group">
+                    <label>Durée max (s)</label>
+                    <input type="number" name="duree_max_secondes" placeholder="illimitée" min="60" max="86400">
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom:16px;">
+                <label>Description</label>
+                <input type="text" name="description" placeholder="Courte description…" maxlength="500">
             </div>
             <button type="submit" class="btn-create">Créer le scénario →</button>
         </form>

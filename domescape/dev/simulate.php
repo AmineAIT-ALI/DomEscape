@@ -83,20 +83,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         GameEngine::resetActiveSession();
 
-        // Créer ou retrouver le joueur
-        $stmt = $pdo->prepare("SELECT id_joueur FROM joueur WHERE nom_joueur = ? LIMIT 1");
+        // Créer ou retrouver l'équipe
+        $stmt = $pdo->prepare("SELECT id_equipe FROM equipe WHERE nom_equipe = ? LIMIT 1");
         $stmt->execute([$nomJoueur]);
-        $joueur = $stmt->fetch();
+        $equipe = $stmt->fetch();
 
-        if ($joueur) {
-            $idJoueur = $joueur['id_joueur'];
+        if ($equipe) {
+            $idEquipe = $equipe['id_equipe'];
         } else {
-            $pdo->prepare("INSERT INTO joueur (nom_joueur) VALUES (?)")->execute([$nomJoueur]);
-            $idJoueur = (int)$pdo->lastInsertId();
+            $pdo->prepare("INSERT INTO equipe (nom_equipe) VALUES (?)")->execute([$nomJoueur]);
+            $idEquipe = (int)$pdo->lastInsertId();
         }
 
         try {
-            $idSession = GameEngine::startSession($idScenario, $idJoueur);
+            $idSession = GameEngine::startSession($idScenario, $idEquipe);
             $result = [
                 'type'     => 'start',
                 'response' => ['status' => 'ok', 'id_session' => $idSession, 'message' => 'Partie démarrée.'],
@@ -120,9 +120,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // Session courante
 $session = $pdo->query("
-    SELECT s.*, j.nom_joueur, sc.nom_scenario, e.titre_etape, e.numero_etape
+    SELECT s.*, eq.nom_equipe, sc.nom_scenario, e.titre_etape, e.numero_etape
     FROM session s
-    JOIN joueur j   ON s.id_joueur  = j.id_joueur
+    JOIN equipe eq  ON s.id_equipe  = eq.id_equipe
     JOIN scenario sc ON s.id_scenario = sc.id_scenario
     LEFT JOIN etape e ON s.id_etape_courante = e.id_etape
     WHERE s.statut_session = 'en_cours'
@@ -193,7 +193,7 @@ $recentEvents = $pdo->query("
             <h5 class="mb-3">Session en cours</h5>
             <?php if ($session): ?>
                 <div class="mb-1"><span class="badge badge-run">en_cours</span></div>
-                <div class="mt-2"><span style="color:#888;">Équipe :</span> <?= htmlspecialchars($session['nom_joueur']) ?></div>
+                <div class="mt-2"><span style="color:#888;">Équipe :</span> <?= htmlspecialchars($session['nom_equipe']) ?></div>
                 <div><span style="color:#888;">Scénario :</span> <?= htmlspecialchars($session['nom_scenario']) ?></div>
                 <div><span style="color:#888;">Étape en cours :</span>
                     <strong style="color:#00ff88;"><?= htmlspecialchars($session['titre_etape'] ?? '—') ?></strong>

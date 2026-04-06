@@ -9,9 +9,9 @@ $pdo = getDB();
 // Liste des sessions (pour le sélecteur)
 $listStmt = $pdo->query("
     SELECT s.id_session, s.statut_session, s.date_debut, s.score, s.nb_erreurs,
-           j.nom_joueur, sc.nom_scenario
+           e.nom_equipe, sc.nom_scenario
     FROM session s
-    JOIN joueur   j  ON s.id_joueur   = j.id_joueur
+    JOIN equipe   e  ON s.id_equipe   = e.id_equipe
     JOIN scenario sc ON s.id_scenario = sc.id_scenario
     ORDER BY s.date_debut DESC
     LIMIT 50
@@ -26,10 +26,11 @@ $actions   = [];
 
 if ($idSession) {
     $s = $pdo->prepare("
-        SELECT s.*, j.nom_joueur, sc.nom_scenario
+        SELECT s.*, e.nom_equipe, sc.nom_scenario, u.nom AS nom_createur
         FROM session s
-        JOIN joueur   j  ON s.id_joueur   = j.id_joueur
-        JOIN scenario sc ON s.id_scenario = sc.id_scenario
+        JOIN equipe   e  ON s.id_equipe               = e.id_equipe
+        JOIN scenario sc ON s.id_scenario              = sc.id_scenario
+        LEFT JOIN utilisateur u ON s.id_utilisateur_createur = u.id
         WHERE s.id_session = ?
     ");
     $s->execute([$idSession]);
@@ -274,7 +275,7 @@ function statusColor(string $s): string {
                     <option value="<?= $sess['id_session'] ?>"
                         <?= $sess['id_session'] == $idSession ? 'selected' : '' ?>>
                         #<?= $sess['id_session'] ?>
-                        — <?= htmlspecialchars($sess['nom_joueur'], ENT_QUOTES, 'UTF-8') ?>
+                        — <?= htmlspecialchars($sess['nom_equipe'], ENT_QUOTES, 'UTF-8') ?>
                         (<?= statusLabel($sess['statut_session']) ?>)
                         <?= $sess['date_debut'] ? '· ' . substr($sess['date_debut'], 0, 16) : '' ?>
                     </option>
@@ -293,7 +294,7 @@ function statusColor(string $s): string {
         <div class="summary-box">
             <div class="summary-label">Équipe</div>
             <div class="summary-value" style="font-size:.85rem;">
-                <?= htmlspecialchars($current['nom_joueur'], ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars($current['nom_equipe'], ENT_QUOTES, 'UTF-8') ?>
             </div>
         </div>
         <div class="summary-box">
@@ -320,6 +321,14 @@ function statusColor(string $s): string {
             <div class="summary-label">Erreurs</div>
             <div class="summary-value" style="color:#ff4444;"><?= $current['nb_erreurs'] ?></div>
         </div>
+        <?php if ($current['nom_createur']): ?>
+        <div class="summary-box">
+            <div class="summary-label">Créateur</div>
+            <div class="summary-value" style="font-size:.85rem;color:#888;">
+                <?= htmlspecialchars($current['nom_createur'], ENT_QUOTES, 'UTF-8') ?>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     <!-- Timeline -->

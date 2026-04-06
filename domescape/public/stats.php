@@ -57,9 +57,9 @@ $byEtape = $pdo->query("
 $recent = $pdo->query("
     SELECT s.id_session, s.statut_session, s.date_debut, s.score,
            s.nb_erreurs, s.duree_secondes,
-           j.nom_joueur, sc.nom_scenario
+           e.nom_equipe, sc.nom_scenario
     FROM session s
-    JOIN joueur   j  ON s.id_joueur   = j.id_joueur
+    JOIN equipe   e  ON s.id_equipe   = e.id_equipe
     JOIN scenario sc ON s.id_scenario = sc.id_scenario
     WHERE s.statut_session != 'en_attente'
     ORDER BY s.date_debut DESC
@@ -384,7 +384,7 @@ function statusLabel(string $s): string {
                 <?php foreach ($recent as $r): ?>
                 <tr>
                     <td style="color:#333;"><?= $r['id_session'] ?></td>
-                    <td style="color:#aaa;"><?= htmlspecialchars($r['nom_joueur'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#aaa;"><?= htmlspecialchars($r['nom_equipe'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td style="color:#666;"><?= htmlspecialchars($r['nom_scenario'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td>
                         <span class="status-dot" style="background:<?= statusColor($r['statut_session']) ?>;"></span>

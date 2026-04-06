@@ -34,10 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $id = $repo->create($nom, $email, $password);
 
-            // Assigner le rôle "joueur" par défaut
+            // Assigner le rôle "participant" par défaut
             $roles = $repo->getAllRoles();
             foreach ($roles as $r) {
-                if ($r['nom'] === ROLE_JOUEUR) {
+                if ($r['nom'] === ROLE_PARTICIPANT) {
                     $repo->assignRole($id, (int) $r['id']);
                     break;
                 }

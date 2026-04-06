@@ -91,7 +91,7 @@ function nav_active(string $path): string {
     font-family: 'Courier New', monospace;
     letter-spacing: .05em;
 }
-.dn-role-joueur        { color: #00ff88; border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
+.dn-role-participant   { color: #00ff88; border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
 .dn-role-superviseur   { color: #60a5fa; border-color: rgba(96,165,250,.3); background: rgba(96,165,250,.06); }
 .dn-role-administrateur{ color: #a78bfa; border-color: rgba(167,139,250,.3); background: rgba(167,139,250,.06); }
 /* Nom utilisateur */
@@ -162,6 +162,8 @@ function nav_active(string $path): string {
         <?php if ($_nav_isSuperv): ?>
           <a href="/domescape/public/gamemaster.php"
              class="<?= nav_active('gamemaster.php') ?>">Supervision</a>
+          <a href="/domescape/public/demandes.php"
+             class="<?= nav_active('demandes.php') ?>">Demandes</a>
           <a href="/domescape/public/stats.php"
              class="<?= nav_active('stats.php') ?>">Stats</a>
           <a href="/domescape/public/historique.php"
