@@ -96,7 +96,7 @@ function statusLabel(string $s): string {
     <title>Statistiques — DomEscape</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
         a { color: #00ff88; text-decoration: none; }
 
         .page-wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }

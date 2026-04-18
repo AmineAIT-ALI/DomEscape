@@ -66,7 +66,7 @@ $scenarios = $pdo->query("
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Scénarios — DomEscape Admin</title>
     <style>
-        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
         a { color: #00ff88; }
 
         .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -87,7 +87,7 @@ $scenarios = $pdo->query("
         tbody tr:last-child td { border-bottom: none; }
         tbody tr:hover td { background: rgba(255,255,255,.02); }
 
-        .btn-action { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border: 1px solid; border-radius: 3px; font-size: .72rem; cursor: pointer; background: transparent; font-family: 'Courier New', monospace; transition: all .15s; text-decoration: none; white-space: nowrap; }
+        .btn-action { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border: 1px solid; border-radius: 3px; font-size: .72rem; cursor: pointer; background: transparent; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: all .15s; text-decoration: none; white-space: nowrap; }
         .btn-edit    { color: #60a5fa; border-color: rgba(96,165,250,.3); }
         .btn-edit:hover { background: rgba(96,165,250,.08); color: #60a5fa; }
         .btn-toggle-on  { color: #00ff88; border-color: rgba(0,255,136,.3); }
@@ -107,11 +107,11 @@ $scenarios = $pdo->query("
         .form-group label { font-size: .68rem; color: #555; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
         .form-group input, .form-group textarea {
             width: 100%; background: #080810; border: 1px solid #1a1a2e; color: #e0e0e0;
-            font-family: 'Courier New', monospace; font-size: .82rem; padding: 8px 12px;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: .82rem; padding: 8px 12px;
             border-radius: 4px; outline: none; transition: border-color .15s;
         }
         .form-group input:focus, .form-group textarea:focus { border-color: #00ff88; }
-        .btn-create { background: #00ff88; color: #080810; font-weight: 700; font-size: .8rem; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; transition: background .15s; }
+        .btn-create { background: #00ff88; color: #080810; font-weight: 700; font-size: .8rem; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: background .15s; }
         .btn-create:hover { background: #00cc6a; }
 
         .alert-error   { background: rgba(255,68,68,.07); border: 1px solid rgba(255,68,68,.25); color: #ff6666; padding: 10px 14px; border-radius: 4px; font-size: .8rem; margin-bottom: 20px; }

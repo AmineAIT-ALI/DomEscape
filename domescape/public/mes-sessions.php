@@ -16,7 +16,7 @@ $sessions = $repo->getSessionsForUser($user['id']);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mes sessions — DomEscape</title>
   <style>
-    body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+    body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
     a { color: #00ff88; }
 
     .page-wrap { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }

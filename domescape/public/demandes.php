@@ -49,7 +49,7 @@ $recent = $pdo->query("
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Demandes — DomEscape</title>
     <style>
-        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
         a { color: #00ff88; }
 
         .page-wrap { max-width: 1000px; margin: 0 auto; padding: 36px 24px 80px; }
@@ -120,7 +120,7 @@ $recent = $pdo->query("
             border: 1px solid rgba(0,255,136,.35);
             padding: 7px 18px;
             border-radius: 4px;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             font-size: .75rem;
             font-weight: 700;
             cursor: pointer;
@@ -135,7 +135,7 @@ $recent = $pdo->query("
             border: 1px solid #222;
             padding: 7px 18px;
             border-radius: 4px;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             font-size: .75rem;
             cursor: pointer;
             transition: all .15s;
@@ -165,7 +165,7 @@ $recent = $pdo->query("
             padding: 10px 18px;
             border-radius: 5px;
             border: 1px solid;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             opacity: 0;
             transform: translateY(8px);
             transition: opacity .2s, transform .2s;

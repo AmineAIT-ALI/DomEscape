@@ -101,7 +101,7 @@ function statusColor(string $s): string {
     <title>Historique — DomEscape</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
         a { color: #00ff88; text-decoration: none; }
 
         .page-wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
@@ -129,7 +129,7 @@ function statusColor(string $s): string {
             background: #0d0d1a;
             border: 1px solid #1f2937;
             color: #e0e0e0;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             font-size: .75rem;
             padding: 6px 10px;
             border-radius: 4px;

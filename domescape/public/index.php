@@ -58,7 +58,7 @@ if ($activeSession && $authUser) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Jouer — DomEscape</title>
     <style>
-        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
 
         /* Page header */
         .play-header {
@@ -233,7 +233,7 @@ if ($activeSession && $authUser) {
             border: none;
             border-radius: 4px;
             width: 100%;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             transition: background .15s;
         }
         .btn-play:hover { background: #00cc6a; }
@@ -264,7 +264,7 @@ if ($activeSession && $authUser) {
             border-radius: 8px;
             width: 100%;
             max-width: 460px;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             animation: modal-in .15s ease;
         }
         @keyframes modal-in { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
@@ -297,7 +297,7 @@ if ($activeSession && $authUser) {
             border: 1px solid #1a1a2e;
             border-radius: 4px;
             color: #e0e0e0;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             font-size: .875rem;
             outline: none;
             transition: border-color .15s;
@@ -315,7 +315,7 @@ if ($activeSession && $authUser) {
             border: 1px solid #1a1a2e;
             color: #888;
             font-size: .8rem;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             padding: 8px 18px;
             border-radius: 4px;
             cursor: pointer;
@@ -327,7 +327,7 @@ if ($activeSession && $authUser) {
             color: #080810;
             font-weight: 700;
             font-size: .8rem;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             padding: 8px 18px;
             border: none;
             border-radius: 4px;

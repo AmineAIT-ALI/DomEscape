@@ -81,7 +81,7 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
             border-radius: 6px;
             padding: 14px 16px;
         }
-        .stat-label { font-size: .62rem; color: #333; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+        .stat-label { font-size: .70rem; color: #444; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
         .stat-value { font-size: 1.3rem; font-weight: 700; color: #e0e0e0; }
         .stat-value.green  { color: #00ff88; }
         .stat-value.red    { color: #ff4444; }
@@ -160,8 +160,8 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
             background: transparent;
             border: 1px solid #1f2937;
             color: #888;
-            font-family: 'Courier New', monospace;
-            font-size: .75rem;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            font-size: .78rem;
             border-radius: 4px;
             cursor: pointer;
             text-align: left;

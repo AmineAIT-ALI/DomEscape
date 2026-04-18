@@ -133,7 +133,7 @@ if (isset($_GET['edit_etape'])) {
     <title>Éditer scénario — DomEscape Admin</title>
     <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
         a { color: #00ff88; }
 
         .admin-wrap { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -151,7 +151,7 @@ if (isset($_GET['edit_etape'])) {
         .form-group label { font-size: .68rem; color: #555; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
         .form-input {
             width: 100%; background: #080810; border: 1px solid #1a1a2e; color: #e0e0e0;
-            font-family: 'Courier New', monospace; font-size: .82rem; padding: 8px 12px;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: .82rem; padding: 8px 12px;
             border-radius: 4px; outline: none; transition: border-color .15s;
         }
         .form-input:focus { border-color: #00ff88; }
@@ -159,11 +159,11 @@ if (isset($_GET['edit_etape'])) {
 
         .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-        .btn-save { background: #00ff88; color: #080810; font-weight: 700; font-size: .8rem; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; transition: background .15s; }
+        .btn-save { background: #00ff88; color: #080810; font-weight: 700; font-size: .8rem; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: background .15s; }
         .btn-save:hover { background: #00cc6a; }
-        .btn-outline { display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border: 1px solid #1a1a2e; border-radius: 3px; font-size: .78rem; cursor: pointer; background: transparent; font-family: 'Courier New', monospace; color: #888; transition: all .15s; text-decoration: none; }
+        .btn-outline { display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border: 1px solid #1a1a2e; border-radius: 3px; font-size: .78rem; cursor: pointer; background: transparent; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #888; transition: all .15s; text-decoration: none; }
         .btn-outline:hover { border-color: #555; color: #e0e0e0; }
-        .btn-action { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 1px solid; border-radius: 3px; font-size: .7rem; cursor: pointer; background: transparent; font-family: 'Courier New', monospace; transition: all .15s; text-decoration: none; white-space: nowrap; }
+        .btn-action { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 1px solid; border-radius: 3px; font-size: .7rem; cursor: pointer; background: transparent; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: all .15s; text-decoration: none; white-space: nowrap; }
         .btn-edit-sm { color: #60a5fa; border-color: rgba(96,165,250,.3); }
         .btn-edit-sm:hover { background: rgba(96,165,250,.08); color: #60a5fa; }
         .btn-del-sm  { color: #ff4444; border-color: rgba(255,68,68,.2); }

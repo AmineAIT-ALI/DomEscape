@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mon profil — DomEscape</title>
   <style>
-    body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+    body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
     a { color: #00ff88; }
 
     .page-wrap { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
         background: #080810;
         border: 1px solid #1a1a2e;
         color: #e0e0e0;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: .85rem;
     }
     .form-control:focus {
@@ -193,7 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
         background: transparent;
         border: 1px solid #00ff88;
         color: #00ff88;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: .8rem;
         padding: 8px 20px;
         border-radius: 4px;

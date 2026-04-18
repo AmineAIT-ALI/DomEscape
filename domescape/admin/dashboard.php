@@ -44,7 +44,7 @@ $sessions = $pdo->query("
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Administration — DomEscape</title>
     <style>
-        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
         a { color: #00ff88; }
 
         .admin-wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -62,7 +62,7 @@ $sessions = $pdo->query("
         /* Stats grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
             margin-bottom: 36px;
         }
@@ -83,7 +83,7 @@ $sessions = $pdo->query("
         .stat-card-value.purple { color: #a78bfa; }
         .stat-card-value.yellow { color: #fbbf24; }
         .stat-card-label {
-            font-size: .62rem;
+            font-size: .72rem;
             color: #444;
             letter-spacing: .08em;
             text-transform: uppercase;
@@ -107,7 +107,7 @@ $sessions = $pdo->query("
             color: #888;
             text-decoration: none;
             transition: border-color .15s, color .15s;
-            font-family: 'Courier New', monospace;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         }
         .qa-btn:hover { border-color: #00ff88; color: #00ff88; }
         .qa-btn-icon { opacity: .6; }

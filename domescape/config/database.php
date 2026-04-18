@@ -57,7 +57,7 @@ function _renderDbError(): void
   <meta charset="UTF-8">
   <title>Erreur — DomEscape</title>
   <style>
-    body { background:#080810; color:#e0e0e0; font-family:'Courier New',monospace;
+    body { background:#080810; color:#e0e0e0; font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
            display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
     .box { text-align:center; max-width:420px; padding:40px; }
     .title { font-size:1.1rem; color:#ff4444; margin-bottom:16px; font-weight:700; }

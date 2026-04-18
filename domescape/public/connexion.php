@@ -36,12 +36,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Connexion — DomEscape</title>
   <style>
+    :root {
+      --accent: #00ff88; --accent-dark: #00cc6a;
+      --bg-base: #080810; --bg-card: #0f0f18; --bg-input: #0d0d16;
+      --border: #1a1a2e; --border-dim: #111;
+      --text: #e0e0e0; --muted: #555; --dim: #333;
+    }
     *, *::before, *::after { box-sizing: border-box; }
     body {
         margin: 0;
         background: #080810;
         color: #e0e0e0;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -135,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         border: 1px solid #1a1a2e;
         border-radius: 4px;
         color: #e0e0e0;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: .875rem;
         outline: none;
         transition: border-color .15s;
@@ -158,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         color: #080810;
         border: none;
         font-weight: 700;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: .875rem;
         padding: 11px;
         border-radius: 4px;
@@ -189,16 +195,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .auth-hints {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
     }
     .auth-hint {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: .72rem;
-        color: #444;
+        font-size: .73rem;
+        color: #555;
+        padding: 7px 10px;
+        border-radius: 4px;
+        border: 1px solid transparent;
+        transition: border-color .15s, color .15s;
     }
-    .auth-hint-icon { color: #00ff88; opacity: .6; font-size: .8rem; }
+    .auth-hint:hover { border-color: #1a1a2e; color: #888; }
+    .auth-hint-icon { color: #00ff88; opacity: .7; display: flex; align-items: center; }
   </style>
 </head>
 <body>
@@ -214,7 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="auth-card">
 
     <div class="auth-head">
-      <div class="auth-head-icon">&#9632;</div>
+      <div class="auth-head-icon"><i data-lucide="lock-keyhole" style="width:20px;height:20px;"></i></div>
       <h1>Connexion</h1>
       <p>Accédez à votre espace DomEscape.</p>
     </div>
@@ -246,15 +257,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="auth-hints">
       <div class="auth-hint">
-        <span class="auth-hint-icon">&#9632;</span>
+        <span class="auth-hint-icon"><i data-lucide="cpu" style="width:13px;height:13px;"></i></span>
         Escape game physique piloté par capteurs Z-Wave
       </div>
       <div class="auth-hint">
-        <span class="auth-hint-icon">&#9632;</span>
+        <span class="auth-hint-icon"><i data-lucide="users" style="width:13px;height:13px;"></i></span>
         Gestion multi-rôles (joueur, superviseur, administrateur)
       </div>
       <div class="auth-hint">
-        <span class="auth-hint-icon">&#9632;</span>
+        <span class="auth-hint-icon"><i data-lucide="activity" style="width:13px;height:13px;"></i></span>
         Suivi en temps réel des sessions
       </div>
     </div>
@@ -266,5 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 </div>
 
+<script src="/domescape/assets/vendor/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

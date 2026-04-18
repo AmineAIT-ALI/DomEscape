@@ -1,0 +1,123 @@
+/*
+ * DomEscape — Composants partagés
+ * Inclure après la définition des variables :root (nav.php ou inline).
+ * ------------------------------------------------------------------ */
+
+/* ── Boutons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: .82rem;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .15s, border-color .15s, color .15s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent, #00ff88);
+  color: #080810;
+  border-color: var(--accent, #00ff88);
+}
+.btn-primary:hover {
+  background: var(--accent-dark, #00cc6a);
+  border-color: var(--accent-dark, #00cc6a);
+  color: #080810;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--muted, #555);
+  border-color: #222;
+}
+.btn-outline:hover {
+  border-color: #444;
+  color: var(--text, #e0e0e0);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--red, #ff4444);
+  border-color: rgba(255, 68, 68, .3);
+}
+.btn-danger:hover {
+  background: rgba(255, 68, 68, .08);
+}
+
+.btn-blue {
+  background: rgba(96, 165, 250, .1);
+  color: var(--blue, #60a5fa);
+  border-color: rgba(96, 165, 250, .25);
+}
+.btn-blue:hover { background: rgba(96, 165, 250, .18); }
+
+.btn-purple {
+  background: rgba(167, 139, 250, .1);
+  color: var(--purple, #a78bfa);
+  border-color: rgba(167, 139, 250, .25);
+}
+.btn-purple:hover { background: rgba(167, 139, 250, .18); }
+
+.btn-sm { font-size: .75rem; padding: 6px 13px; }
+.btn-lg { font-size: .9rem;  padding: 12px 24px; }
+
+/* ── Badges statut session ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .68rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.status-badge .sb-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sb-gagnee    { color: var(--accent,  #00ff88); border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
+.sb-en_cours  { color: var(--yellow,  #f0c040); border-color: rgba(240,192,64,.3); background: rgba(240,192,64,.06); }
+.sb-perdue    { color: var(--red,     #ff4444); border-color: rgba(255,68,68,.3);  background: rgba(255,68,68,.06); }
+.sb-abandonnee{ color: var(--red,     #ff4444); border-color: rgba(255,68,68,.3);  background: rgba(255,68,68,.06); }
+.sb-en_attente{ color: var(--yellow,  #f0c040); border-color: rgba(240,192,64,.3); background: rgba(240,192,64,.06); }
+.sb-terminee  { color: var(--blue,    #60a5fa); border-color: rgba(96,165,250,.3); background: rgba(96,165,250,.06); }
+
+/* ── Cartes ── */
+.card {
+  background: var(--bg-card, #0f0f18);
+  border: 1px solid var(--border, #1a1a2e);
+  border-radius: 6px;
+}
+.card:hover { border-color: #2a2a3e; }
+
+/* ── Label de section ── */
+.section-label {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--dim, #333);
+  margin-bottom: 14px;
+}
+
+/* ── Pulse dot ── */
+.pulse-dot {
+  width: 8px; height: 8px;
+  background: var(--accent, #00ff88);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,136,.4); }
+  50%       { box-shadow: 0 0 0 5px rgba(0,255,136,0); }
+}
+.pulse-dot { animation: pulse-dot 1.5s infinite; }

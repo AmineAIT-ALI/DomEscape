@@ -29,7 +29,7 @@ foreach ($users as $u) {
   <title>Utilisateurs — DomEscape Admin</title>
   <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+    body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
     a { color: #00ff88; }
 
     .page-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -100,7 +100,7 @@ foreach ($users as $u) {
         background: #080810;
         border: 1px solid #1a1a2e;
         color: #e0e0e0;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: .78rem;
         padding: 7px 12px;
         border-radius: 4px;
@@ -157,7 +157,7 @@ foreach ($users as $u) {
         border-radius: 3px;
         font-size: .72rem;
         text-decoration: none;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         transition: border-color .15s, color .15s;
         white-space: nowrap;
     }

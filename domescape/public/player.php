@@ -38,6 +38,9 @@ RoleGuard::requireLogin();
             letter-spacing: .1em;
             text-transform: uppercase;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .topbar-team {
             font-size: .75rem;
@@ -152,6 +155,7 @@ RoleGuard::requireLogin();
             border: 1px solid #1a1a2e;
             border-radius: 10px;
             padding: 32px;
+            box-shadow: 0 0 0 1px rgba(0,255,136,.04), 0 8px 32px rgba(0,0,0,.4);
         }
         .puzzle-meta {
             font-size: .65rem;
@@ -388,7 +392,10 @@ RoleGuard::requireLogin();
 
 <!-- Top bar -->
 <div class="topbar">
-    <a href="/domescape/public/index.php" class="topbar-brand">&#9632; DomEscape</a>
+    <a href="/domescape/public/index.php" class="topbar-brand">
+        <span style="width:7px;height:7px;background:#00ff88;border-radius:50%;box-shadow:0 0 7px #00ff88;display:inline-block;flex-shrink:0;"></span>
+        DomEscape
+    </a>
     <div class="topbar-team" id="teamDisplay"></div>
     <div class="topbar-right">
         <button id="abandonBtn" class="btn-abandon" style="display:none;" onclick="abandonGame()">Abandonner</button>

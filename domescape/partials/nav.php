@@ -16,7 +16,24 @@ function nav_active(string $path): string {
     return (strpos($_nav_uri, $path) !== false) ? 'nav-active' : '';
 }
 ?>
+<link rel="stylesheet" href="/domescape/assets/css/components.css">
 <style>
+:root {
+  --accent:       #00ff88;
+  --accent-dark:  #00cc6a;
+  --bg-base:      #080810;
+  --bg-card:      #0f0f18;
+  --bg-input:     #0d0d16;
+  --border:       #1a1a2e;
+  --border-dim:   #111;
+  --text:         #e0e0e0;
+  --muted:        #555;
+  --dim:          #333;
+  --blue:         #60a5fa;
+  --purple:       #a78bfa;
+  --red:          #ff4444;
+  --yellow:       #f0c040;
+}
 .dn-nav {
     background: #0a0a0f;
     border-bottom: 1px solid #1a1a2e;
@@ -27,7 +44,7 @@ function nav_active(string $path): string {
     position: sticky;
     top: 0;
     z-index: 1000;
-    font-family: 'Courier New', monospace;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 .dn-nav-inner {
     display: flex;

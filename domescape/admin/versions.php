@@ -176,7 +176,7 @@ $statutLabels = [
     <title>Versions — DomEscape Admin</title>
     <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #080810; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
         a { color: #00ff88; }
         .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
@@ -189,7 +189,7 @@ $statutLabels = [
         td { padding: 12px 16px; border-bottom: 1px solid #0a0a14; vertical-align: middle; }
         tbody tr:last-child td { border-bottom: none; }
         tbody tr:hover td { background: rgba(255,255,255,.02); }
-        .btn-action { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border: 1px solid; border-radius: 3px; font-size: .72rem; cursor: pointer; background: transparent; font-family: 'Courier New', monospace; transition: all .15s; text-decoration: none; white-space: nowrap; }
+        .btn-action { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border: 1px solid; border-radius: 3px; font-size: .72rem; cursor: pointer; background: transparent; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: all .15s; text-decoration: none; white-space: nowrap; }
         .btn-activate { color: #00ff88; border-color: rgba(0,255,136,.3); }
         .btn-activate:hover { background: rgba(0,255,136,.08); }
         .btn-archive  { color: #888; border-color: #333; }
@@ -202,10 +202,10 @@ $statutLabels = [
         .create-panel h2 { font-size: .85rem; font-weight: 700; color: #ccc; margin: 0 0 20px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
         .form-group label { font-size: .68rem; color: #555; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
-        .form-group input, .form-group select { width: 100%; background: #080810; border: 1px solid #1a1a2e; color: #e0e0e0; font-family: 'Courier New', monospace; font-size: .82rem; padding: 8px 12px; border-radius: 4px; outline: none; transition: border-color .15s; }
+        .form-group input, .form-group select { width: 100%; background: #080810; border: 1px solid #1a1a2e; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: .82rem; padding: 8px 12px; border-radius: 4px; outline: none; transition: border-color .15s; }
         .form-group input:focus, .form-group select:focus { border-color: #00ff88; }
         .form-group select option { background: #080810; }
-        .btn-create { background: #00ff88; color: #080810; font-weight: 700; font-size: .8rem; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; transition: background .15s; }
+        .btn-create { background: #00ff88; color: #080810; font-weight: 700; font-size: .8rem; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: background .15s; }
         .btn-create:hover { background: #00cc6a; }
         .alert-error   { background: rgba(255,68,68,.07); border: 1px solid rgba(255,68,68,.25); color: #ff6666; padding: 10px 14px; border-radius: 4px; font-size: .8rem; margin-bottom: 20px; }
         .alert-success { background: rgba(0,255,136,.06); border: 1px solid rgba(0,255,136,.2); color: #00ff88; padding: 10px 14px; border-radius: 4px; font-size: .8rem; margin-bottom: 20px; }

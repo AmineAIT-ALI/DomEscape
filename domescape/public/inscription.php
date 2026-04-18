@@ -58,12 +58,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Créer un compte — DomEscape</title>
   <style>
+    :root {
+      --accent: #00ff88; --accent-dark: #00cc6a;
+      --bg-base: #080810; --bg-card: #0f0f18; --bg-input: #0d0d16;
+      --border: #1a1a2e; --border-dim: #111;
+      --text: #e0e0e0; --muted: #555; --dim: #333;
+    }
     *, *::before, *::after { box-sizing: border-box; }
     body {
         margin: 0;
         background: #080810;
         color: #e0e0e0;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -146,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         border: 1px solid #1a1a2e;
         border-radius: 4px;
         color: #e0e0e0;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: .875rem;
         outline: none;
         transition: border-color .15s;
@@ -184,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         color: #080810;
         border: none;
         font-weight: 700;
-        font-family: 'Courier New', monospace;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: .875rem;
         padding: 11px;
         border-radius: 4px;
@@ -234,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="auth-card">
 
     <div class="auth-head">
-      <div class="auth-head-icon">+</div>
+      <div class="auth-head-icon"><i data-lucide="user-plus" style="width:20px;height:20px;"></i></div>
       <h1>Créer un compte</h1>
       <p>Rejoignez la plateforme DomEscape.</p>
     </div>
@@ -318,5 +324,7 @@ function checkStrength(pw) {
     label.style.color    = l.color;
 }
 </script>
+<script src="/domescape/assets/vendor/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

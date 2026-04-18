@@ -60,22 +60,22 @@ $currentAdminId = Auth::user()['id'];
   <title>Modifier l'utilisateur — DomEscape Admin</title>
   <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
   <style>
-    body        { background:#0d0d0d; color:#e0e0e0; font-family:'Courier New',monospace; min-height:100vh; }
+    body        { background:#0d0d0d; color:#e0e0e0; font-family:system-ui,-apple-system,'Segoe UI',sans-serif; min-height:100vh; }
     a           { color:#00ff88; }
     .page-wrap  { max-width:580px; margin:0 auto; padding:40px 24px; }
     .page-title { font-size:1.3rem; font-weight:700; margin-bottom:4px; }
     .page-sub   { font-size:.8rem; color:#555; margin-bottom:36px; }
     .form-card  { background:#111; border:1px solid #222; border-radius:6px; padding:32px; }
     .form-label { font-size:.8rem; color:#888; margin-bottom:4px; display:block; }
-    .form-control{ background:#0d0d0d; border:1px solid #333; color:#e0e0e0; font-family:'Courier New',monospace; font-size:.875rem; border-radius:4px; width:100%; padding:8px 12px; }
+    .form-control{ background:#0d0d0d; border:1px solid #333; color:#e0e0e0; font-family:system-ui,-apple-system,'Segoe UI',sans-serif; font-size:.875rem; border-radius:4px; width:100%; padding:8px 12px; }
     .form-control:focus { outline:none; border-color:#00ff88; }
     .role-item  { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #1a1a1a; }
     .role-item:last-child { border-bottom:none; }
     .role-check { accent-color:#00ff88; width:16px; height:16px; cursor:pointer; }
     .role-name  { font-size:.85rem; }
-    .btn-save   { background:#00ff88; color:#0d0d0d; border:none; font-weight:700; font-family:'Courier New',monospace; padding:10px 24px; border-radius:4px; font-size:.875rem; cursor:pointer; transition:.2s; }
+    .btn-save   { background:#00ff88; color:#0d0d0d; border:none; font-weight:700; font-family:system-ui,-apple-system,'Segoe UI',sans-serif; padding:10px 24px; border-radius:4px; font-size:.875rem; cursor:pointer; transition:.2s; }
     .btn-save:hover { background:#00cc6a; }
-    .btn-cancel { background:transparent; border:1px solid #333; color:#aaa; font-family:'Courier New',monospace; padding:10px 24px; border-radius:4px; font-size:.875rem; text-decoration:none; transition:.2s; }
+    .btn-cancel { background:transparent; border:1px solid #333; color:#aaa; font-family:system-ui,-apple-system,'Segoe UI',sans-serif; padding:10px 24px; border-radius:4px; font-size:.875rem; text-decoration:none; transition:.2s; }
     .btn-cancel:hover { border-color:#555; color:#e0e0e0; }
     .error-box  { background:rgba(255,68,68,.08); border:1px solid #ff4444; color:#ff4444; padding:10px 14px; border-radius:4px; font-size:.8rem; margin-bottom:20px; }
     .section-label{ font-size:.7rem; letter-spacing:.12em; color:#555; text-transform:uppercase; margin-bottom:14px; margin-top:24px; }
