@@ -850,8 +850,9 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 2 | Porte | door_sensor | 25 | Porte principale | 1 |
 | 3 | Multisensor | motion_sensor | 7 | Centre pièce | 1 |
 | 4 | Button Double | button | 30 | Bureau | 1 |
+| 5 | Air Temperature/Humidity | temp_humidity | 8 | Centre pièce | 1 |
 
-> **Note :** Le Fibaro Button FGPB-101 crée un device Domoticz distinct (`idx 30`) pour le double appui et partage le même type `button` que le capteur `idx 9`. Cette particularité du protocole Z-Wave impose deux entrées capteur distinctes dans le modèle.
+> **Note :** Le Fibaro Button FGPB-101 crée un device Domoticz distinct (`idx 30`) pour le double appui et partage le même type `button` que le capteur `idx 9`. Cette particularité du protocole Z-Wave impose deux entrées capteur distinctes dans le modèle. Le capteur 5 est un capteur de télémétrie environnementale (température / humidité) dont les relevés sont collectés périodiquement via un script cron et stockés dans `mesure_capteur`.
 
 ### actionneur
 
@@ -909,10 +910,10 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 1 | 1 | 1 | 1 |
 | 2 | 2 | 5 | 1 |
 | 3 | 3 | 7 | 1 |
-| 4 | 4 | 2 | 1 |
+| 4 | 4 | 1 | 1 |
 | 5 | 1 | 1 | 1 |
 
-> **Note :** L'étape 4 attend l'événement `BUTTON_DOUBLE_PRESS` (id=2) sur le capteur `Button Double` (id=4, idx=30), et non sur le capteur `Button` (id=1, idx=9). Cette distinction est imposée par la façon dont Domoticz expose les appuis multiples du Fibaro Button.
+> **Note :** L'étape 4 attend l'événement `BUTTON_PRESS` (id=1) sur le capteur `Button Double` (id=4, idx=30). Le device Domoticz idx=30 correspond physiquement au double appui sur le Fibaro Button, mais Domoticz l'expose comme un Switch classique émettant `nvalue=1` (BUTTON_PRESS) à chaque déclenchement. C'est la combinaison capteur + type d'événement qui encode la sémantique "double appui", non la valeur `nvalue`.
 
 ### etape_declenche
 
@@ -948,7 +949,7 @@ Les exemples suivants ont pour objectif d'illustrer la structure et l'usage des 
 | 2 | 1 | 1 | 2 | 3 | perdue | 250 | 8 | 3600 |
 | 3 | 1 | 1 | 1 | 2 | gagnee | 750 | 0 | 194 |
 | 4 | 2 | NULL | 2 | 4 | abandonnee | 100 | 1 | NULL |
-| 5 | 1 | 1 | 1 | 2 | en_attente | 0 | 0 | NULL |
+| 5 | 1 | 1 | 1 | 2 | gagnee | 750 | 5 | 54 |
 
 > **Note :** `id_scenario_version` est renseigné dès le démarrage dès lors que le scénario dispose d'une version active. Les sessions antérieures à l'intégration du versionnage, ou pour des scénarios sans version définie, conservent `NULL` dans ce champ.
 
