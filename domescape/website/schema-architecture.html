@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>DomEscape — Schéma architecture système</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f1117;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .diagram {
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .diagram-title {
+      text-align: center;
+      color: #e2e8f0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 32px;
+    }
+    .diagram-title span { color: #7c3aed; }
+
+    /* ─── grille principale ─── */
+    .cols {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .layer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      padding: 0 6px;
+    }
+
+    .layer-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+
+    .box {
+      width: 100%;
+      border-radius: 10px;
+      padding: 11px 8px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .box-icon { font-size: 20px; margin-bottom: 3px; }
+    .box-name { font-size: 12px; font-weight: 600; color: #f1f5f9; }
+    .box-sub  { font-size: 10px; color: #94a3b8; margin-top: 2px; line-height: 1.4; }
+
+    .c-hw   { background: #1e293b; border-color: #334155; }
+    .c-dom  { background: #1c1f3a; border-color: #3730a3; }
+    .c-php  { background: #1a2e1a; border-color: #166534; }
+    .c-db   { background: #1c1515; border-color: #7f1d1d; }
+    .c-out  { background: #1c1f3a; border-color: #1e40af; }
+    .c-ui   { background: #1c1a2e; border-color: #6d28d9; }
+
+    /* ─── flèches ─── */
+    .arrow-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 28px;
+      flex-shrink: 0;
+    }
+    .arrow-lbl {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-align: center;
+      margin-top: 3px;
+    }
+
+    /* ─── badges ─── */
+    .badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      margin-top: 3px;
+      letter-spacing: 0.04em;
+    }
+    .bg  { background: #14532d; color: #86efac; }
+    .bb  { background: #1e3a5f; color: #93c5fd; }
+    .bp  { background: #3b0764; color: #d8b4fe; }
+    .br  { background: #450a0a; color: #fca5a5; }
+
+    /* ─── légende ─── */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      color: #64748b;
+    }
+    .ldot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .note {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 10px;
+      color: #334155;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="diagram">
+
+  <div class="diagram-title">DomEscape — <span>Architecture système</span></div>
+
+  <div class="cols">
+
+    <!-- HARDWARE -->
+    <div class="layer">
+      <div class="layer-label">Matériel Z-Wave</div>
+      <div class="box c-hw">
+        <div class="box-icon">🔘</div>
+        <div class="box-name">Button</div>
+        <div class="box-sub">Fibaro FGPB-101<br>idx 9 / 30</div>
+      </div>
+      <div class="box c-hw">
+        <div class="box-icon">🚪</div>
+        <div class="box-name">Door Sensor</div>
+        <div class="box-sub">Fibaro FGDW-002<br>idx 25</div>
+      </div>
+      <div class="box c-hw">
+        <div class="box-icon">👁️</div>
+        <div class="box-name">Multisensor 6</div>
+        <div class="box-sub">Aeotec<br>idx 7</div>
+      </div>
+      <div class="box c-hw" style="border-color:#164e63">
+        <div class="box-icon">🌡️</div>
+        <div class="box-name">Temp/Humidity</div>
+        <div class="box-sub">idx 8</div>
+        <div><span class="badge bb">télémétrie</span></div>
+      </div>
+    </div>
+
+    <!-- FLÈCHE 1 -->
+    <div class="arrow-col">
+      <svg width="28" height="180" viewBox="0 0 28 180" fill="none">
+        <line x1="14" y1="0" x2="14" y2="165" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <polygon points="8,165 20,165 14,178" fill="#475569"/>
+      </svg>
+      <div class="arrow-lbl" style="color:#475569">Z-Wave</div>
+    </div>
+
+    <!-- DOMOTICZ -->
+    <div class="layer">
+      <div class="layer-label">Domoticz</div>
+      <div class="box c-dom" style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:170px">
+        <div class="box-icon">🏠</div>
+        <div class="box-name">Domoticz V2024</div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;align-items:center">
+          <span class="badge bp">dzVents (Lua)</span>
+          <span class="badge bb">REST API</span>
+        </div>
+        <div class="box-sub" style="margin-top:8px">Centralise les devices<br>Webhook → PHP<br>Scenes → Actionneurs</div>
+      </div>
+    </div>
+
+    <!-- FLÈCHE 2 -->
+    <div class="arrow-col">
+      <svg width="28" height="180" viewBox="0 0 28 180" fill="none">
+        <line x1="14" y1="0" x2="14" y2="165" stroke="#166534" stroke-width="2"/>
+        <polygon points="8,165 20,165 14,178" fill="#22c55e"/>
+      </svg>
+      <div class="arrow-lbl" style="color:#22c55e">POST</div>
+    </div>
+
+    <!-- BACKEND PHP -->
+    <div class="layer">
+      <div class="layer-label">Backend PHP</div>
+      <div class="box c-php">
+        <div class="box-icon">📡</div>
+        <div class="box-name">EventManager</div>
+        <div class="box-sub">idx+nvalue → code métier</div>
+        <div><span class="badge bg">BUTTON_PRESS…</span></div>
+      </div>
+      <div class="box c-php" style="border-color:#15803d">
+        <div class="box-icon">⚙️</div>
+        <div class="box-name">GameEngine</div>
+        <div class="box-sub">Logique de progression<br>Transaction verrouillée</div>
+        <div><span class="badge bg">stateless</span></div>
+      </div>
+      <div class="box c-php">
+        <div class="box-icon">🎬</div>
+        <div class="box-name">ActionManager</div>
+        <div class="box-sub">Pilote LCD + Wall Plug</div>
+        <div><span class="badge bg">on_enter / on_success</span></div>
+      </div>
+    </div>
+
+    <!-- FLÈCHE 3 -->
+    <div class="arrow-col">
+      <svg width="28" height="180" viewBox="0 0 28 180" fill="none">
+        <!-- aller -->
+        <line x1="18" y1="0" x2="18" y2="165" stroke="#7f1d1d" stroke-width="1.5"/>
+        <polygon points="12,165 24,165 18,178" fill="#ef4444"/>
+        <!-- retour -->
+        <line x1="8" y1="178" x2="8" y2="13" stroke="#7f1d1d" stroke-width="1" stroke-dasharray="3 3"/>
+        <polygon points="2,13 14,13 8,0" fill="#7f1d1d"/>
+      </svg>
+      <div class="arrow-lbl" style="color:#ef4444">SQL</div>
+    </div>
+
+    <!-- MARIADB -->
+    <div class="layer">
+      <div class="layer-label">Base de données</div>
+      <div class="box c-db" style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:170px">
+        <div class="box-icon">🗄️</div>
+        <div class="box-name">MariaDB 10.5</div>
+        <div class="box-sub">20 tables</div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:3px;justify-content:center">
+          <span class="badge br">config scénarios</span>
+          <span class="badge br">état session</span>
+          <span class="badge br">historique</span>
+          <span class="badge br">RBAC</span>
+          <span class="badge br">télémétrie</span>
+        </div>
+        <div class="box-sub" style="margin-top:8px;color:#64748b;font-size:9px">Source de vérité unique</div>
+      </div>
+    </div>
+
+    <!-- FLÈCHE 4 -->
+    <div class="arrow-col">
+      <svg width="28" height="180" viewBox="0 0 28 180" fill="none">
+        <line x1="14" y1="0" x2="14" y2="165" stroke="#1e40af" stroke-width="1.5"/>
+        <polygon points="8,165 20,165 14,178" fill="#3b82f6"/>
+        <line x1="14" y1="178" x2="14" y2="13" stroke="#1e40af" stroke-width="1" stroke-dasharray="3 3"/>
+        <polygon points="8,13 20,13 14,0" fill="#1e40af"/>
+      </svg>
+      <div class="arrow-lbl" style="color:#3b82f6">polling 2s</div>
+    </div>
+
+    <!-- SORTIES + UI -->
+    <div class="layer">
+      <div class="layer-label">Sorties &amp; Interfaces</div>
+      <div class="box c-out">
+        <div class="box-icon">🔌</div>
+        <div class="box-name">Wall Plug</div>
+        <div class="box-sub">Fibaro — idx 13</div>
+      </div>
+      <div class="box c-out">
+        <div class="box-icon">📟</div>
+        <div class="box-name">LCD PiFace</div>
+        <div class="box-sub">Python stdlib</div>
+      </div>
+      <div class="box c-ui" style="margin-top:8px">
+        <div class="box-icon">🎮</div>
+        <div class="box-name">Joueur</div>
+        <div class="box-sub">player.php</div>
+      </div>
+      <div class="box c-ui">
+        <div class="box-icon">👀</div>
+        <div class="box-name">Superviseur</div>
+        <div class="box-sub">gamemaster.php</div>
+      </div>
+      <div class="box c-ui">
+        <div class="box-icon">⚙️</div>
+        <div class="box-name">Admin</div>
+        <div class="box-sub">dashboard.php</div>
+      </div>
+    </div>
+
+  </div><!-- /cols -->
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="ldot" style="background:#22c55e"></div>
+      Flux événementiel temps réel (dzVents → webhook)
+    </div>
+    <div class="legend-item">
+      <div class="ldot" style="background:#ef4444"></div>
+      Lecture / écriture SQL (transaction verrouillée)
+    </div>
+    <div class="legend-item">
+      <div class="ldot" style="background:#3b82f6"></div>
+      Polling état session (2s)
+    </div>
+    <div class="legend-item">
+      <div class="ldot" style="background:#475569"></div>
+      Signal radio Z-Wave
+    </div>
+  </div>
+
+  <div class="note">Raspberry Pi 4 — architecture mono-salle — MariaDB 10.5 / PHP 7.4 / Apache2 / Domoticz V2024</div>
+
+</div>
+</body>
+</html>
