@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../core/RoleGuard.php';
+require_once __DIR__ . '/../core/Csrf.php';
 require_once __DIR__ . '/../config/database.php';
 
 RoleGuard::requireRole(ROLE_ADMINISTRATEUR);
@@ -10,6 +11,7 @@ $error   = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    Csrf::verify();
     $action = $_POST['action'] ?? '';
 
     if ($action === 'create') {
@@ -174,7 +176,6 @@ $statutLabels = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Versions — DomEscape Admin</title>
-    <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
         a { color: #00ff88; }
@@ -189,7 +190,7 @@ $statutLabels = [
         td { padding: 12px 16px; border-bottom: 1px solid #0a0a14; vertical-align: middle; }
         tbody tr:last-child td { border-bottom: none; }
         tbody tr:hover td { background: rgba(255,255,255,.02); }
-        .btn-action { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border: 1px solid; border-radius: 3px; font-size: .72rem; cursor: pointer; background: transparent; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: all .15s; text-decoration: none; white-space: nowrap; }
+        .btn-action { font-size: .72rem; padding: 5px 11px; }
         .btn-activate { color: #00ff88; border-color: rgba(0,255,136,.3); }
         .btn-activate:hover { background: rgba(0,255,136,.08); }
         .btn-archive  { color: #888; border-color: #333; }
@@ -205,12 +206,10 @@ $statutLabels = [
         .form-group input, .form-group select { width: 100%; background: #080810; border: 1px solid #1a1a2e; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: .82rem; padding: 8px 12px; border-radius: 4px; outline: none; transition: border-color .15s; }
         .form-group input:focus, .form-group select:focus { border-color: #00ff88; }
         .form-group select option { background: #080810; }
-        .btn-create { background: #00ff88; color: #080810; font-weight: 700; font-size: .8rem; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: background .15s; }
-        .btn-create:hover { background: #00cc6a; }
-        .alert-error   { background: rgba(255,68,68,.07); border: 1px solid rgba(255,68,68,.25); color: #ff6666; padding: 10px 14px; border-radius: 4px; font-size: .8rem; margin-bottom: 20px; }
-        .alert-success { background: rgba(0,255,136,.06); border: 1px solid rgba(0,255,136,.2); color: #00ff88; padding: 10px 14px; border-radius: 4px; font-size: .8rem; margin-bottom: 20px; }
+        .btn-create { font-size: .8rem; padding: 9px 20px; }
         @media (max-width: 700px) { .form-row { grid-template-columns: 1fr; } }
     </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -239,6 +238,7 @@ $statutLabels = [
     <div class="create-panel">
         <h2>Nouvelle version</h2>
         <form method="POST">
+                <?= Csrf::field() ?>
             <input type="hidden" name="action" value="create">
             <div class="form-row">
                 <div class="form-group">
@@ -261,7 +261,7 @@ $statutLabels = [
                     <input type="text" name="commentaire" placeholder="Notes de version…" maxlength="500">
                 </div>
             </div>
-            <button type="submit" class="btn-create">Créer la version →</button>
+            <button type="submit" class="btn btn-primary btn-create">Créer la version →</button>
         </form>
     </div>
     <?php endif; ?>
@@ -313,30 +313,34 @@ $statutLabels = [
                         <div style="display:flex; gap:8px; justify-content:flex-end;">
                             <?php if ($statut !== 'active'): ?>
                             <form method="POST" style="display:inline;">
+                <?= Csrf::field() ?>
                                 <input type="hidden" name="action" value="activate">
                                 <input type="hidden" name="id_scenario_version" value="<?= (int)$v['id_scenario_version'] ?>">
                                 <input type="hidden" name="id_scenario" value="<?= (int)$v['id_scenario'] ?>">
-                                <button type="submit" class="btn-action btn-activate">Activer</button>
+                                <button type="submit" class="btn btn-action btn-activate">Activer</button>
                             </form>
                             <?php endif; ?>
                             <?php if ($statut === 'active'): ?>
                             <form method="POST" style="display:inline;">
+                <?= Csrf::field() ?>
                                 <input type="hidden" name="action" value="archive">
                                 <input type="hidden" name="id_scenario_version" value="<?= (int)$v['id_scenario_version'] ?>">
-                                <button type="submit" class="btn-action btn-archive">Archiver</button>
+                                <button type="submit" class="btn btn-action btn-archive">Archiver</button>
                             </form>
                             <?php endif; ?>
                             <form method="POST" style="display:inline;">
+                <?= Csrf::field() ?>
                                 <input type="hidden" name="action" value="clone">
                                 <input type="hidden" name="id_scenario_version" value="<?= (int)$v['id_scenario_version'] ?>">
-                                <button type="submit" class="btn-action btn-archive" title="Dupliquer cette version en brouillon">
+                                <button type="submit" class="btn btn-action btn-archive" title="Dupliquer cette version en brouillon">
                                     <i data-lucide="copy" style="width:11px;height:11px;"></i> Dupliquer
                                 </button>
                             </form>
                             <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cette version ?');">
+                <?= Csrf::field() ?>
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id_scenario_version" value="<?= (int)$v['id_scenario_version'] ?>">
-                                <button type="submit" class="btn-action btn-delete">
+                                <button type="submit" class="btn btn-action btn-delete">
                                     <i data-lucide="trash-2" style="width:11px;height:11px;"></i>
                                 </button>
                             </form>

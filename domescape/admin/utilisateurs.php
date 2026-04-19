@@ -27,7 +27,6 @@ foreach ($users as $u) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Utilisateurs — DomEscape Admin</title>
-  <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
   <style>
     body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
     a { color: #00ff88; }
@@ -57,27 +56,45 @@ foreach ($users as $u) {
     .page-head h1 { font-size: 1.1rem; font-weight: 700; margin: 0; }
     .page-head p { font-size: .72rem; color: #444; margin: 4px 0 0; }
 
-    /* Summary chips */
-    .summary-chips {
-        display: flex;
+    /* Summary stats */
+    .summary-stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
         gap: 10px;
-        flex-wrap: wrap;
         margin-bottom: 28px;
     }
-    .chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 5px 12px;
-        border-radius: 3px;
-        font-size: .7rem;
-        border: 1px solid;
+    .sum-card {
+        background: #0f0f18;
+        border: 1px solid #111;
+        border-radius: 6px;
+        padding: 14px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
     }
-    .chip-total   { color: #e0e0e0; border-color: #222; background: rgba(255,255,255,.03); }
-    .chip-active  { color: #00ff88; border-color: rgba(0,255,136,.2); background: rgba(0,255,136,.04); }
-    .chip-participant { color: #00ff88; border-color: rgba(0,255,136,.2); background: rgba(0,255,136,.04); }
-    .chip-superv  { color: #60a5fa; border-color: rgba(96,165,250,.2); background: rgba(96,165,250,.04); }
-    .chip-admin   { color: #a78bfa; border-color: rgba(167,139,250,.2); background: rgba(167,139,250,.04); }
+    .sum-val {
+        font-size: 1.4rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -.02em;
+    }
+    .sum-lbl {
+        font-size: .65rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #444;
+    }
+    .sum-card-total  { border-top: 2px solid #333; }
+    .sum-card-total  .sum-val { color: #e0e0e0; }
+    .sum-card-active { border-top: 2px solid rgba(0,255,136,.5); }
+    .sum-card-active .sum-val { color: #00ff88; }
+    .sum-card-part   { border-top: 2px solid rgba(0,255,136,.25); }
+    .sum-card-part   .sum-val { color: rgba(0,255,136,.7); }
+    .sum-card-superv { border-top: 2px solid rgba(96,165,250,.5); }
+    .sum-card-superv .sum-val { color: #60a5fa; }
+    .sum-card-admin  { border-top: 2px solid rgba(167,139,250,.5); }
+    .sum-card-admin  .sum-val { color: #a78bfa; }
+    @media (max-width: 768px) { .summary-stats { grid-template-columns: repeat(3, 1fr); } }
 
     /* Table panel */
     .panel {
@@ -150,16 +167,10 @@ foreach ($users as $u) {
 
     /* Edit button */
     .btn-edit {
-        background: transparent;
-        border: 1px solid #1a1a2e;
         color: #666;
-        padding: 5px 12px;
-        border-radius: 3px;
+        border-color: #1a1a2e;
         font-size: .72rem;
-        text-decoration: none;
-        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-        transition: border-color .15s, color .15s;
-        white-space: nowrap;
+        padding: 5px 12px;
     }
     .btn-edit:hover { border-color: #00ff88; color: #00ff88; }
 
@@ -168,6 +179,7 @@ foreach ($users as $u) {
         th:nth-child(7), td:nth-child(7) { display: none; }
     }
   </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -189,13 +201,27 @@ foreach ($users as $u) {
     </div>
   </div>
 
-  <!-- Summary chips -->
-  <div class="summary-chips">
-    <span class="chip chip-total">&#9632; <?= count($users) ?> total</span>
-    <span class="chip chip-active">● <?= $countActive ?> actif<?= $countActive > 1 ? 's' : '' ?></span>
-    <span class="chip chip-participant">participant · <?= $countByRole['participant'] ?></span>
-    <span class="chip chip-superv">superviseur · <?= $countByRole['superviseur'] ?></span>
-    <span class="chip chip-admin">administrateur · <?= $countByRole['administrateur'] ?></span>
+  <div class="summary-stats">
+    <div class="sum-card sum-card-total">
+      <span class="sum-val"><?= count($users) ?></span>
+      <span class="sum-lbl">Total</span>
+    </div>
+    <div class="sum-card sum-card-active">
+      <span class="sum-val"><?= $countActive ?></span>
+      <span class="sum-lbl">Actifs</span>
+    </div>
+    <div class="sum-card sum-card-part">
+      <span class="sum-val"><?= $countByRole['participant'] ?></span>
+      <span class="sum-lbl">Participants</span>
+    </div>
+    <div class="sum-card sum-card-superv">
+      <span class="sum-val"><?= $countByRole['superviseur'] ?></span>
+      <span class="sum-lbl">Superviseurs</span>
+    </div>
+    <div class="sum-card sum-card-admin">
+      <span class="sum-val"><?= $countByRole['administrateur'] ?></span>
+      <span class="sum-lbl">Admins</span>
+    </div>
   </div>
 
   <div class="panel">
@@ -248,7 +274,7 @@ foreach ($users as $u) {
               <?= $u['derniere_connexion'] ? htmlspecialchars($u['derniere_connexion'], ENT_QUOTES, 'UTF-8') : '—' ?>
             </td>
             <td>
-              <a href="/domescape/admin/utilisateur_edit.php?id=<?= (int)$u['id'] ?>" class="btn-edit">Modifier →</a>
+              <a href="/domescape/admin/utilisateur_edit.php?id=<?= (int)$u['id'] ?>" class="btn btn-edit">Modifier →</a>
             </td>
           </tr>
         <?php endforeach; ?>

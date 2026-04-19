@@ -255,6 +255,7 @@ function statusColor(string $s): string {
             border-top: 1px solid #080810;
         }
     </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 

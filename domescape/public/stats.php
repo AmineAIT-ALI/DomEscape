@@ -236,6 +236,7 @@ function statusLabel(string $s): string {
             vertical-align: middle;
         }
     </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 

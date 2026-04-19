@@ -4,6 +4,13 @@
 // Remplace Domoticz + dzVents pour tester le moteur de jeu
 // =============================================================
 
+// Accès localhost uniquement
+$remoteIp = $_SERVER['REMOTE_ADDR'] ?? '';
+if (!in_array($remoteIp, ['127.0.0.1', '::1'], true)) {
+    http_response_code(403);
+    exit('Accès refusé — outil de développement local uniquement.');
+}
+
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../core/EventManager.php';

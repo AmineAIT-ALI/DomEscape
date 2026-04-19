@@ -1,24 +1,46 @@
 /*
  * DomEscape — Composants partagés
- * Inclure après la définition des variables :root (nav.php ou inline).
+ * À inclure dans <head> — contient les variables CSS globales.
  * ------------------------------------------------------------------ */
+
+/* ── Variables globales ── */
+:root {
+  --accent:      #00ff88;
+  --accent-dark: #00cc6a;
+  --bg-base:     #080810;
+  --bg-card:     #0f0f18;
+  --bg-input:    #0d0d16;
+  --border:      #1a1a2e;
+  --border-dim:  #111;
+  --text:        #e0e0e0;
+  --muted:       #555;
+  --dim:         #333;
+  --blue:        #60a5fa;
+  --purple:      #a78bfa;
+  --red:         #ff4444;
+  --yellow:      #f0c040;
+}
 
 /* ── Boutons ── */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: .82rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 9px 18px;
   border-radius: 4px;
   border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
   text-decoration: none;
   transition: background .15s, border-color .15s, color .15s;
   white-space: nowrap;
 }
+.btn-block { width: 100%; }
 
 .btn-primary {
   background: var(--accent, #00ff88);
@@ -121,3 +143,42 @@
   50%       { box-shadow: 0 0 0 5px rgba(0,255,136,0); }
 }
 .pulse-dot { animation: pulse-dot 1.5s infinite; }
+
+/* ── Alertes ── */
+.alert-error {
+  background: rgba(255,68,68,.07);
+  border: 1px solid rgba(255,68,68,.25);
+  color: #ff6666;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: .8rem;
+  margin-bottom: 20px;
+}
+.alert-success {
+  background: rgba(0,255,136,.06);
+  border: 1px solid rgba(0,255,136,.2);
+  color: #00ff88;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: .8rem;
+  margin-bottom: 20px;
+}
+
+/* ── Layout admin / page ── */
+.admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+.admin-header h1 { font-size: 1.1rem; font-weight: 700; margin: 0; color: #e0e0e0; }
+.admin-header p  { font-size: .72rem; color: #444; margin: 4px 0 0; }
+.page-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* ── Panel ── */
+.panel { background: #0f0f18; border: 1px solid #111; border-radius: 6px; margin-bottom: 24px; overflow: hidden; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #0a0a14; }
+.panel-head h2 { font-size: .82rem; font-weight: 700; margin: 0; color: #ccc; }
+
+/* ── Tableau partagé ── */
+.data-table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+.data-table th { font-size: .62rem; letter-spacing: .1em; color: #444; text-transform: uppercase; padding: 11px 16px; text-align: left; font-weight: normal; border-bottom: 1px solid #0a0a14; }
+.data-table td { padding: 12px 16px; border-bottom: 1px solid #0a0a14; vertical-align: middle; }
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover td { background: rgba(255,255,255,.02); }

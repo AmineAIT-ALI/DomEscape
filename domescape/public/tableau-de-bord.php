@@ -130,14 +130,10 @@ $statutLabel = [
     .db-active-meta  { font-size: .78rem; color: #555; margin-top: 2px; }
 
     /* Bouton principal */
-    .db-btn-primary { display: inline-block; background: #00ff88; color: #080810; font-weight: 700; font-size: .85rem; padding: 11px 22px; border-radius: 4px; transition: background .15s; border: none; cursor: pointer; }
-    .db-btn-primary:hover { background: #00cc6a; color: #080810; }
-    .db-btn-outline { display: inline-block; background: transparent; color: #aaa; font-size: .82rem; padding: 10px 18px; border-radius: 4px; border: 1px solid #222; transition: border-color .15s, color .15s; }
-    .db-btn-outline:hover { border-color: #444; color: #e0e0e0; }
-    .db-btn-blue    { display: inline-block; background: rgba(96,165,250,.1); color: #60a5fa; font-size: .82rem; font-weight: 600; padding: 10px 18px; border-radius: 4px; border: 1px solid rgba(96,165,250,.25); transition: background .15s; }
-    .db-btn-blue:hover { background: rgba(96,165,250,.18); }
-    .db-btn-purple  { display: inline-block; background: rgba(167,139,250,.1); color: #a78bfa; font-size: .82rem; font-weight: 600; padding: 10px 18px; border-radius: 4px; border: 1px solid rgba(167,139,250,.25); transition: background .15s; }
-    .db-btn-purple:hover { background: rgba(167,139,250,.18); }
+    .db-btn-primary { font-size: .85rem; padding: 11px 22px; }
+    .db-btn-outline { padding: 10px 18px; }
+    .db-btn-blue    { padding: 10px 18px; }
+
 
     /* Stats */
     .db-stat { background: #0f0f18; border: 1px solid #1a1a2e; border-radius: 6px; padding: 20px; }
@@ -157,6 +153,7 @@ $statutLabel = [
     .db-supervision-val   { font-size: 1.3rem; font-weight: 700; color: #00ff88; }
     .db-no-session { font-size: .82rem; color: #333; }
   </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -178,7 +175,7 @@ $statutLabel = [
     </div>
     <div class="db-sub">
       Dernière connexion :
-      <?= $userInfo['derniere_connexion']
+      <?= (!empty($userInfo['derniere_connexion']))
           ? htmlspecialchars($userInfo['derniere_connexion'], ENT_QUOTES, 'UTF-8')
           : 'première connexion' ?>
     </div>
@@ -207,7 +204,7 @@ $statutLabel = [
             <div class="db-active-meta">Démarrée le <?= htmlspecialchars($activeSession['date_debut'], ENT_QUOTES, 'UTF-8') ?></div>
           </div>
         </div>
-        <a href="/domescape/admin/dashboard.php" class="db-btn-outline">Voir dans l'admin →</a>
+        <a href="/domescape/admin/dashboard.php" class="btn btn-outline db-btn-outline">Voir dans l'admin →</a>
       </div>
     <?php endif; ?>
 
@@ -299,7 +296,7 @@ $statutLabel = [
             <div class="db-active-meta">Depuis le <?= htmlspecialchars($activeSession['date_debut'], ENT_QUOTES, 'UTF-8') ?></div>
           </div>
         </div>
-        <a href="/domescape/public/gamemaster.php" class="db-btn-blue">Ouvrir la supervision →</a>
+        <a href="/domescape/public/gamemaster.php" class="btn btn-blue db-btn-blue">Ouvrir la supervision →</a>
       </div>
     <?php else: ?>
       <div style="background:#0f0f18; border:1px solid #1a1a2e; border-radius:6px; padding:20px 24px; margin-bottom:32px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:space-between;">
@@ -307,7 +304,7 @@ $statutLabel = [
           <div style="font-size:.72rem; color:#333; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px;">Aucune session active</div>
           <div style="font-size:.85rem; color:#555;">En attente d'une partie lancée depuis l'accueil.</div>
         </div>
-        <a href="/domescape/public/gamemaster.php" class="db-btn-outline">Ouvrir la supervision</a>
+        <a href="/domescape/public/gamemaster.php" class="btn btn-outline db-btn-outline">Ouvrir la supervision</a>
       </div>
     <?php endif; ?>
 
@@ -320,7 +317,7 @@ $statutLabel = [
             <div class="db-supervision-label">Supervision temps réel</div>
             <div style="font-size:1rem; font-weight:600; color:#e0e0e0; margin-top:4px;">Centre de contrôle Game Master</div>
           </div>
-          <a href="/domescape/public/gamemaster.php" class="db-btn-blue">Accéder →</a>
+          <a href="/domescape/public/gamemaster.php" class="btn btn-blue db-btn-blue">Accéder →</a>
         </div>
         <p style="font-size:.82rem; color:#444; line-height:1.7; margin:0;">
           Suivez la progression des équipes en temps réel, consultez les événements capteurs, visualisez l'étape courante et réinitialisez la session si nécessaire.
@@ -349,7 +346,7 @@ $statutLabel = [
             <div class="db-active-meta">Démarrée le <?= htmlspecialchars($activeSession['date_debut'], ENT_QUOTES, 'UTF-8') ?></div>
           </div>
         </div>
-        <a href="/domescape/public/player.php" class="db-btn-primary">Reprendre la partie →</a>
+        <a href="/domescape/public/player.php" class="btn btn-primary db-btn-primary">Reprendre la partie →</a>
       </div>
     <?php endif; ?>
 
@@ -382,19 +379,19 @@ $statutLabel = [
         <div class="db-card-icon" style="color:#00ff88;"><i data-lucide="play"></i></div>
         <div class="db-card-title" style="margin-bottom:12px;">Lancer une session</div>
         <p class="db-card-text" style="margin-bottom:20px;">Choisissez un scénario disponible et commencez une nouvelle partie.</p>
-        <a href="/domescape/public/index.php" class="db-btn-primary">Voir les scénarios →</a>
+        <a href="/domescape/public/index.php" class="btn btn-primary db-btn-primary">Voir les scénarios →</a>
       </div>
       <div class="db-card">
         <div class="db-card-icon" style="color:#888;"><i data-lucide="clipboard-list"></i></div>
         <div class="db-card-title" style="margin-bottom:12px;">Mes sessions</div>
         <p class="db-card-text" style="margin-bottom:20px;">Consultez l'historique complet de vos parties passées.</p>
-        <a href="/domescape/public/mes-sessions.php" class="db-btn-outline">Voir l'historique</a>
+        <a href="/domescape/public/mes-sessions.php" class="btn btn-outline db-btn-outline">Voir l'historique</a>
       </div>
       <div class="db-card">
         <div class="db-card-icon" style="color:#888;"><i data-lucide="user"></i></div>
         <div class="db-card-title" style="margin-bottom:12px;">Mon profil</div>
         <p class="db-card-text" style="margin-bottom:20px;">Vos informations, vos rôles et vos accès.</p>
-        <a href="/domescape/public/profil.php" class="db-btn-outline">Voir le profil</a>
+        <a href="/domescape/public/profil.php" class="btn btn-outline db-btn-outline">Voir le profil</a>
       </div>
     </div>
 

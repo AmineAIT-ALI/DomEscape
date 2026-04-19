@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../core/RoleGuard.php';
+require_once __DIR__ . '/../core/Csrf.php';
 require_once __DIR__ . '/../config/database.php';
 
 RoleGuard::requireRole(ROLE_ADMINISTRATEUR);
@@ -27,6 +28,7 @@ $success = '';
 
 // --- Actions POST ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    Csrf::verify();
     $action = $_POST['action'] ?? '';
 
     // Mettre à jour scénario
@@ -131,7 +133,6 @@ if (isset($_GET['edit_etape'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Éditer scénario — DomEscape Admin</title>
-    <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
         a { color: #00ff88; }
@@ -159,11 +160,9 @@ if (isset($_GET['edit_etape'])) {
 
         .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-        .btn-save { background: #00ff88; color: #080810; font-weight: 700; font-size: .8rem; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: background .15s; }
-        .btn-save:hover { background: #00cc6a; }
-        .btn-outline { display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border: 1px solid #1a1a2e; border-radius: 3px; font-size: .78rem; cursor: pointer; background: transparent; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #888; transition: all .15s; text-decoration: none; }
-        .btn-outline:hover { border-color: #555; color: #e0e0e0; }
-        .btn-action { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 1px solid; border-radius: 3px; font-size: .7rem; cursor: pointer; background: transparent; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; transition: all .15s; text-decoration: none; white-space: nowrap; }
+        .btn-save { font-size: .8rem; padding: 9px 20px; }
+        .btn-outline { font-size: .78rem; padding: 8px 16px; }
+        .btn-action { font-size: .7rem; padding: 4px 10px; }
         .btn-edit-sm { color: #60a5fa; border-color: rgba(96,165,250,.3); }
         .btn-edit-sm:hover { background: rgba(96,165,250,.08); color: #60a5fa; }
         .btn-del-sm  { color: #ff4444; border-color: rgba(255,68,68,.2); }
@@ -190,6 +189,7 @@ if (isset($_GET['edit_etape'])) {
 
         @media (max-width: 700px) { .form-grid-2 { grid-template-columns: 1fr; } }
     </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -202,7 +202,7 @@ if (isset($_GET['edit_etape'])) {
             <h1><?= htmlspecialchars($scenario['nom_scenario'], ENT_QUOTES, 'UTF-8') ?></h1>
             <p>Scénario #<?= (int)$id ?> — <?= count($etapes) ?> étape<?= count($etapes) != 1 ? 's' : '' ?></p>
         </div>
-        <a href="/domescape/admin/scenarios.php" class="btn-outline">← Scénarios</a>
+        <a href="/domescape/admin/scenarios.php" class="btn btn-outline">← Scénarios</a>
     </div>
 
     <?php if ($error): ?>
@@ -216,6 +216,7 @@ if (isset($_GET['edit_etape'])) {
     <div class="section-label" style="margin-top:0;">Informations du scénario</div>
     <div class="panel">
         <form method="POST">
+                <?= Csrf::field() ?>
             <input type="hidden" name="action" value="update_scenario">
             <div class="form-grid-2">
                 <div class="form-group">
@@ -258,7 +259,7 @@ if (isset($_GET['edit_etape'])) {
                     <input type="checkbox" name="actif" id="actif" <?= $scenario['actif'] ? 'checked' : '' ?>>
                     <label for="actif">Scénario actif (visible dans la liste des parties)</label>
                 </div>
-                <button type="submit" class="btn-save">Enregistrer</button>
+                <button type="submit" class="btn btn-primary btn-save">Enregistrer</button>
             </div>
         </form>
     </div>
@@ -317,13 +318,14 @@ if (isset($_GET['edit_etape'])) {
                     </td>
                     <td>
                         <div style="display:flex; gap:6px; justify-content:flex-end;">
-                            <a href="?id=<?= $id ?>&edit_etape=<?= (int)$e['id_etape'] ?>" class="btn-action btn-edit-sm">
+                            <a href="?id=<?= $id ?>&edit_etape=<?= (int)$e['id_etape'] ?>" class="btn btn-action btn-edit-sm">
                                 <i data-lucide="pencil" style="width:10px;height:10px;"></i> Éditer
                             </a>
                             <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cette étape ?');">
+                <?= Csrf::field() ?>
                                 <input type="hidden" name="action" value="delete_etape">
                                 <input type="hidden" name="id_etape" value="<?= (int)$e['id_etape'] ?>">
-                                <button type="submit" class="btn-action btn-del-sm">
+                                <button type="submit" class="btn btn-action btn-del-sm">
                                     <i data-lucide="trash-2" style="width:10px;height:10px;"></i>
                                 </button>
                             </form>
@@ -346,6 +348,7 @@ if (isset($_GET['edit_etape'])) {
             Édition : <?= htmlspecialchars($editEtape['titre_etape'], ENT_QUOTES, 'UTF-8') ?>
         </div>
         <form method="POST">
+                <?= Csrf::field() ?>
             <input type="hidden" name="action" value="update_etape">
             <input type="hidden" name="id_etape" value="<?= (int)$editEtape['id_etape'] ?>">
             <div class="form-grid-2">
@@ -386,8 +389,8 @@ if (isset($_GET['edit_etape'])) {
                     <label for="finale_edit">Étape finale (victoire au succès)</label>
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <a href="?id=<?= $id ?>" class="btn-outline">Annuler</a>
-                    <button type="submit" class="btn-save">Enregistrer l'étape</button>
+                    <a href="?id=<?= $id ?>" class="btn btn-outline">Annuler</a>
+                    <button type="submit" class="btn btn-primary btn-save">Enregistrer l'étape</button>
                 </div>
             </div>
         </form>
@@ -398,6 +401,7 @@ if (isset($_GET['edit_etape'])) {
     <div class="section-label">Ajouter une étape</div>
     <div class="panel">
         <form method="POST">
+                <?= Csrf::field() ?>
             <input type="hidden" name="action" value="add_etape">
             <div class="form-grid-2">
                 <div class="form-group">
@@ -436,7 +440,7 @@ if (isset($_GET['edit_etape'])) {
                     <input type="checkbox" name="finale" id="finale_add">
                     <label for="finale_add">Étape finale (victoire au succès)</label>
                 </div>
-                <button type="submit" class="btn-save">Ajouter l'étape →</button>
+                <button type="submit" class="btn btn-primary btn-save">Ajouter l'étape →</button>
             </div>
         </form>
     </div>

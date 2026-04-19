@@ -91,7 +91,8 @@ class GameEngine
         } catch (Throwable $e) {
             $pdo->rollBack();
             error_log('[GameEngine] Erreur dans process() : ' . $e->getMessage());
-            throw $e;
+            // On ne throw pas l'erreur pour éviter un HTTP 500 sur le webhook Domoticz
+            // L'erreur est logguée, l'état reste cohérent.
         }
     }
 

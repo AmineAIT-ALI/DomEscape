@@ -174,6 +174,7 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
         .btn-ctrl.green:hover  { border-color: #00ff88; color: #00ff88; }
         .btn-ctrl-prefix { color: #333; margin-right: 8px; }
     </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 

@@ -96,19 +96,7 @@ $sessions = $pdo->query("
             flex-wrap: wrap;
             margin-bottom: 36px;
         }
-        .qa-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 9px 16px;
-            border: 1px solid #1a1a2e;
-            border-radius: 4px;
-            font-size: .78rem;
-            color: #888;
-            text-decoration: none;
-            transition: border-color .15s, color .15s;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-        }
+        .qa-btn { font-size: .78rem; padding: 9px 16px; }
         .qa-btn:hover { border-color: #00ff88; color: #00ff88; }
         .qa-btn-icon { opacity: .6; }
 
@@ -187,6 +175,7 @@ $sessions = $pdo->query("
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -244,19 +233,19 @@ $sessions = $pdo->query("
     <!-- Quick actions -->
     <div class="section-label">Actions rapides</div>
     <div class="quick-actions">
-        <a href="/domescape/admin/scenarios.php" class="qa-btn">
+        <a href="/domescape/admin/scenarios.php" class="btn btn-outline qa-btn">
             <i data-lucide="layers" style="width:13px;height:13px;opacity:.6;"></i> Scénarios
         </a>
-        <a href="/domescape/admin/versions.php" class="qa-btn">
+        <a href="/domescape/admin/versions.php" class="btn btn-outline qa-btn">
             <i data-lucide="git-branch" style="width:13px;height:13px;opacity:.6;"></i> Versions
         </a>
-        <a href="/domescape/admin/utilisateurs.php" class="qa-btn">
+        <a href="/domescape/admin/utilisateurs.php" class="btn btn-outline qa-btn">
             <i data-lucide="users" style="width:13px;height:13px;opacity:.6;"></i> Utilisateurs
         </a>
-        <a href="/domescape/public/gamemaster.php" class="qa-btn">
+        <a href="/domescape/public/gamemaster.php" class="btn btn-outline qa-btn">
             <i data-lucide="monitor" style="width:13px;height:13px;opacity:.6;"></i> Supervision
         </a>
-        <a href="/domescape/api/debug_event.php" class="qa-btn" target="_blank">
+        <a href="/domescape/api/debug_event.php" class="btn btn-outline qa-btn" target="_blank">
             <i data-lucide="radio" style="width:13px;height:13px;opacity:.6;"></i> Z-Wave
         </a>
     </div>

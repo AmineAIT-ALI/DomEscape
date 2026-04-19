@@ -107,17 +107,7 @@ $sessions = $repo->getSessionsForUser($user['id']);
     }
     .empty-icon { font-size: 2.5rem; opacity: .15; margin-bottom: 16px; }
     .empty-state p { font-size: .82rem; color: #444; margin-bottom: 20px; }
-    .btn-play {
-        display: inline-block;
-        background: #00ff88;
-        color: #080810;
-        font-weight: 700;
-        font-size: .8rem;
-        padding: 10px 22px;
-        border-radius: 4px;
-        text-decoration: none;
-    }
-    .btn-play:hover { background: #00cc6a; color: #080810; }
+    .btn-play { padding: 10px 22px; }
 
     @media (max-width: 600px) {
         .summary-row { grid-template-columns: repeat(2, 1fr); }
@@ -125,6 +115,7 @@ $sessions = $repo->getSessionsForUser($user['id']);
         th:nth-child(5), td:nth-child(5) { display: none; }
     }
   </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -151,7 +142,7 @@ $sessions = $repo->getSessionsForUser($user['id']);
     <div class="empty-state">
       <div class="empty-icon"><i data-lucide="inbox" style="width:2.5rem;height:2.5rem;"></i></div>
       <p>Vous n'avez pas encore joué.<br>Lancez votre première session dès maintenant.</p>
-      <a href="/domescape/public/index.php" class="btn-play">Démarrer une partie →</a>
+      <a href="/domescape/public/index.php" class="btn btn-primary btn-play">Démarrer une partie →</a>
     </div>
 
   <?php else:

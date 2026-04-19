@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/Csrf.php';
 
 Auth::init();
 
@@ -13,6 +14,7 @@ $error    = '';
 $redirect = $_GET['redirect'] ?? AUTH_DASHBOARD_URL;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    Csrf::verify();
     $email    = trim($_POST['email']    ?? '');
     $password = trim($_POST['password'] ?? '');
 
@@ -159,20 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     /* Submit */
-    .btn-submit {
-        background: #00ff88;
-        color: #080810;
-        border: none;
-        font-weight: 700;
-        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-        font-size: .875rem;
-        padding: 11px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background .15s;
-        margin-top: 4px;
-    }
-    .btn-submit:hover { background: #00cc6a; }
+    .btn-submit { font-size: .875rem; padding: 11px; margin-top: 4px; }
 
     /* Footer */
     .auth-footer {
@@ -211,6 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .auth-hint:hover { border-color: #1a1a2e; color: #888; }
     .auth-hint-icon { color: #00ff88; opacity: .7; display: flex; align-items: center; }
   </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -231,6 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <form method="post" action="" class="auth-form">
+                <?= Csrf::field() ?>
       <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect, ENT_QUOTES, 'UTF-8') ?>">
 
       <?php if ($error !== ''): ?>
@@ -250,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                autocomplete="current-password" required>
       </div>
 
-      <button type="submit" class="btn-submit">Se connecter →</button>
+      <button type="submit" class="btn btn-primary btn-block btn-submit">Se connecter →</button>
     </form>
 
     <hr class="auth-divider">

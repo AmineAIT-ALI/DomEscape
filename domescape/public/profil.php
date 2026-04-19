@@ -171,24 +171,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
         background: #0f0f18;
         border: 1px solid #111;
         border-radius: 6px;
-        padding: 24px;
+        overflow: hidden;
         margin-bottom: 20px;
     }
-    .pw-card h6 { color: #888; font-size: .8rem; margin-bottom: 20px; }
-    .form-label { font-size: .72rem; color: #666; margin-bottom: 5px; }
-    .form-control {
+    .pw-card-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 20px;
+        border-bottom: 1px solid #0a0a14;
+    }
+    .pw-card-head-icon {
+        width: 30px; height: 30px;
+        background: rgba(0,255,136,.06);
+        border: 1px solid rgba(0,255,136,.15);
+        border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .pw-card-head-title { font-size: .82rem; font-weight: 600; color: #ccc; }
+    .pw-card-head-sub   { font-size: .7rem; color: #444; margin-top: 1px; }
+    .pw-card-body { padding: 24px 20px; }
+    .pw-field { margin-bottom: 16px; }
+    .pw-field label {
+        font-size: .65rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #555;
+        display: block;
+        margin-bottom: 7px;
+    }
+    .pw-input-wrap { position: relative; }
+    .pw-input {
+        width: 100%;
         background: #080810;
         border: 1px solid #1a1a2e;
         color: #e0e0e0;
         font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: .85rem;
+        padding: 9px 38px 9px 13px;
+        border-radius: 4px;
+        outline: none;
+        transition: border-color .15s;
+        box-sizing: border-box;
     }
-    .form-control:focus {
-        background: #080810;
-        border-color: #00ff88;
-        color: #e0e0e0;
-        box-shadow: none;
+    .pw-input:focus { border-color: #00ff88; }
+    .pw-input.input-ok    { border-color: rgba(0,255,136,.5); }
+    .pw-input.input-error { border-color: rgba(255,68,68,.5); }
+    .pw-toggle {
+        position: absolute; right: 10px; top: 50%;
+        transform: translateY(-50%);
+        background: none; border: none; padding: 0;
+        color: #333; cursor: pointer;
+        display: flex; align-items: center;
+        transition: color .15s;
     }
+    .pw-toggle:hover { color: #888; }
+    /* Barre de force */
+    .pw-strength { margin-top: 8px; }
+    .pw-strength-bar {
+        height: 3px;
+        background: #111;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 5px;
+    }
+    .pw-strength-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 2px;
+        transition: width .25s, background .25s;
+    }
+    .pw-strength-label { font-size: .62rem; color: #444; letter-spacing: .06em; }
+    /* Indicateur confirmation */
+    .pw-match { font-size: .62rem; margin-top: 6px; display: none; }
+    .pw-match.ok  { color: #00ff88; display: block; }
+    .pw-match.err { color: #ff4444; display: block; }
+    .pw-divider { height: 1px; background: #0a0a14; margin: 4px 0 20px; }
     .btn-save {
         background: transparent;
         border: 1px solid #00ff88;
@@ -198,24 +257,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
         padding: 8px 20px;
         border-radius: 4px;
         transition: background .15s, color .15s;
+        cursor: pointer;
     }
     .btn-save:hover { background: #00ff88; color: #080810; }
-    .alert-success-custom {
-        background: rgba(0,255,136,.06);
-        border: 1px solid rgba(0,255,136,.2);
-        color: #00ff88;
-        padding: 10px 14px;
-        border-radius: 4px;
-        font-size: .78rem;
-    }
-    .alert-error-custom {
-        background: rgba(255,68,68,.06);
-        border: 1px solid rgba(255,68,68,.25);
-        color: #ff6666;
-        padding: 10px 14px;
-        border-radius: 4px;
-        font-size: .78rem;
-    }
 
     /* Quick links */
     .quick-links { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -235,6 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
         .profile-head { flex-direction: column; align-items: flex-start; }
     }
   </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -308,52 +353,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
         <?= $userInfo['actif'] ? '● Actif' : '● Désactivé' ?>
       </span>
     </div>
-  </div>
-
-  <!-- Rôles -->
-  <div class="section-label">Rôles et permissions</div>
-  <div class="info-card">
-    <div class="info-row" style="flex-wrap:wrap; gap:8px;">
-      <?php if (empty($roles)): ?>
-        <span style="color:#444;font-size:.78rem;">Aucun rôle assigné.</span>
-      <?php else: ?>
-        <?php foreach ($roles as $r): ?>
-          <span class="badge-role badge-<?= htmlspecialchars($r, ENT_QUOTES, 'UTF-8') ?>">
-            <?= htmlspecialchars($r, ENT_QUOTES, 'UTF-8') ?>
-          </span>
-        <?php endforeach; ?>
-      <?php endif; ?>
+    <div class="info-row" style="align-items:flex-start; padding-top:14px; padding-bottom:14px;">
+      <span class="info-label">Rôles</span>
+      <span style="display:flex; gap:6px; flex-wrap:wrap;">
+        <?php if (empty($roles)): ?>
+          <span style="color:#333; font-size:.78rem;">—</span>
+        <?php else: ?>
+          <?php foreach ($roles as $r): ?>
+            <span class="badge-role badge-<?= htmlspecialchars($r, ENT_QUOTES, 'UTF-8') ?>">
+              <?= htmlspecialchars($r, ENT_QUOTES, 'UTF-8') ?>
+            </span>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </span>
     </div>
   </div>
 
   <!-- Mot de passe -->
-  <div class="section-label" style="margin-top:32px;">Modifier le mot de passe</div>
+  <div class="section-label" style="margin-top:32px;">Sécurité</div>
   <div class="pw-card">
-
-    <?php if ($pwSuccess): ?>
-      <div class="alert-success-custom" style="margin-bottom:16px;"><?= htmlspecialchars($pwSuccess, ENT_QUOTES, 'UTF-8') ?></div>
-    <?php elseif ($pwError): ?>
-      <div class="alert-error-custom" style="margin-bottom:16px;"><?= htmlspecialchars($pwError, ENT_QUOTES, 'UTF-8') ?></div>
-    <?php endif; ?>
-
-    <form method="post" action="">
-      <input type="hidden" name="_action" value="change_password">
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:16px;">
-        <div>
-          <label class="form-label" for="current_password">Mot de passe actuel</label>
-          <input type="password" id="current_password" name="current_password" class="form-control" required>
-        </div>
-        <div>
-          <label class="form-label" for="new_password">Nouveau mot de passe</label>
-          <input type="password" id="new_password" name="new_password" class="form-control" required>
-        </div>
-        <div>
-          <label class="form-label" for="confirm_password">Confirmer</label>
-          <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
-        </div>
+    <div class="pw-card-head">
+      <div class="pw-card-head-icon">
+        <i data-lucide="lock" style="width:13px;height:13px;color:#00ff88;"></i>
       </div>
-      <button type="submit" class="btn-save">Mettre à jour le mot de passe →</button>
-    </form>
+      <div>
+        <div class="pw-card-head-title">Modifier le mot de passe</div>
+        <div class="pw-card-head-sub">Minimum 8 caractères</div>
+      </div>
+    </div>
+    <div class="pw-card-body">
+
+      <?php if ($pwSuccess): ?>
+        <div class="alert-success" style="margin-bottom:20px;"><?= htmlspecialchars($pwSuccess, ENT_QUOTES, 'UTF-8') ?></div>
+      <?php elseif ($pwError): ?>
+        <div class="alert-error" style="margin-bottom:20px;"><?= htmlspecialchars($pwError, ENT_QUOTES, 'UTF-8') ?></div>
+      <?php endif; ?>
+
+      <form method="post" action="">
+        <input type="hidden" name="_action" value="change_password">
+
+        <div class="pw-field">
+          <label for="current_password">Mot de passe actuel</label>
+          <div class="pw-input-wrap">
+            <input type="password" id="current_password" name="current_password" class="pw-input" required autocomplete="current-password">
+            <button type="button" class="pw-toggle" onclick="togglePw('current_password', this)" tabindex="-1">
+              <i data-lucide="eye" style="width:14px;height:14px;"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="pw-divider"></div>
+
+        <div class="pw-field">
+          <label for="new_password">Nouveau mot de passe</label>
+          <div class="pw-input-wrap">
+            <input type="password" id="new_password" name="new_password" class="pw-input" required autocomplete="new-password" oninput="checkStrength(this.value); checkMatch();">
+            <button type="button" class="pw-toggle" onclick="togglePw('new_password', this)" tabindex="-1">
+              <i data-lucide="eye" style="width:14px;height:14px;"></i>
+            </button>
+          </div>
+          <div class="pw-strength" id="pw-strength" style="display:none;">
+            <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-fill"></div></div>
+            <span class="pw-strength-label" id="pw-label"></span>
+          </div>
+        </div>
+
+        <div class="pw-field" style="margin-bottom:20px;">
+          <label for="confirm_password">Confirmer le nouveau mot de passe</label>
+          <div class="pw-input-wrap">
+            <input type="password" id="confirm_password" name="confirm_password" class="pw-input" required autocomplete="new-password" oninput="checkMatch();">
+            <button type="button" class="pw-toggle" onclick="togglePw('confirm_password', this)" tabindex="-1">
+              <i data-lucide="eye" style="width:14px;height:14px;"></i>
+            </button>
+          </div>
+          <div class="pw-match" id="pw-match"></div>
+        </div>
+
+        <button type="submit" class="btn-save">Mettre à jour →</button>
+      </form>
+    </div>
   </div>
 
   <!-- Quick links -->
@@ -367,6 +445,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_action']) && $_POST[
 </div>
 
 <script src="/domescape/assets/vendor/lucide.min.js"></script>
-<script>lucide.createIcons();</script>
+<script>
+lucide.createIcons();
+
+function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    btn.innerHTML = isHidden
+        ? '<i data-lucide="eye-off" style="width:14px;height:14px;"></i>'
+        : '<i data-lucide="eye"     style="width:14px;height:14px;"></i>';
+    lucide.createIcons();
+}
+
+function checkStrength(val) {
+    const fill  = document.getElementById('pw-fill');
+    const label = document.getElementById('pw-label');
+    const wrap  = document.getElementById('pw-strength');
+    if (!val) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    let score = 0;
+    if (val.length >= 8)  score++;
+    if (val.length >= 12) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const levels = [
+        { pct: '20%', color: '#ff4444', text: 'Très faible' },
+        { pct: '40%', color: '#f97316', text: 'Faible'      },
+        { pct: '60%', color: '#f0c040', text: 'Moyen'       },
+        { pct: '80%', color: '#00cc6a', text: 'Fort'        },
+        { pct: '100%',color: '#00ff88', text: 'Très fort'   },
+    ];
+    const l = levels[Math.min(score, 4)];
+    fill.style.width      = l.pct;
+    fill.style.background = l.color;
+    label.textContent     = l.text;
+    label.style.color     = l.color;
+}
+
+function checkMatch() {
+    const np  = document.getElementById('new_password').value;
+    const cp  = document.getElementById('confirm_password').value;
+    const el  = document.getElementById('pw-match');
+    const cin = document.getElementById('confirm_password');
+    if (!cp) { el.className = 'pw-match'; cin.classList.remove('input-ok','input-error'); return; }
+    if (np === cp) {
+        el.textContent = '✓ Les mots de passe correspondent';
+        el.className   = 'pw-match ok';
+        cin.classList.add('input-ok'); cin.classList.remove('input-error');
+    } else {
+        el.textContent = '✗ Les mots de passe ne correspondent pas';
+        el.className   = 'pw-match err';
+        cin.classList.add('input-error'); cin.classList.remove('input-ok');
+    }
+}
+</script>
 </body>
 </html>

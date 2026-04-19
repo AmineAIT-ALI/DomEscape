@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/Csrf.php';
 require_once __DIR__ . '/../core/UserRepository.php';
 
 Auth::init();
@@ -13,6 +14,7 @@ $error   = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    Csrf::verify();
     $nom      = trim($_POST['nom']      ?? '');
     $email    = trim($_POST['email']    ?? '');
     $password = $_POST['password']      ?? '';
@@ -185,20 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size: .78rem;
     }
 
-    .btn-submit {
-        background: #00ff88;
-        color: #080810;
-        border: none;
-        font-weight: 700;
-        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-        font-size: .875rem;
-        padding: 11px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background .15s;
-        margin-top: 6px;
-    }
-    .btn-submit:hover { background: #00cc6a; }
+    .btn-submit { font-size: .875rem; padding: 11px; margin-top: 6px; }
 
     /* Role chip */
     .role-chip {
@@ -226,6 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .auth-footer a { color: #00ff88; text-decoration: none; }
     .auth-footer a:hover { text-decoration: underline; }
   </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -253,6 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <form method="post" action="" class="auth-form">
+                <?= Csrf::field() ?>
 
       <?php if ($error !== ''): ?>
         <div class="error-box"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
@@ -288,7 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                autocomplete="new-password" required>
       </div>
 
-      <button type="submit" class="btn-submit">Créer mon compte →</button>
+      <button type="submit" class="btn btn-primary btn-block btn-submit">Créer mon compte →</button>
     </form>
 
     <div class="auth-footer">

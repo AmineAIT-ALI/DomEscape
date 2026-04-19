@@ -55,16 +55,16 @@ class RoleGuard
     .deny-code { font-size: 5rem; font-weight: 700; color: #ff4444; line-height: 1; }
     .deny-title { font-size: 1.3rem; color: #e0e0e0; margin: 16px 0 8px; }
     .deny-sub { color: #888; font-size: 0.9rem; margin-bottom: 32px; }
-    .btn-back { background: #1a1a2e; border: 1px solid #333; color: #00ff88; padding: 10px 24px; text-decoration: none; border-radius: 4px; font-size: 0.85rem; transition: border-color .2s; }
-    .btn-back:hover { border-color: #00ff88; color: #00ff88; }
+    .btn-back { background: #1a1a2e; color: #00ff88; border-color: #333; font-size: .85rem; }
   </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
   <div class="deny-box">
     <div class="deny-code">403</div>
     <div class="deny-title">Accès refusé</div>
     <p class="deny-sub">Vous n'avez pas les droits nécessaires pour accéder à cette page.</p>
-    <a href="/domescape/public/tableau-de-bord.php" class="btn-back">← Retour au tableau de bord</a>
+    <a href="/domescape/public/tableau-de-bord.php" class="btn btn-outline btn-back">← Retour au tableau de bord</a>
   </div>
 </body>
 </html>

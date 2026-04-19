@@ -107,20 +107,7 @@ if ($activeSession && $authUser) {
         }
         .session-banner-text strong { color: #00ff88; }
         .session-banner-text span { color: #888; }
-        .btn-resume {
-            background: #00ff88;
-            color: #080810;
-            font-weight: 700;
-            font-size: .78rem;
-            padding: 8px 18px;
-            border: none;
-            border-radius: 4px;
-            text-decoration: none;
-            white-space: nowrap;
-            transition: background .15s;
-            cursor: pointer;
-        }
-        .btn-resume:hover { background: #00cc6a; color: #080810; }
+        .btn-resume { font-size: .78rem; padding: 8px 18px; }
         .btn-join {
             background: transparent;
             color: #00ff88;
@@ -224,19 +211,7 @@ if ($activeSession && $authUser) {
             gap: 5px;
         }
         .meta-item span { color: #888; }
-        .btn-play {
-            background: #00ff88;
-            color: #080810;
-            font-weight: 700;
-            font-size: .8rem;
-            padding: 9px 0;
-            border: none;
-            border-radius: 4px;
-            width: 100%;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-            transition: background .15s;
-        }
-        .btn-play:hover { background: #00cc6a; }
+        .btn-play { font-size: .8rem; padding: 9px 0; }
 
         /* Empty state */
         .empty-state {
@@ -310,31 +285,8 @@ if ($activeSession && $authUser) {
             padding: 14px 22px;
             border-top: 1px solid #111827;
         }
-        .btn-modal-cancel {
-            background: transparent;
-            border: 1px solid #1a1a2e;
-            color: #888;
-            font-size: .8rem;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-            padding: 8px 18px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: border-color .15s, color .15s;
-        }
-        .btn-modal-cancel:hover { border-color: #444; color: #e0e0e0; }
-        .btn-modal-start {
-            background: #00ff88;
-            color: #080810;
-            font-weight: 700;
-            font-size: .8rem;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-            padding: 8px 18px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background .15s;
-        }
-        .btn-modal-start:hover { background: #00cc6a; }
+        .btn-modal-cancel { font-size: .8rem; padding: 8px 18px; border-color: #1a1a2e; }
+        .btn-modal-start  { font-size: .8rem; padding: 8px 18px; }
         .error-inline {
             display: none;
             background: rgba(255,68,68,.08);
@@ -346,6 +298,7 @@ if ($activeSession && $authUser) {
             margin-top: 12px;
         }
     </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -373,7 +326,7 @@ if ($activeSession && $authUser) {
             </div>
 
             <?php if ($isMembre): ?>
-                <a href="/domescape/public/player.php" class="btn-resume">Reprendre →</a>
+                <a href="/domescape/public/player.php" class="btn btn-primary btn-resume">Reprendre →</a>
 
             <?php elseif ($statut === 'en_attente'): ?>
                 <button class="btn-join" onclick="joinSession(<?= (int)$activeSession['id_session'] ?>)">
@@ -450,7 +403,7 @@ if ($activeSession && $authUser) {
                         <?php endif; ?>
                     </div>
 
-                    <button class="btn-play">Jouer ce scénario →</button>
+                    <button class="btn btn-primary btn-block btn-play">Jouer ce scénario →</button>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -476,8 +429,8 @@ if ($activeSession && $authUser) {
             <div id="startError" class="error-inline"></div>
         </div>
         <div class="modal-foot">
-            <button class="btn-modal-cancel" onclick="closeModal()">Annuler</button>
-            <button class="btn-modal-start" onclick="startGame()">Lancer la partie →</button>
+            <button class="btn btn-outline btn-modal-cancel" onclick="closeModal()">Annuler</button>
+            <button class="btn btn-primary btn-modal-start" onclick="startGame()">Lancer la partie →</button>
         </div>
     </div>
 </div>
@@ -499,8 +452,8 @@ if ($activeSession && $authUser) {
             <div id="requestError" class="error-inline"></div>
         </div>
         <div class="modal-foot">
-            <button class="btn-modal-cancel" onclick="closeRequestModal()">Annuler</button>
-            <button class="btn-modal-start" onclick="submitRequest()">Envoyer la demande →</button>
+            <button class="btn btn-outline btn-modal-cancel" onclick="closeRequestModal()">Annuler</button>
+            <button class="btn btn-primary btn-modal-start" onclick="submitRequest()">Envoyer la demande →</button>
         </div>
     </div>
 </div>

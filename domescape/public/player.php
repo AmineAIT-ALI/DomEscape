@@ -387,6 +387,7 @@ RoleGuard::requireLogin();
         }
         .lobby-waiting { animation: lobby-pulse 1.8s infinite; }
     </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 

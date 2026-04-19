@@ -117,29 +117,17 @@ $recent = $pdo->query("
         .btn-accept {
             background: rgba(0,255,136,.1);
             color: #00ff88;
-            border: 1px solid rgba(0,255,136,.35);
-            padding: 7px 18px;
-            border-radius: 4px;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            border-color: rgba(0,255,136,.35);
             font-size: .75rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background .15s;
-            white-space: nowrap;
+            padding: 7px 18px;
         }
         .btn-accept:hover { background: rgba(0,255,136,.2); }
         .btn-accept:disabled { opacity: .4; cursor: default; }
         .btn-refuse {
-            background: transparent;
             color: #666;
-            border: 1px solid #222;
-            padding: 7px 18px;
-            border-radius: 4px;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            border-color: #222;
             font-size: .75rem;
-            cursor: pointer;
-            transition: all .15s;
-            white-space: nowrap;
+            padding: 7px 18px;
         }
         .btn-refuse:hover { color: #ff4444; border-color: rgba(255,68,68,.3); }
         .btn-refuse:disabled { opacity: .4; cursor: default; }
@@ -220,6 +208,7 @@ $recent = $pdo->query("
             .demande-actions { flex-direction: row; }
         }
     </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -266,10 +255,10 @@ $recent = $pdo->query("
                 <?php endif; ?>
             </div>
             <div class="demande-actions">
-                <button class="btn-accept" onclick="traiter(<?= (int)$d['id_demande'] ?>, 'accepter', this)">
+                <button class="btn btn-accept" onclick="traiter(<?= (int)$d['id_demande'] ?>, 'accepter', this)">
                     Accepter →
                 </button>
-                <button class="btn-refuse" onclick="traiter(<?= (int)$d['id_demande'] ?>, 'refuser', this)">
+                <button class="btn btn-refuse" onclick="traiter(<?= (int)$d['id_demande'] ?>, 'refuser', this)">
                     Refuser
                 </button>
             </div>

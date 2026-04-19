@@ -418,6 +418,19 @@ CREATE TABLE mesure_capteur (
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- -------------------------------------------------------------
+-- LOG_REBOND — Gestion anti-rebond (Debounce) Z-Wave
+-- Stockée en RAM (Moteur MEMORY) pour des performances extrêmes sans I/O SD Card.
+-- -------------------------------------------------------------
+CREATE TABLE log_rebond (
+    domoticz_idx INT NOT NULL,
+    nvalue       INT NOT NULL,
+    date_recu    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (domoticz_idx, nvalue),
+    INDEX idx_date (date_recu)
+) ENGINE=MEMORY;
+
+
 -- =============================================================
 -- SEED DATA
 -- =============================================================

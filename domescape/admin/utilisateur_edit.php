@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../core/RoleGuard.php';
+require_once __DIR__ . '/../core/Csrf.php';
 require_once __DIR__ . '/../core/UserRepository.php';
 require_once __DIR__ . '/../partials/flash.php';
 
@@ -25,6 +26,7 @@ $allRoles    = $repo->getAllRoles();
 $error       = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    Csrf::verify();
     $nom   = trim($_POST['nom']   ?? '');
     $actif = isset($_POST['actif']) ? 1 : 0;
     $newRoles = array_map('intval', $_POST['roles'] ?? []);
@@ -58,7 +60,6 @@ $currentAdminId = Auth::user()['id'];
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Modifier l'utilisateur — DomEscape Admin</title>
-  <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
   <style>
     body        { background:#0d0d0d; color:#e0e0e0; font-family:system-ui,-apple-system,'Segoe UI',sans-serif; min-height:100vh; }
     a           { color:#00ff88; }
@@ -73,13 +74,12 @@ $currentAdminId = Auth::user()['id'];
     .role-item:last-child { border-bottom:none; }
     .role-check { accent-color:#00ff88; width:16px; height:16px; cursor:pointer; }
     .role-name  { font-size:.85rem; }
-    .btn-save   { background:#00ff88; color:#0d0d0d; border:none; font-weight:700; font-family:system-ui,-apple-system,'Segoe UI',sans-serif; padding:10px 24px; border-radius:4px; font-size:.875rem; cursor:pointer; transition:.2s; }
-    .btn-save:hover { background:#00cc6a; }
-    .btn-cancel { background:transparent; border:1px solid #333; color:#aaa; font-family:system-ui,-apple-system,'Segoe UI',sans-serif; padding:10px 24px; border-radius:4px; font-size:.875rem; text-decoration:none; transition:.2s; }
-    .btn-cancel:hover { border-color:#555; color:#e0e0e0; }
+    .btn-save   { font-size:.875rem; padding:10px 24px; }
+    .btn-cancel { font-size:.875rem; padding:10px 24px; }
     .error-box  { background:rgba(255,68,68,.08); border:1px solid #ff4444; color:#ff4444; padding:10px 14px; border-radius:4px; font-size:.8rem; margin-bottom:20px; }
     .section-label{ font-size:.7rem; letter-spacing:.12em; color:#555; text-transform:uppercase; margin-bottom:14px; margin-top:24px; }
   </style>
+    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
 
@@ -97,13 +97,14 @@ $currentAdminId = Auth::user()['id'];
 
   <div class="form-card">
     <form method="post" action="">
-      <div class="mb-4">
+                <?= Csrf::field() ?>
+      <div style="margin-bottom:20px;">
         <label class="form-label" for="nom">Nom</label>
         <input type="text" id="nom" name="nom" class="form-control"
                value="<?= htmlspecialchars($target['nom'], ENT_QUOTES, 'UTF-8') ?>" required>
       </div>
 
-      <div class="mb-4">
+      <div style="margin-bottom:20px;">
         <label class="form-label">Adresse e-mail</label>
         <div style="font-size:.875rem;color:#555;padding:8px 0;">
           <?= htmlspecialchars($target['email'], ENT_QUOTES, 'UTF-8') ?>
@@ -144,8 +145,8 @@ $currentAdminId = Auth::user()['id'];
       </div>
 
       <div style="display:flex;gap:12px;margin-top:8px;">
-        <button type="submit" class="btn-save">Enregistrer</button>
-        <a href="/domescape/admin/utilisateurs.php" class="btn-cancel">Annuler</a>
+        <button type="submit" class="btn btn-primary btn-save">Enregistrer</button>
+        <a href="/domescape/admin/utilisateurs.php" class="btn btn-outline btn-cancel">Annuler</a>
       </div>
     </form>
   </div>
