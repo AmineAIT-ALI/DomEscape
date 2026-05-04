@@ -111,6 +111,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $success = 'Étape supprimée.';
     }
+
+    // Enregistrer événements attendus
+    if ($action === 'save_attend') {
+        $idEtape = (int)($_POST['id_etape'] ?? 0);
+        $chk = $pdo->prepare("SELECT id_etape FROM etape WHERE id_etape=? AND id_scenario=?");
+        $chk->execute([$idEtape, $id]);
+        if ($chk->fetch()) {
+            $pdo->prepare("DELETE FROM etape_attend WHERE id_etape=?")->execute([$idEtape]);
+            $caps   = $_POST['attend_capteur']     ?? [];
+            $evts   = $_POST['attend_event']       ?? [];
+            $obligs = $_POST['attend_obligatoire'] ?? [];
+            $ins = $pdo->prepare("INSERT IGNORE INTO etape_attend (id_etape,id_capteur,id_type_evenement,obligatoire) VALUES (?,?,?,?)");
+            foreach ($caps as $i => $cap) {
+                $cap  = (int)$cap;
+                $evt  = (int)($evts[$i] ?? 0);
+                $obli = (int)($obligs[$i] ?? 1);
+                if ($cap > 0 && $evt > 0) $ins->execute([$idEtape, $cap, $evt, $obli]);
+            }
+            $success = 'Événements attendus enregistrés.';
+            header("Location: /domescape/admin/scenario_edit.php?id=$id&edit_etape=$idEtape");
+            exit;
+        }
+    }
+
+    // Enregistrer actions déclenchées
+    if ($action === 'save_declenche') {
+        $idEtape = (int)($_POST['id_etape'] ?? 0);
+        $chk = $pdo->prepare("SELECT id_etape FROM etape WHERE id_etape=? AND id_scenario=?");
+        $chk->execute([$idEtape, $id]);
+        if ($chk->fetch()) {
+            $pdo->prepare("DELETE FROM etape_declenche WHERE id_etape=?")->execute([$idEtape]);
+            $acts    = $_POST['dec_actionneur'] ?? [];
+            $types   = $_POST['dec_type']       ?? [];
+            $moments = $_POST['dec_moment']     ?? [];
+            $valeurs = $_POST['dec_valeur']     ?? [];
+            $allowed = ['on_enter','on_success','on_failure','on_hint'];
+            $ins = $pdo->prepare("INSERT INTO etape_declenche (id_etape,id_actionneur,id_type_action,ordre_action,valeur_action,moment_declenchement) VALUES (?,?,?,?,?,?)");
+            $ordre = 1;
+            foreach ($acts as $i => $act) {
+                $act    = (int)$act;
+                $type   = (int)($types[$i] ?? 0);
+                $moment = in_array($moments[$i] ?? '', $allowed) ? $moments[$i] : 'on_success';
+                $valeur = trim($valeurs[$i] ?? '') ?: null;
+                if ($act > 0 && $type > 0) $ins->execute([$idEtape, $act, $type, $ordre++, $valeur, $moment]);
+            }
+            $success = 'Actions déclenchées enregistrées.';
+            header("Location: /domescape/admin/scenario_edit.php?id=$id&edit_etape=$idEtape");
+            exit;
+        }
+    }
 }
 
 // Charger étapes
@@ -125,6 +175,36 @@ if (isset($_GET['edit_etape'])) {
     foreach ($etapes as $e) {
         if ((int)$e['id_etape'] === $editId) { $editEtape = $e; break; }
     }
+}
+
+// Catalogues
+$capteurs    = $pdo->query("SELECT * FROM capteur    WHERE actif=1 ORDER BY nom_capteur")->fetchAll();
+$eventTypes  = $pdo->query("SELECT * FROM evenement_type ORDER BY libelle_evenement")->fetchAll();
+$actionneurs = $pdo->query("SELECT * FROM actionneur WHERE actif=1 ORDER BY nom_actionneur")->fetchAll();
+$actionTypes = $pdo->query("SELECT * FROM action_type ORDER BY libelle_action")->fetchAll();
+
+// Données existantes pour l'étape en cours d'édition
+$attendList    = [];
+$declencheList = [];
+if ($editEtape) {
+    $s = $pdo->prepare(
+        "SELECT ea.*, c.nom_capteur, et.libelle_evenement
+         FROM etape_attend ea
+         JOIN capteur c ON c.id_capteur = ea.id_capteur
+         JOIN evenement_type et ON et.id_type_evenement = ea.id_type_evenement
+         WHERE ea.id_etape = ?");
+    $s->execute([$editEtape['id_etape']]);
+    $attendList = $s->fetchAll();
+
+    $s = $pdo->prepare(
+        "SELECT ed.*, a.nom_actionneur, at.libelle_action
+         FROM etape_declenche ed
+         JOIN actionneur a ON a.id_actionneur = ed.id_actionneur
+         JOIN action_type at ON at.id_type_action = ed.id_type_action
+         WHERE ed.id_etape = ?
+         ORDER BY ed.moment_declenchement, ed.ordre_action");
+    $s->execute([$editEtape['id_etape']]);
+    $declencheList = $s->fetchAll();
 }
 ?>
 <!DOCTYPE html>
@@ -396,6 +476,149 @@ if (isset($_GET['edit_etape'])) {
         </form>
     </div>
 
+    <?php
+    $flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+    $jsCapteurs    = json_encode(array_values(array_map(fn($c)  => ['v' => (int)$c['id_capteur'],        'l' => $c['nom_capteur'],       't' => $c['type_capteur']],    $capteurs)),    $flags);
+    $jsEvents      = json_encode(array_values(array_map(fn($e)  => ['v' => (int)$e['id_type_evenement'], 'l' => $e['libelle_evenement'], 't' => $e['type_capteur']], $eventTypes)), $flags);
+    $jsActionneurs = json_encode(array_values(array_map(fn($a)  => ['v' => (int)$a['id_actionneur'],     'l' => $a['nom_actionneur']],  $actionneurs)), $flags);
+    $jsTypes       = json_encode(array_values(array_map(fn($at) => ['v' => (int)$at['id_type_action'],   'l' => $at['libelle_action']], $actionTypes)), $flags);
+    ?>
+    <script>
+    const CAPTEURS    = <?= $jsCapteurs ?>;
+    const EVENTS      = <?= $jsEvents ?>;
+    const ACTIONNEURS = <?= $jsActionneurs ?>;
+    const ACTION_TYPES = <?= $jsTypes ?>;
+    </script>
+
+    <!-- Événements attendus -->
+    <div class="section-label" style="margin-top:20px;">Événement attendu pour valider l'étape</div>
+    <div class="panel" style="padding:0;">
+        <form method="POST">
+            <?= Csrf::field() ?>
+            <input type="hidden" name="action" value="save_attend">
+            <input type="hidden" name="id_etape" value="<?= (int)$editEtape['id_etape'] ?>">
+            <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:.78rem;">
+                <thead>
+                    <tr>
+                        <th style="padding:9px 14px;font-size:.6rem;letter-spacing:.08em;color:#444;text-transform:uppercase;text-align:left;border-bottom:1px solid #0a0a14;font-weight:normal;">Capteur</th>
+                        <th style="padding:9px 14px;font-size:.6rem;letter-spacing:.08em;color:#444;text-transform:uppercase;text-align:left;border-bottom:1px solid #0a0a14;font-weight:normal;">Événement</th>
+                        <th style="padding:9px 14px;font-size:.6rem;letter-spacing:.08em;color:#444;text-transform:uppercase;text-align:left;border-bottom:1px solid #0a0a14;font-weight:normal;">Obligatoire</th>
+                        <th style="border-bottom:1px solid #0a0a14;width:40px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="attend-body">
+                <?php
+                $attendRows = !empty($attendList) ? $attendList : [['id_capteur' => '', 'id_type_evenement' => '', 'obligatoire' => 1]];
+                foreach ($attendRows as $a):
+                ?>
+                <tr class="attend-row">
+                    <td style="padding:10px 14px;">
+                        <select name="attend_capteur[]" class="form-input" style="padding:6px 10px;" onchange="filterEvents(this)">
+                            <option value="">— capteur —</option>
+                            <?php foreach ($capteurs as $c): ?>
+                                <option value="<?= (int)$c['id_capteur'] ?>" <?= isset($a['id_capteur']) && $c['id_capteur'] == $a['id_capteur'] ? 'selected' : '' ?>><?= htmlspecialchars($c['nom_capteur'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td style="padding:10px 14px;">
+                        <select name="attend_event[]" class="form-input" style="padding:6px 10px;">
+                            <option value="">— événement —</option>
+                            <?php foreach ($eventTypes as $et): ?>
+                                <option value="<?= (int)$et['id_type_evenement'] ?>" <?= isset($a['id_type_evenement']) && $et['id_type_evenement'] == $a['id_type_evenement'] ? 'selected' : '' ?>><?= htmlspecialchars($et['libelle_evenement'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td style="padding:10px 14px;">
+                        <select name="attend_obligatoire[]" class="form-input" style="padding:6px 10px;width:auto;">
+                            <option value="1" <?= !isset($a['obligatoire']) || $a['obligatoire'] ? 'selected' : '' ?>>Oui</option>
+                            <option value="0" <?= isset($a['obligatoire']) && !$a['obligatoire'] ? 'selected' : '' ?>>Non</option>
+                        </select>
+                    </td>
+                    <td style="padding:10px 14px;">
+                        <button type="button" onclick="removeRow(this)" class="btn btn-action btn-del-sm" title="Supprimer">×</button>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-top:1px solid #0a0a14;">
+                <button type="button" onclick="addAttendRow()" class="btn btn-outline btn-sm">+ Ajouter</button>
+                <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Actions déclenchées -->
+    <div class="section-label" style="margin-top:20px;">Actions déclenchées par l'étape</div>
+    <div class="panel" style="padding:0;">
+        <form method="POST">
+            <?= Csrf::field() ?>
+            <input type="hidden" name="action" value="save_declenche">
+            <input type="hidden" name="id_etape" value="<?= (int)$editEtape['id_etape'] ?>">
+            <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:.78rem;">
+                <thead>
+                    <tr>
+                        <th style="padding:9px 14px;font-size:.6rem;letter-spacing:.08em;color:#444;text-transform:uppercase;text-align:left;border-bottom:1px solid #0a0a14;font-weight:normal;">Moment</th>
+                        <th style="padding:9px 14px;font-size:.6rem;letter-spacing:.08em;color:#444;text-transform:uppercase;text-align:left;border-bottom:1px solid #0a0a14;font-weight:normal;">Actionneur</th>
+                        <th style="padding:9px 14px;font-size:.6rem;letter-spacing:.08em;color:#444;text-transform:uppercase;text-align:left;border-bottom:1px solid #0a0a14;font-weight:normal;">Action</th>
+                        <th style="padding:9px 14px;font-size:.6rem;letter-spacing:.08em;color:#444;text-transform:uppercase;text-align:left;border-bottom:1px solid #0a0a14;font-weight:normal;">Valeur</th>
+                        <th style="border-bottom:1px solid #0a0a14;width:40px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="dec-body">
+                <?php
+                $decRows = !empty($declencheList) ? $declencheList : [['id_actionneur' => '', 'id_type_action' => '', 'moment_declenchement' => 'on_success', 'valeur_action' => '']];
+                foreach ($decRows as $d):
+                    $mom = $d['moment_declenchement'] ?? 'on_success';
+                ?>
+                <tr class="dec-row">
+                    <td style="padding:10px 14px;">
+                        <select name="dec_moment[]" class="form-input" style="padding:6px 10px;width:auto;">
+                            <option value="on_enter"  <?= $mom === 'on_enter'  ? 'selected' : '' ?>>On enter</option>
+                            <option value="on_success"<?= $mom === 'on_success'? 'selected' : '' ?>>On success</option>
+                            <option value="on_failure"<?= $mom === 'on_failure'? 'selected' : '' ?>>On failure</option>
+                            <option value="on_hint"   <?= $mom === 'on_hint'   ? 'selected' : '' ?>>On hint</option>
+                        </select>
+                    </td>
+                    <td style="padding:10px 14px;">
+                        <select name="dec_actionneur[]" class="form-input" style="padding:6px 10px;">
+                            <option value="">— actionneur —</option>
+                            <?php foreach ($actionneurs as $act): ?>
+                                <option value="<?= (int)$act['id_actionneur'] ?>" <?= isset($d['id_actionneur']) && $act['id_actionneur'] == $d['id_actionneur'] ? 'selected' : '' ?>><?= htmlspecialchars($act['nom_actionneur'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td style="padding:10px 14px;">
+                        <select name="dec_type[]" class="form-input" style="padding:6px 10px;">
+                            <option value="">— action —</option>
+                            <?php foreach ($actionTypes as $at): ?>
+                                <option value="<?= (int)$at['id_type_action'] ?>" <?= isset($d['id_type_action']) && $at['id_type_action'] == $d['id_type_action'] ? 'selected' : '' ?>><?= htmlspecialchars($at['libelle_action'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td style="padding:10px 14px;">
+                        <input type="text" name="dec_valeur[]" class="form-input" placeholder="ex : Niveau 1 OK !"
+                               style="padding:6px 10px;" maxlength="100"
+                               value="<?= htmlspecialchars($d['valeur_action'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    </td>
+                    <td style="padding:10px 14px;">
+                        <button type="button" onclick="removeRow(this)" class="btn btn-action btn-del-sm" title="Supprimer">×</button>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-top:1px solid #0a0a14;">
+                <button type="button" onclick="addDecRow()" class="btn btn-outline btn-sm">+ Ajouter</button>
+                <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+
     <?php else: ?>
     <!-- Formulaire ajout étape -->
     <div class="section-label">Ajouter une étape</div>
@@ -449,6 +672,79 @@ if (isset($_GET['edit_etape'])) {
 </div>
 
 <script src="/domescape/assets/vendor/lucide.min.js"></script>
-<script>lucide.createIcons();</script>
+<script>
+lucide.createIcons();
+
+function removeRow(btn) {
+    btn.closest('tr').remove();
+}
+
+function makeSelect(name, options, selected = '', extra = '') {
+    return `<select name="${name}" class="form-input" style="padding:6px 10px;" ${extra}>
+        <option value="">—</option>
+        ${options.map(o => `<option value="${o.v}"${o.v == selected ? ' selected' : ''}>${o.l}</option>`).join('')}
+    </select>`;
+}
+
+function filterEvents(capteurSel) {
+    const capteur = CAPTEURS.find(c => c.v == capteurSel.value);
+    const type = capteur ? capteur.t : null;
+    const row = capteurSel.closest('tr');
+    const eventSel = row.querySelector('select[name="attend_event[]"]');
+    Array.from(eventSel.options).forEach(opt => {
+        if (!opt.value) return;
+        const evt = EVENTS.find(e => e.v == opt.value);
+        const hide = type && evt ? evt.t !== type : false;
+        opt.hidden = hide;
+        opt.disabled = hide;
+    });
+    const cur = eventSel.options[eventSel.selectedIndex];
+    if (cur && cur.hidden) eventSel.value = '';
+}
+
+function addAttendRow() {
+    const tr = document.createElement('tr');
+    tr.className = 'attend-row';
+    tr.innerHTML = `
+        <td style="padding:10px 14px;">${makeSelect('attend_capteur[]', CAPTEURS, '', 'onchange="filterEvents(this)"')}</td>
+        <td style="padding:10px 14px;">${makeSelect('attend_event[]', EVENTS)}</td>
+        <td style="padding:10px 14px;">
+            <select name="attend_obligatoire[]" class="form-input" style="padding:6px 10px;width:auto;">
+                <option value="1" selected>Oui</option>
+                <option value="0">Non</option>
+            </select>
+        </td>
+        <td style="padding:10px 14px;">
+            <button type="button" onclick="removeRow(this)" class="btn btn-action btn-del-sm" title="Supprimer">×</button>
+        </td>`;
+    document.getElementById('attend-body').appendChild(tr);
+}
+
+// Filtrer les événements au chargement pour les lignes pré-remplies
+document.querySelectorAll('select[name="attend_capteur[]"]').forEach(filterEvents);
+
+function addDecRow() {
+    const tr = document.createElement('tr');
+    tr.className = 'dec-row';
+    tr.innerHTML = `
+        <td style="padding:10px 14px;">
+            <select name="dec_moment[]" class="form-input" style="padding:6px 10px;width:auto;">
+                <option value="on_enter">On enter</option>
+                <option value="on_success" selected>On success</option>
+                <option value="on_failure">On failure</option>
+                <option value="on_hint">On hint</option>
+            </select>
+        </td>
+        <td style="padding:10px 14px;">${makeSelect('dec_actionneur[]', ACTIONNEURS)}</td>
+        <td style="padding:10px 14px;">${makeSelect('dec_type[]', ACTION_TYPES)}</td>
+        <td style="padding:10px 14px;">
+            <input type="text" name="dec_valeur[]" class="form-input" placeholder="ex : Niveau 1 OK !" style="padding:6px 10px;" maxlength="100">
+        </td>
+        <td style="padding:10px 14px;">
+            <button type="button" onclick="removeRow(this)" class="btn btn-action btn-del-sm" title="Supprimer">×</button>
+        </td>`;
+    document.getElementById('dec-body').appendChild(tr);
+}
+</script>
 </body>
 </html>

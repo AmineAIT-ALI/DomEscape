@@ -48,7 +48,7 @@ class RoleGuard
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Accès refusé — DomEscape</title>
-  <link href="/domescape/assets/vendor/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/domescape/assets/css/components.css">
   <style>
     body { background: #0d0d0d; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
     .deny-box { text-align: center; max-width: 480px; }
@@ -57,7 +57,6 @@ class RoleGuard
     .deny-sub { color: #888; font-size: 0.9rem; margin-bottom: 32px; }
     .btn-back { background: #1a1a2e; color: #00ff88; border-color: #333; font-size: .85rem; }
   </style>
-    <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
   <div class="deny-box">

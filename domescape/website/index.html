@@ -13,13 +13,8 @@
   <div class="nav-inner">
     <a href="index.html" class="nav-logo"><span class="dot"></span>DomEscape</a>
     <div class="nav-links">
-      <a href="demo.html">Démonstration</a>
-      <a href="platform.html">Plateforme</a>
-      <a href="architecture.html">Architecture</a>
-      <a href="control-center.html">Centre de contrôle</a>
-      <a href="data-observability.html">Données</a>
-      <a href="docs.html">Documentation</a>
-      <a href="vision.html">Vision</a>
+      <a href="#pages">Documentation</a>
+      <a href="#acces">Accès</a>
     </div>
     <div class="nav-cta">
       <a href="../public/connexion.php" class="btn btn-ghost btn-sm">Connexion</a>
@@ -46,7 +41,7 @@
 
   <div class="hero-actions animate-fade-up delay-3">
     <a href="../public/inscription.php" class="btn btn-primary btn-lg">Créer un compte →</a>
-    <a href="demo.html" class="btn btn-outline btn-lg">Voir en action</a>
+    <a href="#pages" class="btn btn-outline btn-lg">Documentation</a>
     <a href="../public/connexion.php" class="btn btn-ghost btn-lg">Connexion</a>
   </div>
 
@@ -161,7 +156,7 @@
   </div>
 </section>
 
-<!-- SECTION 4 : Concepts clés (anciennement 3) -->
+<!-- SECTION 4 : Concepts clés -->
 <section class="section grid-bg">
   <div class="section-header center animate-fade-up">
     <div class="section-label">CONCEPTS CLÉS</div>
@@ -202,7 +197,7 @@
   </div>
 </section>
 
-<!-- SECTION 4 : Ingénierie -->
+<!-- SECTION 5 : Ingénierie -->
 <section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
   <div class="section">
     <div class="section-header center animate-fade-up">
@@ -235,8 +230,60 @@
   </div>
 </section>
 
-<!-- SECTION 5 : Accéder à la plateforme -->
-<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+<!-- SECTION 6 : Pages du projet -->
+<section id="pages" class="section grid-bg">
+  <div class="section-header center animate-fade-up">
+    <div class="section-label">DOCUMENTATION</div>
+    <h2 class="section-title">Ce que couvre le projet.</h2>
+    <p class="section-sub">Huit domaines documentés — de la vision initiale au schéma d'architecture déployé sur Raspberry Pi.</p>
+  </div>
+
+  <div class="grid-4">
+    <div class="card glow-card animate-fade-up delay-1">
+      <div class="card-icon green"><i data-lucide="eye"></i></div>
+      <div class="card-title">Vision</div>
+      <p class="card-text">Pourquoi DomEscape existe. Les deux secteurs qu'il connecte — domotique et escape room — et le problème qu'aucun système ne résolvait.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-2">
+      <div class="card-icon purple"><i data-lucide="box"></i></div>
+      <div class="card-title">Plateforme</div>
+      <p class="card-text">La mécanique centrale : événements en entrée, logique en base de données, réactions physiques en sortie. Le moteur qui rend tout possible.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-3">
+      <div class="card-icon blue"><i data-lucide="network"></i></div>
+      <div class="card-title">Architecture</div>
+      <p class="card-text">Le flux complet de bout en bout : capteur Z-Wave → Domoticz → dzVents → PHP → MariaDB → interface → actionneur.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-4">
+      <div class="card-icon orange"><i data-lucide="git-branch"></i></div>
+      <div class="card-title">Schéma système</div>
+      <p class="card-text">Diagramme détaillé de l'architecture déployée sur Raspberry Pi 5 — couches hardware, middleware et applicative.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-1">
+      <div class="card-icon green"><i data-lucide="monitor"></i></div>
+      <div class="card-title">Centre de contrôle</div>
+      <p class="card-text">L'interface gamemaster en temps réel — suivi de progression, capteurs live, validation d'étapes et envoi d'indices.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-2">
+      <div class="card-icon blue"><i data-lucide="activity"></i></div>
+      <div class="card-title">Données & Observabilité</div>
+      <p class="card-text">Télémétrie capteurs, log des événements, traçabilité des actions. Chaque interaction laisse une trace exploitable.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-3">
+      <div class="card-icon purple"><i data-lucide="play-circle"></i></div>
+      <div class="card-title">Démonstration Lab 01</div>
+      <p class="card-text">Le scénario de démonstration : quatre étapes, trois capteurs Z-Wave, deux actionneurs. Tout est réel, rien n'est simulé.</p>
+    </div>
+    <div class="card glow-card animate-fade-up delay-4">
+      <div class="card-icon orange"><i data-lucide="book-open"></i></div>
+      <div class="card-title">Documentation technique</div>
+      <p class="card-text">API, structure des modules (EventManager, GameEngine, ActionManager), conventions de code et guide de déploiement.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7 : Accéder à la plateforme -->
+<section id="acces" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
   <div class="section">
     <div class="section-header center animate-fade-up">
       <div class="section-label">ACCÉDER À LA PLATEFORME</div>
@@ -266,18 +313,18 @@
   </div>
 </section>
 
-<!-- SECTION 6 : CTA final -->
+<!-- CTA final -->
 <section class="section">
   <div class="animate-fade-up" style="border: 1px solid var(--border-glow); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; background: var(--card); position: relative; overflow: hidden;">
     <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 600px; height: 200px; background: radial-gradient(ellipse, rgba(0,255,136,0.06) 0%, transparent 70%); pointer-events: none;"></div>
     <div class="section-label" style="display: inline-block; margin-bottom: 20px;">PRÊT</div>
-    <h2 class="section-title" style="margin-bottom: 16px;">Prêt à voir la démo ?</h2>
+    <h2 class="section-title" style="margin-bottom: 16px;">Prêt à tester la plateforme ?</h2>
     <p style="color: var(--text-muted); max-width: 520px; margin: 0 auto 40px; line-height: 1.7;">
       DomEscape Lab 01 tourne sur Raspberry Pi avec trois capteurs Z-Wave et deux actionneurs. Tout est réel.
     </p>
     <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
-      <a href="demo.html" class="btn btn-primary btn-lg">Explorer la démo →</a>
-      <a href="../public/inscription.php" class="btn btn-outline btn-lg">Créer un compte</a>
+      <a href="../public/inscription.php" class="btn btn-primary btn-lg">Créer un compte →</a>
+      <a href="../public/connexion.php" class="btn btn-outline btn-lg">Se connecter</a>
     </div>
   </div>
 </section>
@@ -285,13 +332,10 @@
 <footer class="footer">
   <div class="footer-logo">● DomEscape</div>
   <div class="footer-links">
-    <a href="demo.html">Démonstration</a>
-    <a href="platform.html">Plateforme</a>
-    <a href="architecture.html">Architecture</a>
-    <a href="control-center.html">Centre de contrôle</a>
-    <a href="data-observability.html">Données</a>
-    <a href="docs.html">Documentation</a>
-    <a href="vision.html">Vision</a>
+    <a href="#pages">Documentation</a>
+    <a href="#acces">Accès</a>
+    <a href="../public/connexion.php">Connexion</a>
+    <a href="../public/inscription.php">Créer un compte</a>
   </div>
 </footer>
 

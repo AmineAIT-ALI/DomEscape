@@ -89,11 +89,6 @@ else
     warn "Import schéma échoué (tables existent peut-être déjà)"
 fi
 
-if mariadb domescape < "$DEPLOY_DIR/sql/auth_extension.sql" 2>/dev/null; then
-    ok "Auth extension importée (utilisateur, role, utilisateur_role)"
-else
-    warn "Import auth_extension échoué (tables existent peut-être déjà)"
-fi
 
 # --- 5b. Créer le dossier logs/ avec les bonnes permissions ---
 echo ">>> Dossier logs/..."
