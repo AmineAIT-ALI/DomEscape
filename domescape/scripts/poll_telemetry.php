@@ -8,16 +8,14 @@
 // Cron : */5 * * * * php /var/www/html/domescape/scripts/poll_telemetry.php
 // =============================================================
 
+require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/database.php';
 
-define('DOMOTICZ_HOST', DOMOTICZ_URL);
-define('DOMOTICZ_USER', 'admin');
-define('DOMOTICZ_PASS', 'domoticz');
-define('DEVICE_IDX',    8);
-define('ID_CAPTEUR',    5);
+define('DEVICE_IDX', 8);
+define('ID_CAPTEUR',  5);
 
-function fetch_device($idx) {
-    $url = DOMOTICZ_HOST . '/json.htm?type=devices&rid=' . $idx;
+function fetch_device(int $idx): array {
+    $url = DOMOTICZ_URL . '/json.htm?type=devices&rid=' . $idx;
     $ch  = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
@@ -28,28 +26,27 @@ function fetch_device($idx) {
     curl_close($ch);
 
     if ($output === false || $httpCode !== 200) {
-        throw new RuntimeException("Domoticz HTTP $httpCode");
+        throw new RuntimeException("Domoticz HTTP $httpCode pour idx=$idx");
     }
     $data    = json_decode($output, true);
     $results = $data['result'] ?? [];
     if (empty($results)) {
-        throw new RuntimeException("Device idx=$idx introuvable");
+        throw new RuntimeException("Device idx=$idx introuvable dans Domoticz");
     }
     return $results[0];
 }
 
-function insert_mesure($temperature, $humidite) {
+function insert_mesure(float $temperature, float $humidite): void {
     $pdo  = getDB();
-    $stmt = $pdo->prepare(
+    $pdo->prepare(
         'INSERT INTO mesure_capteur (id_capteur, temperature, humidite) VALUES (?, ?, ?)'
-    );
-    $stmt->execute([ID_CAPTEUR, $temperature, $humidite]);
+    )->execute([ID_CAPTEUR, $temperature, $humidite]);
 }
 
 try {
     $device = fetch_device(DEVICE_IDX);
-    $temp   = (float) ($device['Temp']     ?? 0);
-    $humid  = (float) ($device['Humidity'] ?? 0);
+    $temp   = (float)($device['Temp']     ?? 0);
+    $humid  = (float)($device['Humidity'] ?? 0);
     insert_mesure($temp, $humid);
     echo "[OK] {$temp}°C, {$humid}%" . PHP_EOL;
 } catch (Exception $e) {

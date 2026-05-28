@@ -1,179 +1,14 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../core/RoleGuard.php';
-RoleGuard::requireRole(ROLE_SUPERVISEUR);
+RoleGuard::requireAdmin();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DomEscape — Game Master</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background: #080810;
-            color: #e0e0e0;
-            font-family: 'Courier New', monospace;
-            min-height: 100vh;
-        }
-
-        /* ── Layout ── */
-        .layout {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 16px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; }
-        }
-
-        /* ── Panel ── */
-        .panel {
-            background: #0d0d1a;
-            border: 1px solid #1a1a2e;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .panel-title {
-            font-size: .68rem;
-            color: #333;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #111827;
-        }
-        .panel-title span { color: #00ff88; }
-
-        /* ── Status badge ── */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: .7rem;
-            padding: 3px 10px;
-            border-radius: 20px;
-        }
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
-        .badge-running { background: rgba(0,255,136,.08); color: #00ff88; border: 1px solid rgba(0,255,136,.3); }
-        .badge-running .status-dot { background: #00ff88; box-shadow: 0 0 6px #00ff88; animation: blink 1.2s infinite; }
-        .badge-won     { background: rgba(68,136,255,.08); color: #4488ff; border: 1px solid rgba(68,136,255,.3); }
-        .badge-won .status-dot { background: #4488ff; }
-        .badge-idle    { background: rgba(255,255,255,.03); color: #444; border: 1px solid #1f2937; }
-        .badge-idle .status-dot { background: #333; }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-        /* ── Stats grid ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .stat-box {
-            background: #080810;
-            border: 1px solid #111827;
-            border-radius: 6px;
-            padding: 14px 16px;
-        }
-        .stat-label { font-size: .70rem; color: #444; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
-        .stat-value { font-size: 1.3rem; font-weight: 700; color: #e0e0e0; }
-        .stat-value.green  { color: #00ff88; }
-        .stat-value.red    { color: #ff4444; }
-        .stat-value.yellow { color: #f0c040; }
-
-        /* ── Puzzle info ── */
-        .puzzle-info {
-            background: #080810;
-            border: 1px solid #111827;
-            border-radius: 6px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-        .puzzle-info-label {
-            font-size: .6rem;
-            color: #333;
-            letter-spacing: .1em;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-        .puzzle-info-title { font-size: .92rem; color: #e0e0e0; margin-bottom: 6px; }
-        .puzzle-info-desc  { font-size: .78rem; color: #555; line-height: 1.55; }
-
-        /* ── Event timeline ── */
-        .event-list { display: flex; flex-direction: column; gap: 4px; }
-        .event-row {
-            display: grid;
-            grid-template-columns: 60px 1fr auto;
-            align-items: center;
-            gap: 10px;
-            padding: 7px 10px;
-            border-radius: 4px;
-            font-size: .75rem;
-            background: rgba(255,255,255,.02);
-            border: 1px solid transparent;
-            transition: border-color .2s;
-        }
-        .event-row:hover { border-color: #1f2937; }
-        .event-time  { color: #333; font-size: .7rem; }
-        .event-body  { display: flex; flex-direction: column; gap: 2px; }
-        .event-code  { color: #aaa; font-size: .75rem; }
-        .event-sensor{ color: #444; font-size: .68rem; }
-        .event-badge {
-            font-size: .62rem;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .badge-ok  { background: rgba(0,255,136,.1);  color: #00ff88; }
-        .badge-err { background: rgba(255,68,68,.1);  color: #ff4444; }
-        .badge-ign { background: rgba(255,255,255,.04); color: #444; }
-        .no-events { font-size: .75rem; color: #333; padding: 16px 0; text-align: center; }
-
-        /* ── Action log ── */
-        .action-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 0;
-            border-bottom: 1px solid #0d0d1a;
-            font-size: .73rem;
-        }
-        .action-time   { color: #333; font-size: .68rem; flex-shrink: 0; }
-        .action-code   { color: #888; flex: 1; }
-        .action-target { color: #444; font-size: .68rem; }
-        .action-ok  { color: #00ff88; font-size: .65rem; }
-        .action-err { color: #ff4444; font-size: .65rem; }
-
-        /* ── Controls ── */
-        .controls { display: flex; flex-direction: column; gap: 8px; }
-        .btn-ctrl {
-            display: block;
-            width: 100%;
-            padding: 10px 14px;
-            background: transparent;
-            border: 1px solid #1f2937;
-            color: #888;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-            font-size: .78rem;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: left;
-            text-decoration: none;
-            transition: border-color .15s, color .15s;
-        }
-        .btn-ctrl:hover { border-color: #374151; color: #e0e0e0; }
-        .btn-ctrl.yellow:hover { border-color: #f0c040; color: #f0c040; }
-        .btn-ctrl.red:hover    { border-color: #ff4444; color: #ff4444; }
-        .btn-ctrl.green:hover  { border-color: #00ff88; color: #00ff88; }
-        .btn-ctrl-prefix { color: #333; margin-right: 8px; }
-    </style>
+    <title>DomEscape — Supervision</title>
     <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
@@ -265,10 +100,25 @@ RoleGuard::requireRole(ROLE_SUPERVISEUR);
         </div>
 
         <div class="panel">
-            <div class="panel-title">Log local</div>
+            <div class="panel-title">Journal local</div>
             <div id="localLog" style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
                 <div class="no-events">—</div>
             </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Conditions laboratoire</div>
+            <div class="stats-grid" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+                <div class="stat-box">
+                    <div class="stat-label">Température</div>
+                    <div class="stat-value" id="gmTemp" style="color:#60a5fa;">—</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Humidité</div>
+                    <div class="stat-value" id="gmHumid" style="color:#a78bfa;">—</div>
+                </div>
+            </div>
+            <div id="gmTelemDate" style="font-size:.65rem;color:#333;text-align:center;">—</div>
         </div>
 
     </div>
@@ -371,7 +221,7 @@ function poll() {
 
             setBadge(data.status);
 
-            document.getElementById('gmTeam').textContent  = data.equipe;
+            document.getElementById('gmTeam').textContent  = data.nom_equipe;
             document.getElementById('gmGame').textContent  = data.scenario;
             document.getElementById('gmScore').textContent = data.score;
             document.getElementById('gmMistakes').textContent = data.nb_erreurs;
@@ -403,12 +253,22 @@ function poll() {
             if (lastSessionId !== data.session_id) {
                 lastSessionId = data.session_id;
                 startTime = null;
-                addLocalLog('Session #' + data.session_id + ' — ' + data.equipe, 'ok');
+                addLocalLog('Session #' + data.session_id + ' — ' + data.nom_equipe, 'ok');
             }
 
             // Événements + actions depuis BDD
             renderEvents(data.events);
             renderActions(data.actions);
+
+            // Télémétrie
+            if (data.telemetry) {
+                document.getElementById('gmTemp').textContent =
+                    data.telemetry.temperature !== null ? data.telemetry.temperature + ' °C' : '—';
+                document.getElementById('gmHumid').textContent =
+                    data.telemetry.humidite !== null ? data.telemetry.humidite + ' %' : '—';
+                document.getElementById('gmTelemDate').textContent =
+                    data.telemetry.date ? data.telemetry.date.substr(0, 16) : '—';
+            }
 
             // Nouveaux événements depuis dernier poll
             if (data.events && data.events.length > lastEvtCount && lastEvtCount > 0) {
@@ -435,7 +295,7 @@ function sendHint() {
 
 function resetSession() {
     if (!confirm('Réinitialiser la session en cours ?')) return;
-    fetch('/domescape/api/reset_game.php')
+    fetch('/domescape/api/reset_game.php', { method: 'POST' })
         .then(r => r.json())
         .then(() => {
             addLocalLog('Session réinitialisée.', 'err');

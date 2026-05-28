@@ -88,12 +88,14 @@ class DomoticzClient
 
     private function get(array $params): array
     {
-        $url = $this->baseUrl . '?' . http_build_query($params);
+        $url  = $this->baseUrl . '?' . http_build_query($params);
+        $auth = base64_encode(DOMOTICZ_USER . ':' . DOMOTICZ_PASS);
 
         $ctx = stream_context_create([
             'http' => [
                 'timeout' => 3,
                 'method'  => 'GET',
+                'header'  => 'Authorization: Basic ' . $auth . "\r\n",
             ]
         ]);
 

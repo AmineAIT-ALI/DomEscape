@@ -20,11 +20,11 @@ if (!Auth::check()) {
     exit;
 }
 
+$pdo     = getDB();
 $session = GameEngine::getActiveSession();
 
 if ($session === null) {
     // Chercher la dernière session terminée (pour afficher le résultat)
-    $pdo  = getDB();
     $stmt = $pdo->query("
         SELECT * FROM session
         WHERE statut_session IN ('gagnee','perdue','abandonnee')
@@ -40,8 +40,6 @@ if ($session === null) {
     }
 }
 
-$pdo = getDB();
-
 // Étape courante
 $etape = null;
 if ($session['id_etape_courante']) {
@@ -50,11 +48,7 @@ if ($session['id_etape_courante']) {
     $etape = $s->fetch();
 }
 
-// Équipe + scénario
-$equipeStmt = $pdo->prepare('SELECT * FROM equipe WHERE id_equipe = ? LIMIT 1');
-$equipeStmt->execute([$session['id_equipe']]);
-$equipe = $equipeStmt->fetch();
-
+// Scénario
 $scenarioStmt = $pdo->prepare('SELECT * FROM scenario WHERE id_scenario = ? LIMIT 1');
 $scenarioStmt->execute([$session['id_scenario']]);
 $scenario = $scenarioStmt->fetch();
@@ -110,35 +104,48 @@ $actStmt = $pdo->prepare("
 $actStmt->execute([$session['id_session']]);
 $actions = $actStmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Dernière mesure télémétrie
+$telemRow = $pdo->query("
+    SELECT temperature, humidite, date_mesure
+    FROM mesure_capteur
+    ORDER BY date_mesure DESC
+    LIMIT 1
+")->fetch(PDO::FETCH_ASSOC);
+
 echo json_encode([
     'status'          => $session['statut_session'],
     'session_id'      => $session['id_session'],
-    'equipe'          => $equipe['nom_equipe']    ?? 'Équipe inconnue',
+    'nom_equipe'      => $session['nom_equipe'],
     'scenario'        => $scenario['nom_scenario'] ?? '',
     'score'           => $session['score'],
     'nb_erreurs'      => $session['nb_erreurs'],
     'nb_indices'      => (int)$session['nb_indices'],
     'elapsed_seconds' => $elapsed,
     'etape' => [
-        'id'          => $etape['id_etape']          ?? null,
-        'numero'      => $etape['numero_etape']       ?? null,
-        'titre'       => $etape['titre_etape']        ?? '',
-        'description' => $etape['description_etape']  ?? '',
+        'id'          => $etape['id_etape']         ?? null,
+        'numero'      => $etape['numero_etape']      ?? null,
+        'titre'       => $etape['titre_etape']       ?? '',
+        'description' => $etape['description_etape'] ?? '',
     ],
     'total_etapes' => $total,
-    'events'        => array_map(fn($r) => [
-        'time'     => substr($r['date_evenement'], 11, 8),
-        'capteur'  => $r['nom_capteur']  ?? '?',
-        'code'     => $r['code_evenement'] ?? '?',
-        'etape'    => $r['numero_etape'] ?? null,
-        'valide'   => (bool)$r['valide'],
-        'attendu'  => (bool)$r['evenement_attendu'],
+    'events'  => array_map(fn($r) => [
+        'time'    => substr($r['date_evenement'], 11, 8),
+        'capteur' => $r['nom_capteur']    ?? '?',
+        'code'    => $r['code_evenement'] ?? '?',
+        'etape'   => $r['numero_etape']   ?? null,
+        'valide'  => (bool)$r['valide'],
+        'attendu' => (bool)$r['evenement_attendu'],
     ], $events),
     'actions' => array_map(fn($r) => [
-        'time'    => substr($r['date_execution'], 11, 8),
-        'acteur'  => $r['nom_actionneur'] ?? '?',
-        'code'    => $r['code_action']    ?? '?',
-        'valeur'  => $r['valeur_action']  ?? '',
-        'statut'  => $r['statut_execution'],
+        'time'   => substr($r['date_execution'], 11, 8),
+        'acteur' => $r['nom_actionneur']  ?? '?',
+        'code'   => $r['code_action']     ?? '?',
+        'valeur' => $r['valeur_action']   ?? '',
+        'statut' => $r['statut_execution'],
     ], $actions),
+    'telemetry' => $telemRow ? [
+        'temperature' => $telemRow['temperature'] !== null ? (float)$telemRow['temperature'] : null,
+        'humidite'    => $telemRow['humidite']    !== null ? (float)$telemRow['humidite']    : null,
+        'date'        => $telemRow['date_mesure'],
+    ] : null,
 ]);

@@ -21,6 +21,7 @@ local SENSOR_NAMES = {
     'Level',                               -- Node 3 — Bouton simple (idx 9)
     'Alarm Type: Access Control 6 (0x06)', -- Node 5 — Porte (idx 25)
     'double_press',                        -- Node 3 — Bouton double appui (idx 30)
+    'triple_press',                        -- Node 3 — Bouton triple appui (idx 27) — vérifier le nom exact dans Setup > Devices
 }
 
 -- Idx surveillés (sécurité supplémentaire — filtre dans execute())
@@ -29,6 +30,7 @@ local WATCHED_IDX = {
     [9]  = true,   -- Button simple (Node 3)
     [25] = true,   -- Door sensor — Alarm Type: Access Control 6 (Node 5)
     [30] = true,   -- Button double appui (Node 3 — device séparé Domoticz)
+    [27] = true,   -- Button triple appui (Node 3 — device séparé Domoticz)
 }
 
 -- URL du webhook backend
@@ -83,17 +85,3 @@ return {
     end,
 }
 
--- =============================================================
--- Callback pour logger la réponse du backend (optionnel)
--- Activer dans un fichier dzVents séparé nommé 'domescape_callback'
--- =============================================================
--- return {
---     on = { httpResponses = { 'domescape_callback' } },
---     execute = function(domoticz, response)
---         if response.ok then
---             domoticz.log('[DomEscape] Webhook OK : ' .. response.data, domoticz.LOG_INFO)
---         else
---             domoticz.log('[DomEscape] Webhook ERREUR : ' .. tostring(response.statusCode), domoticz.LOG_ERROR)
---         end
---     end,
--- }

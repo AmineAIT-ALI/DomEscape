@@ -2,11 +2,11 @@
 require_once __DIR__ . '/../core/RoleGuard.php';
 require_once __DIR__ . '/../config/database.php';
 
-RoleGuard::requireRole(ROLE_ADMINISTRATEUR);
+RoleGuard::requireAdmin();
 
 $pdo = getDB();
 
-// Platform stats
+// Stats globales
 $statsQ = $pdo->query("
     SELECT
         (SELECT COUNT(*) FROM utilisateur WHERE actif = 1)       AS nb_users,
@@ -14,7 +14,27 @@ $statsQ = $pdo->query("
         (SELECT COUNT(*) FROM session WHERE DATE(date_debut) = CURDATE()) AS sessions_today,
         (SELECT COUNT(*) FROM session)                           AS sessions_total,
         (SELECT COUNT(*) FROM session WHERE statut_session = 'en_cours') AS sessions_active,
-        (SELECT COUNT(*) FROM session WHERE statut_session = 'gagnee')   AS sessions_won
+        (SELECT COUNT(*) FROM session WHERE statut_session = 'gagnee')   AS sessions_won,
+        (SELECT ROUND(AVG(duree_secondes)) FROM session WHERE statut_session IN ('gagnee','perdue') AND duree_secondes > 0) AS avg_duree,
+        (SELECT ROUND(AVG(score)) FROM session WHERE statut_session IN ('gagnee','perdue') AND score > 0) AS avg_score,
+        (SELECT COUNT(*) FROM evenement_session) AS nb_evenements,
+        (SELECT COUNT(*) FROM action_executee)   AS nb_actions
+")->fetch();
+
+// Durée moyenne formatée
+$avgDuree = '—';
+if ($statsQ['avg_duree']) {
+    $s = (int)$statsQ['avg_duree'];
+    $avgDuree = floor($s / 60) . 'm ' . ($s % 60) . 's';
+}
+
+// Dernière mesure télémétrie
+$telemetry = $pdo->query("
+    SELECT mc.temperature, mc.humidite, mc.date_mesure, c.nom_capteur
+    FROM mesure_capteur mc
+    JOIN capteur c ON mc.id_capteur = c.id_capteur
+    ORDER BY mc.date_mesure DESC
+    LIMIT 1
 ")->fetch();
 
 // Scénarios configurés avec count d'étapes
@@ -28,13 +48,34 @@ $scenarios = $pdo->query("
 
 // Dernières sessions
 $sessions = $pdo->query("
-    SELECT se.*, e.nom_equipe, sc.nom_scenario, u.nom AS nom_createur
+    SELECT se.*, sc.nom_scenario
     FROM session se
-    JOIN equipe   e  ON se.id_equipe              = e.id_equipe
-    JOIN scenario sc ON se.id_scenario             = sc.id_scenario
-    LEFT JOIN utilisateur u ON se.id_utilisateur_createur = u.id
+    JOIN scenario sc ON se.id_scenario = sc.id_scenario
     ORDER BY se.date_debut DESC
     LIMIT 12
+")->fetchAll();
+
+// Derniers événements (10 — plateforme entière)
+$recentEvents = $pdo->query("
+    SELECT es.date_evenement, es.evenement_attendu, c.nom_capteur, et.code_evenement, s.nom_equipe
+    FROM evenement_session es
+    LEFT JOIN capteur c        ON es.id_capteur        = c.id_capteur
+    LEFT JOIN evenement_type et ON es.id_type_evenement = et.id_type_evenement
+    LEFT JOIN session s         ON es.id_session        = s.id_session
+    ORDER BY es.date_evenement DESC
+    LIMIT 10
+")->fetchAll();
+
+// Dernières actions physiques (10 — plateforme entière)
+$recentActions = $pdo->query("
+    SELECT ae.date_execution, ae.valeur_action, ae.statut_execution,
+           a.nom_actionneur, at.code_action, s.nom_equipe
+    FROM action_executee ae
+    LEFT JOIN actionneur  a  ON ae.id_actionneur = a.id_actionneur
+    LEFT JOIN action_type at ON ae.id_type_action = at.id_type_action
+    LEFT JOIN session s       ON ae.id_session    = s.id_session
+    ORDER BY ae.date_execution DESC
+    LIMIT 10
 ")->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -43,138 +84,6 @@ $sessions = $pdo->query("
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Administration — DomEscape</title>
-    <style>
-        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
-        a { color: #00ff88; }
-
-        .admin-wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
-
-        /* Header */
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-        .admin-header h1 { font-size: 1.1rem; font-weight: 700; margin: 0; color: #e0e0e0; }
-        .admin-header p  { font-size: .72rem; color: #444; margin: 4px 0 0; }
-
-        /* Stats grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 36px;
-        }
-        .stat-card {
-            background: #0f0f18;
-            border: 1px solid #111;
-            border-radius: 6px;
-            padding: 18px 16px;
-        }
-        .stat-card-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #00ff88;
-            margin-bottom: 4px;
-            line-height: 1;
-        }
-        .stat-card-value.blue   { color: #60a5fa; }
-        .stat-card-value.purple { color: #a78bfa; }
-        .stat-card-value.yellow { color: #fbbf24; }
-        .stat-card-label {
-            font-size: .72rem;
-            color: #444;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-        }
-
-        /* Quick actions */
-        .quick-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 36px;
-        }
-        .qa-btn { font-size: .78rem; padding: 9px 16px; }
-        .qa-btn:hover { border-color: #00ff88; color: #00ff88; }
-        .qa-btn-icon { opacity: .6; }
-
-        /* Sections */
-        .section-label {
-            font-size: .65rem;
-            letter-spacing: .12em;
-            color: #444;
-            text-transform: uppercase;
-            margin-bottom: 14px;
-        }
-
-        /* Panel */
-        .panel {
-            background: #0f0f18;
-            border: 1px solid #111;
-            border-radius: 6px;
-            margin-bottom: 24px;
-            overflow: hidden;
-        }
-        .panel-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            border-bottom: 1px solid #0a0a14;
-        }
-        .panel-head h2 { font-size: .82rem; font-weight: 700; margin: 0; color: #ccc; }
-
-        /* Tables */
-        table { width: 100%; border-collapse: collapse; font-size: .78rem; }
-        th {
-            font-size: .62rem;
-            letter-spacing: .1em;
-            color: #444;
-            text-transform: uppercase;
-            padding: 11px 16px;
-            text-align: left;
-            font-weight: normal;
-            border-bottom: 1px solid #0a0a14;
-        }
-        td { padding: 12px 16px; border-bottom: 1px solid #0a0a14; vertical-align: middle; }
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: rgba(255,255,255,.02); }
-
-        /* Status badges */
-        .sb {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: .65rem;
-            padding: 2px 8px;
-            border-radius: 3px;
-            border: 1px solid;
-        }
-        .sb-gagnee   { color: #00ff88; border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.06); }
-        .sb-perdue   { color: #ff6666; border-color: rgba(255,68,68,.3); background: rgba(255,68,68,.06); }
-        .sb-en_cours { color: #fbbf24; border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.06); }
-        .sb-terminee { color: #60a5fa; border-color: rgba(96,165,250,.3); background: rgba(96,165,250,.06); }
-        .sb-other    { color: #888; border-color: #333; background: rgba(255,255,255,.02); }
-        .sb-dot      { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
-
-        /* Active indicator */
-        .active-dot {
-            display: inline-block;
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            margin-right: 5px;
-            vertical-align: middle;
-        }
-
-        @media (max-width: 900px) {
-            .stats-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 600px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-    </style>
     <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
@@ -197,10 +106,41 @@ $sessions = $pdo->query("
         <?php endif; ?>
     </div>
 
-    <!-- Stats -->
+    <!-- KPI — Sessions & plateforme -->
+    <div class="section-label">Sessions</div>
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-card-value"><?= (int)$statsQ['nb_users'] ?></div>
+            <div class="stat-card-value yellow"><?= (int)$statsQ['sessions_today'] ?></div>
+            <div class="stat-card-label">Aujourd'hui</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-value" style="color:#e0e0e0;"><?= (int)$statsQ['sessions_total'] ?></div>
+            <div class="stat-card-label">Total sessions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-value" style="color:#00ff88;"><?= (int)$statsQ['sessions_won'] ?></div>
+            <div class="stat-card-label">Victoires</div>
+        </div>
+        <div class="stat-card">
+            <?php $winRate = $statsQ['sessions_total'] > 0 ? round(($statsQ['sessions_won'] / $statsQ['sessions_total']) * 100) : 0; ?>
+            <div class="stat-card-value purple"><?= $winRate ?>%</div>
+            <div class="stat-card-label">Taux de réussite</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-value yellow"><?= $avgDuree ?></div>
+            <div class="stat-card-label">Durée moyenne</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-value" style="color:#00ff88;"><?= $statsQ['avg_score'] ? (int)$statsQ['avg_score'] : '—' ?></div>
+            <div class="stat-card-label">Score moyen</div>
+        </div>
+    </div>
+
+    <!-- KPI — Activité capteurs & actionneurs -->
+    <div class="section-label">Activité système</div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-card-value blue"><?= (int)$statsQ['nb_users'] ?></div>
             <div class="stat-card-label">Utilisateurs actifs</div>
         </div>
         <div class="stat-card">
@@ -208,26 +148,32 @@ $sessions = $pdo->query("
             <div class="stat-card-label">Scénarios actifs</div>
         </div>
         <div class="stat-card">
-            <div class="stat-card-value yellow"><?= (int)$statsQ['sessions_today'] ?></div>
-            <div class="stat-card-label">Sessions aujourd'hui</div>
+            <div class="stat-card-value" style="color:#e0e0e0;"><?= (int)$statsQ['nb_evenements'] ?></div>
+            <div class="stat-card-label">Événements capteurs</div>
         </div>
         <div class="stat-card">
-            <div class="stat-card-value" style="color:#e0e0e0;"><?= (int)$statsQ['sessions_total'] ?></div>
-            <div class="stat-card-label">Sessions totales</div>
+            <div class="stat-card-value" style="color:#e0e0e0;"><?= (int)$statsQ['nb_actions'] ?></div>
+            <div class="stat-card-label">Actions physiques</div>
+        </div>
+        <?php if ($telemetry): ?>
+        <div class="stat-card">
+            <div class="stat-card-value" style="color:#60a5fa;"><?= number_format((float)$telemetry['temperature'], 1) ?>°C</div>
+            <div class="stat-card-label">Température labo</div>
         </div>
         <div class="stat-card">
-            <div class="stat-card-value" style="color:#00ff88;"><?= (int)$statsQ['sessions_won'] ?></div>
-            <div class="stat-card-label">Victoires</div>
+            <div class="stat-card-value" style="color:#a78bfa;"><?= number_format((float)$telemetry['humidite'], 1) ?>%</div>
+            <div class="stat-card-label">Humidité labo</div>
+        </div>
+        <?php else: ?>
+        <div class="stat-card">
+            <div class="stat-card-value" style="color:#333;">—</div>
+            <div class="stat-card-label">Température labo</div>
         </div>
         <div class="stat-card">
-            <?php
-            $winRate = $statsQ['sessions_total'] > 0
-                ? round(($statsQ['sessions_won'] / $statsQ['sessions_total']) * 100)
-                : 0;
-            ?>
-            <div class="stat-card-value purple"><?= $winRate ?>%</div>
-            <div class="stat-card-label">Taux de victoire</div>
+            <div class="stat-card-value" style="color:#333;">—</div>
+            <div class="stat-card-label">Humidité labo</div>
         </div>
+        <?php endif; ?>
     </div>
 
     <!-- Quick actions -->
@@ -236,23 +182,14 @@ $sessions = $pdo->query("
         <a href="/domescape/admin/scenarios.php" class="btn btn-outline qa-btn">
             <i data-lucide="layers" style="width:13px;height:13px;opacity:.6;"></i> Scénarios
         </a>
-        <a href="/domescape/admin/versions.php" class="btn btn-outline qa-btn">
-            <i data-lucide="git-branch" style="width:13px;height:13px;opacity:.6;"></i> Versions
-        </a>
-        <a href="/domescape/admin/utilisateurs.php" class="btn btn-outline qa-btn">
-            <i data-lucide="users" style="width:13px;height:13px;opacity:.6;"></i> Utilisateurs
-        </a>
         <a href="/domescape/public/gamemaster.php" class="btn btn-outline qa-btn">
             <i data-lucide="monitor" style="width:13px;height:13px;opacity:.6;"></i> Supervision
-        </a>
-        <a href="/domescape/api/debug_event.php" class="btn btn-outline qa-btn" target="_blank">
-            <i data-lucide="radio" style="width:13px;height:13px;opacity:.6;"></i> Z-Wave
         </a>
     </div>
 
     <!-- Scénarios -->
     <div class="section-label">Scénarios configurés</div>
-    <div class="panel">
+    <div class="panel panel-table">
         <div class="panel-head">
             <h2>Scénarios</h2>
             <span style="font-size:.68rem;color:#444;"><?= count($scenarios) ?> scénario<?= count($scenarios) > 1 ? 's' : '' ?></span>
@@ -313,10 +250,10 @@ $sessions = $pdo->query("
 
     <!-- Sessions -->
     <div class="section-label">Dernières sessions</div>
-    <div class="panel">
+    <div class="panel panel-table">
         <div class="panel-head">
             <h2>Historique</h2>
-            <a href="#" style="font-size:.68rem;color:#555;text-decoration:none;">12 dernières</a>
+            <a href="/domescape/public/mes-parties.php" style="font-size:.68rem;color:#60a5fa;text-decoration:none;">Voir tout →</a>
         </div>
         <?php if (empty($sessions)): ?>
             <div style="padding:32px;text-align:center;color:#333;font-size:.8rem;">Aucune partie jouée.</div>
@@ -328,7 +265,6 @@ $sessions = $pdo->query("
                     <th>#</th>
                     <th>Équipe</th>
                     <th>Scénario</th>
-                    <th>Créateur</th>
                     <th>Statut</th>
                     <th>Score</th>
                     <th>Erreurs</th>
@@ -340,17 +276,17 @@ $sessions = $pdo->query("
             <?php foreach ($sessions as $s):
                 $statut = $s['statut_session'];
                 $sbMap = [
-                    'gagnee'   => 'sb-gagnee',
-                    'perdue'   => 'sb-perdue',
-                    'en_cours' => 'sb-en_cours',
-                    'terminee' => 'sb-terminee',
+                    'gagnee'     => 'sb-gagnee',
+                    'perdue'     => 'sb-perdue',
+                    'en_cours'   => 'sb-en_cours',
+                    'abandonnee' => 'sb-perdue',
                 ];
                 $sbClass = $sbMap[$statut] ?? 'sb-other';
                 $statLabels = [
-                    'gagnee'   => 'Victoire',
-                    'perdue'   => 'Défaite',
-                    'en_cours' => 'En cours',
-                    'terminee' => 'Terminée',
+                    'gagnee'     => 'Victoire',
+                    'perdue'     => 'Défaite',
+                    'en_cours'   => 'En cours',
+                    'abandonnee' => 'Abandonnée',
                 ];
                 $statLabel = $statLabels[$statut] ?? ucfirst($statut);
                 $duree = $s['duree_secondes']
@@ -361,7 +297,6 @@ $sessions = $pdo->query("
                     <td style="color:#333;"><?= (int)$s['id_session'] ?></td>
                     <td style="color:#ccc;"><?= htmlspecialchars($s['nom_equipe'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td style="color:#888;"><?= htmlspecialchars($s['nom_scenario'], ENT_QUOTES, 'UTF-8') ?></td>
-                    <td style="color:#555;font-size:.72rem;"><?= $s['nom_createur'] ? htmlspecialchars($s['nom_createur'], ENT_QUOTES, 'UTF-8') : '<span style="color:#333;">—</span>' ?></td>
                     <td>
                         <span class="sb <?= $sbClass ?>">
                             <span class="sb-dot"></span><?= $statLabel ?>
@@ -383,14 +318,116 @@ $sessions = $pdo->query("
         <?php endif; ?>
     </div>
 
+    <!-- Derniers événements capteurs -->
+    <div class="section-label">Derniers événements capteurs</div>
+    <div class="panel panel-table">
+        <div class="panel-head">
+            <h2>Événements</h2>
+            <span style="font-size:.68rem;color:#444;"><?= count($recentEvents) ?> derniers</span>
+        </div>
+        <?php if (empty($recentEvents)): ?>
+            <div style="padding:32px;text-align:center;color:#333;font-size:.8rem;">Aucun événement enregistré.</div>
+        <?php else: ?>
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Horodatage</th>
+                    <th>Événement</th>
+                    <th>Capteur</th>
+                    <th>Équipe</th>
+                    <th>Résultat</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($recentEvents as $e):
+                $attendu = (bool)$e['evenement_attendu'];
+            ?>
+                <tr>
+                    <td style="color:#444;font-size:.72rem;font-family:'SF Mono',monospace;"><?= htmlspecialchars(substr($e['date_evenement'],0,19), ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#cbd5e1;"><?= htmlspecialchars($e['code_evenement'] ?? '?', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#888;"><?= htmlspecialchars($e['nom_capteur'] ?? '?', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#555;"><?= htmlspecialchars($e['nom_equipe'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td>
+                        <?php if ($attendu): ?>
+                            <span style="color:#00ff88;font-size:.68rem;">valide</span>
+                        <?php else: ?>
+                            <span style="color:#555;font-size:.68rem;">ignoré</span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Dernières actions physiques -->
+    <div class="section-label">Dernières actions physiques</div>
+    <div class="panel panel-table">
+        <div class="panel-head">
+            <h2>Actionneurs</h2>
+            <span style="font-size:.68rem;color:#444;"><?= count($recentActions) ?> dernières</span>
+        </div>
+        <?php if (empty($recentActions)): ?>
+            <div style="padding:32px;text-align:center;color:#333;font-size:.8rem;">Aucune action exécutée.</div>
+        <?php else: ?>
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Horodatage</th>
+                    <th>Action</th>
+                    <th>Actionneur</th>
+                    <th>Valeur</th>
+                    <th>Équipe</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($recentActions as $a): ?>
+                <tr>
+                    <td style="color:#444;font-size:.72rem;font-family:'SF Mono',monospace;"><?= htmlspecialchars(substr($a['date_execution'],0,19), ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#cbd5e1;"><?= htmlspecialchars($a['code_action'] ?? '?', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#888;"><?= htmlspecialchars($a['nom_actionneur'] ?? '?', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:#555;"><?= $a['valeur_action'] ? htmlspecialchars($a['valeur_action'], ENT_QUOTES, 'UTF-8') : '—' ?></td>
+                    <td style="color:#555;"><?= htmlspecialchars($a['nom_equipe'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td style="color:<?= $a['statut_execution'] === 'ok' ? '#00ff88' : '#ff6666' ?>;font-size:.68rem;"><?= htmlspecialchars($a['statut_execution'], ENT_QUOTES, 'UTF-8') ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Télémétrie -->
+    <div class="section-label">Télémétrie laboratoire</div>
+    <div class="panel">
+        <div class="panel-title">Dernière mesure — <?= $telemetry ? htmlspecialchars($telemetry['nom_capteur'], ENT_QUOTES, 'UTF-8') : 'Capteur indisponible' ?></div>
+        <?php if ($telemetry): ?>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
+            <div class="stat-box">
+                <div class="stat-label">Température</div>
+                <div class="stat-value" style="color:#60a5fa;"><?= number_format((float)$telemetry['temperature'], 1) ?> °C</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Humidité</div>
+                <div class="stat-value" style="color:#a78bfa;"><?= number_format((float)$telemetry['humidite'], 1) ?> %</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Relevé le</div>
+                <div style="font-size:.78rem;color:#555;margin-top:6px;"><?= htmlspecialchars(substr($telemetry['date_mesure'],0,16), ENT_QUOTES, 'UTF-8') ?></div>
+            </div>
+        </div>
+        <?php else: ?>
+            <div style="color:#333;font-size:.8rem;padding:8px 0;">Aucune mesure disponible. Le cron poll_telemetry.php s'exécute toutes les 5 minutes.</div>
+        <?php endif; ?>
+    </div>
+
 </div>
 
-<style>
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .3; }
-}
-</style>
 <script src="/domescape/assets/vendor/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
 </body>

@@ -138,6 +138,10 @@ class EventManager
                 // Tout nvalue > 0 sur ce device = double appui confirmé
                 return $nvalue > 0 ? 'BUTTON_DOUBLE_PRESS' : null;
 
+            case 'button_triple':
+                // Fibaro Button FGPB-101 — idx 27 — device dédié triple appui
+                return $nvalue > 0 ? 'BUTTON_TRIPLE_PRESS' : null;
+
             default:
                 return null;
         }

@@ -5,7 +5,9 @@
 // =============================================================
 
 // URL de l'API Domoticz (Raspberry Pi local)
-define('DOMOTICZ_URL', 'http://localhost:8080');
+define('DOMOTICZ_URL',  'http://127.0.0.1:8080');
+define('DOMOTICZ_USER', 'admin');
+define('DOMOTICZ_PASS', 'domoticz');
 
 // URL du service LCD Python
 define('LCD_SERVICE_URL', 'http://localhost:5000');
