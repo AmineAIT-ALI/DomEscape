@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DomEscape — La Plateforme</title>
+  <meta name="description" content="Architecture technique de DomEscape : moteur événementiel, pipeline Z-Wave→PHP, MariaDB, dzVents Lua, LCD PiFace." />
+  <link rel="stylesheet" href="assets/css/domescape.css" />
+  <link rel="icon" href="../assets/favicon.ico">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="../assets/logo-icon.svg" alt="DomEscape" style="height:28px;width:auto;display:block;">
+      DomEscape
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="plateforme.html">Plateforme</a>
+      <a href="demonstration.html">Démonstration</a>
+    </div>
+    <div class="nav-cta">
+      <a href="../public/connexion.php" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="../public/inscription.php" class="btn btn-primary btn-sm">Créer un compte</a>
+    </div>
+  </div>
+</nav>
+
+<div class="grid-bg" style="border-bottom:1px solid var(--border);">
+  <div class="page-hero">
+    <div class="section-label animate-fade-up">PLATEFORME</div>
+    <h1 class="page-hero-title animate-fade-up delay-1">
+      Événements en entrée.<br>
+      <span style="color:var(--green);">Réactions en sortie.</span>
+    </h1>
+    <p class="page-hero-sub animate-fade-up delay-2">
+      Comment DomEscape transforme une interaction physique en action coordonnée sur l'ensemble du système.
+    </p>
+  </div>
+</div>
+
+<section style="background: var(--surface); border-bottom: 1px solid var(--border);">
+  <div class="section">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center;">
+      <div data-reveal>
+        <div class="section-label">FONCTIONNEMENT</div>
+        <h2 class="section-title">Logique au milieu.<br>Hardware aux extrémités.</h2>
+        <p style="color:var(--text-secondary); line-height:1.8; margin-bottom:20px;">
+          Les capteurs Z-Wave transmettent chaque interaction au moteur. Celui-ci lit le scénario depuis MariaDB, valide l'étape et déclenche les actions associées.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8;">
+          Le scénario est une donnée interchangeable. Le moteur est constant — l'expérience est variable.
+        </p>
+      </div>
+      <div data-reveal data-delay="2">
+        <div style="display:flex; flex-direction:column; gap:4px; align-items:stretch;">
+          <div class="arch-node" style="text-align:center; padding:20px; border-color:var(--green); color:var(--green); background:var(--green-dim); font-size:.9rem;">
+            Événement physique
+            <div style="font-size:.7rem; color:var(--text-muted); margin-top:4px; font-family:var(--font-mono);">Porte ouverte · Bouton pressé · Mouvement</div>
+          </div>
+          <div style="color:var(--green); font-size:1.2rem; text-align:center; padding:6px;">↓</div>
+          <div class="arch-node" style="text-align:center; padding:20px; border-color:rgba(124,58,237,0.5); color:#a78bfa; background:var(--purple-dim); font-size:.9rem;">
+            Moteur de scénarios
+            <div style="font-size:.7rem; color:var(--text-muted); margin-top:4px; font-family:var(--font-mono);">Valider · Avancer · Scorer</div>
+          </div>
+          <div style="color:var(--green); font-size:1.2rem; text-align:center; padding:6px;">↓</div>
+          <div class="arch-node" style="text-align:center; padding:20px; border-color:rgba(59,130,246,0.5); color:#60a5fa; background:var(--blue-dim); font-size:.9rem;">
+            Réaction physique
+            <div style="font-size:.7rem; color:var(--text-muted); margin-top:4px; font-family:var(--font-mono);">Message LCD · Prise activée</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pipeline-section">
+  <div class="pipeline-section-label">Architecture système complète</div>
+  <div class="pipeline-track">
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-icon"><i data-lucide="radio"></i></div>
+        <div class="pipeline-step-name">Z-Wave</div>
+      </div>
+    </div>
+    <div class="pipeline-connector"></div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-icon"><i data-lucide="server"></i></div>
+        <div class="pipeline-step-name">Domoticz</div>
+      </div>
+    </div>
+    <div class="pipeline-connector"></div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-icon"><i data-lucide="code-2"></i></div>
+        <div class="pipeline-step-name">dzVents</div>
+      </div>
+    </div>
+    <div class="pipeline-connector"></div>
+
+    <div class="pipeline-step is-core">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-icon"><i data-lucide="git-branch"></i></div>
+        <div class="pipeline-step-name">EventManager</div>
+      </div>
+    </div>
+    <div class="pipeline-connector"></div>
+
+    <div class="pipeline-step is-core">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-icon"><i data-lucide="cpu"></i></div>
+        <div class="pipeline-step-name">GameEngine</div>
+      </div>
+    </div>
+    <div class="pipeline-connector"></div>
+
+    <div class="pipeline-step is-core">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-icon"><i data-lucide="zap"></i></div>
+        <div class="pipeline-step-name">ActionManager</div>
+      </div>
+    </div>
+    <div class="pipeline-connector"></div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-icon"><i data-lucide="monitor"></i></div>
+        <div class="pipeline-step-name">LCD / UI</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="section" style="border-top:1px solid var(--border);">
+  <div class="section-header center">
+    <div class="section-label" data-reveal>CONCEPTS CLÉS</div>
+    <h2 class="section-title" data-reveal data-delay="1">Six idées qui définissent la plateforme.</h2>
+  </div>
+
+  <div class="grid-3">
+    <div class="card glow-card" data-reveal data-delay="1">
+      <div class="card-icon green"><i data-lucide="zap"></i></div>
+      <div class="card-title">Architecture événementielle</div>
+      <p class="card-text">Chaque interaction commence par un événement physique. Les capteurs émettent, le moteur interprète, les actionneurs répondent.</p>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="2">
+      <div class="card-icon purple"><i data-lucide="database"></i></div>
+      <div class="card-title">Logique pilotée par la base</div>
+      <p class="card-text">Scénarios, étapes, capteurs attendus et actions sont stockés dans MariaDB. Aucun changement de code pour créer un nouveau scénario.</p>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="3">
+      <div class="card-icon blue"><i data-lucide="refresh-cw"></i></div>
+      <div class="card-title">Boucle de feedback physique</div>
+      <p class="card-text">Les actions correctes déclenchent de vraies réactions physiques : messages LCD, prise connectée activée ou éteinte.</p>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="1">
+      <div class="card-icon green"><i data-lucide="radio"></i></div>
+      <div class="card-title">Supervision en temps réel</div>
+      <p class="card-text">L'interface Game Master se synchronise automatiquement avec l'état de la session — progression, score, erreurs, télémétrie.</p>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="2">
+      <div class="card-icon purple"><i data-lucide="layers"></i></div>
+      <div class="card-title">Séparation des responsabilités</div>
+      <p class="card-text">EventManager, GameEngine et ActionManager sont des modules entièrement découplés, chacun avec une responsabilité unique.</p>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="3">
+      <div class="card-icon orange"><i data-lucide="infinity"></i></div>
+      <div class="card-title">Scénarios configurables</div>
+      <p class="card-text">Chaque étape, déclencheur, action et séquence est configurable via la base de données. Un moteur, une infinité de scénarios.</p>
+    </div>
+  </div>
+</section>
+
+<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section">
+    <div class="section-header center animate-fade-up">
+      <div class="section-label">INGÉNIERIE</div>
+      <h2 class="section-title">Construit sur des principes solides.</h2>
+    </div>
+    <div class="grid-4">
+      <div class="stat-widget animate-fade-up delay-1" style="border-color:rgba(0,255,136,0.15);">
+        <div class="stat-label">Serveur sans état</div>
+        <div style="font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--green); margin-bottom:12px;">PHP + MariaDB</div>
+        <p class="card-text">PHP lit l'état depuis MariaDB à chaque requête. Aucune session en mémoire. Résistant aux pannes.</p>
+      </div>
+      <div class="stat-widget animate-fade-up delay-2" style="border-color:rgba(124,58,237,0.15);">
+        <div class="stat-label">Middleware IoT</div>
+        <div style="font-family:var(--font-head); font-size:1rem; font-weight:600; color:#a78bfa; margin-bottom:12px;">Domoticz + dzVents</div>
+        <p class="card-text">Domoticz abstrait toute la complexité Z-Wave. dzVents relie la couche IoT à la couche applicative via webhooks.</p>
+      </div>
+      <div class="stat-widget animate-fade-up delay-3" style="border-color:rgba(59,130,246,0.15);">
+        <div class="stat-label">Observabilité totale</div>
+        <div style="font-family:var(--font-head); font-size:1rem; font-weight:600; color:#60a5fa; margin-bottom:12px;">100% tracé</div>
+        <p class="card-text">Chaque événement, validation, action et transition est enregistré en base pour le debug et l'analyse.</p>
+      </div>
+      <div class="stat-widget animate-fade-up delay-4" style="border-color:rgba(245,158,11,0.15);">
+        <div class="stat-label">Modèle plateforme</div>
+        <div style="font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--orange); margin-bottom:12px;">∞ Scénarios</div>
+        <p class="card-text">Le jeu d'évasion est un scénario parmi d'autres. Le moteur exécute n'importe quelle narration pilotée par capteurs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-inner" data-reveal>
+    <div class="section-label" style="justify-content:center;display:flex;">Prêt à voir le système</div>
+    <h2 class="cta-title">Voir la démo<br>en conditions réelles.</h2>
+    <p class="cta-sub">Protocol Omega — cinq étapes, six équipements Z-Wave, zéro simulation.</p>
+    <div class="cta-actions">
+      <a href="demonstration.html" class="btn btn-primary btn-lg">Voir la démonstration →</a>
+      <a href="../public/inscription.php" class="btn btn-outline btn-lg">Créer un compte</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-logo">
+    <img src="../assets/logo-full.svg" alt="DomEscape" style="height:36px;width:auto;opacity:.8;">
+  </div>
+  <div class="footer-links">
+    <a href="index.html">Accueil</a>
+    <a href="plateforme.html">Plateforme</a>
+    <a href="demonstration.html">Démonstration</a>
+    <a href="../public/connexion.php">Connexion</a>
+    <a href="../public/inscription.php">Créer un compte</a>
+  </div>
+</footer>
+
+<script src="../assets/vendor/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+<script src="assets/js/domescape.js"></script>
+</body>
+</html>

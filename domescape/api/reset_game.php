@@ -10,9 +10,15 @@ require_once __DIR__ . '/../core/RoleGuard.php';
 require_once __DIR__ . '/../core/GameEngine.php';
 
 Auth::init();
-if (!Auth::check() || !Auth::hasRole(ROLE_SUPERVISEUR)) {
+if (!Auth::check() || !Auth::isAdmin()) {
     http_response_code(403);
     echo json_encode(['status' => 'error', 'message' => 'Accès refusé.']);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['status' => 'error', 'message' => 'Méthode non autorisée.']);
     exit;
 }
 

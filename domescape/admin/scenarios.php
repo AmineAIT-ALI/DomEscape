@@ -1,10 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../core/RoleGuard.php';
-require_once __DIR__ . '/../core/Csrf.php';
 require_once __DIR__ . '/../config/database.php';
 
-RoleGuard::requireRole(ROLE_ADMINISTRATEUR);
+RoleGuard::requireAdmin();
 
 $pdo     = getDB();
 $error   = '';
@@ -12,22 +11,19 @@ $success = '';
 
 // --- Actions POST ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    Csrf::verify();
     $action = $_POST['action'] ?? '';
 
     if ($action === 'create') {
         $nom      = trim($_POST['nom_scenario']       ?? '');
         $desc     = trim($_POST['description']        ?? '');
         $theme    = trim($_POST['theme']              ?? '');
-        $jouMin   = $_POST['nb_joueurs_min']     !== '' ? (int)$_POST['nb_joueurs_min']     : null;
-        $jouMax   = $_POST['nb_joueurs_max']     !== '' ? (int)$_POST['nb_joueurs_max']     : null;
         $dureeMax = $_POST['duree_max_secondes'] !== '' ? (int)$_POST['duree_max_secondes'] : null;
 
         if ($nom === '') {
             $error = 'Le nom du scénario est requis.';
         } else {
-            $pdo->prepare("INSERT INTO scenario (nom_scenario, description, theme, actif, nb_joueurs_min, nb_joueurs_max, duree_max_secondes) VALUES (?, ?, ?, 1, ?, ?, ?)")
-                ->execute([$nom, $desc ?: null, $theme ?: null, $jouMin, $jouMax, $dureeMax]);
+            $pdo->prepare("INSERT INTO scenario (nom_scenario, description, theme, actif, duree_max_secondes) VALUES (?, ?, ?, 1, ?)")
+                ->execute([$nom, $desc ?: null, $theme ?: null, $dureeMax]);
             $success = "Scénario « " . htmlspecialchars($nom, ENT_QUOTES, 'UTF-8') . " » créé.";
         }
     }
@@ -67,56 +63,6 @@ $scenarios = $pdo->query("
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Scénarios — DomEscape Admin</title>
-    <style>
-        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
-        a { color: #00ff88; }
-
-        .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
-
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-        .admin-header h1 { font-size: 1.1rem; font-weight: 700; margin: 0; color: #e0e0e0; }
-        .admin-header p  { font-size: .72rem; color: #444; margin: 4px 0 0; }
-
-        .section-label { font-size: .65rem; letter-spacing: .12em; color: #444; text-transform: uppercase; margin-bottom: 14px; }
-
-        .panel { background: #0f0f18; border: 1px solid #111; border-radius: 6px; margin-bottom: 24px; overflow: hidden; }
-        .panel-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #0a0a14; }
-        .panel-head h2 { font-size: .82rem; font-weight: 700; margin: 0; color: #ccc; }
-
-        table { width: 100%; border-collapse: collapse; font-size: .78rem; }
-        th { font-size: .62rem; letter-spacing: .1em; color: #444; text-transform: uppercase; padding: 11px 16px; text-align: left; font-weight: normal; border-bottom: 1px solid #0a0a14; }
-        td { padding: 12px 16px; border-bottom: 1px solid #0a0a14; vertical-align: middle; }
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: rgba(255,255,255,.02); }
-
-        .btn-action { padding: 5px 11px; font-size: .72rem; gap: 5px; }
-        .btn-edit    { color: #60a5fa; border-color: rgba(96,165,250,.3); }
-        .btn-edit:hover { background: rgba(96,165,250,.08); color: #60a5fa; }
-        .btn-toggle-on  { color: #00ff88; border-color: rgba(0,255,136,.3); }
-        .btn-toggle-on:hover  { background: rgba(0,255,136,.08); }
-        .btn-toggle-off { color: #888; border-color: #333; }
-        .btn-toggle-off:hover { background: rgba(255,255,255,.04); color: #ccc; }
-        .btn-delete { color: #ff4444; border-color: rgba(255,68,68,.2); }
-        .btn-delete:hover { background: rgba(255,68,68,.07); }
-
-        .active-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .68rem; }
-        .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-
-        .create-panel { background: #0a0a14; border: 1px solid #111; border-radius: 6px; padding: 24px; margin-bottom: 28px; }
-        .create-panel h2 { font-size: .85rem; font-weight: 700; color: #ccc; margin: 0 0 20px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
-        .form-row-5 { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
-        .form-group label { font-size: .68rem; color: #555; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
-        .form-group input, .form-group textarea {
-            width: 100%; background: #080810; border: 1px solid #1a1a2e; color: #e0e0e0;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: .82rem; padding: 8px 12px;
-            border-radius: 4px; outline: none; transition: border-color .15s;
-        }
-        .form-group input:focus, .form-group textarea:focus { border-color: #00ff88; }
-        .btn-create { font-size: .8rem; padding: 9px 20px; }
-
-        @media (max-width: 700px) { .form-row { grid-template-columns: 1fr; } }
-    </style>
     <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
@@ -130,7 +76,7 @@ $scenarios = $pdo->query("
             <h1>Scénarios</h1>
             <p>Gérer les scénarios de jeu et leurs étapes</p>
         </div>
-        <a href="/domescape/admin/dashboard.php" style="font-size:.78rem; color:#444; text-decoration:none;">← Dashboard</a>
+        <a href="/domescape/admin/dashboard.php" style="font-size:.78rem; color:#444; text-decoration:none;">← Tableau de bord</a>
     </div>
 
     <?php if ($error): ?>
@@ -144,9 +90,8 @@ $scenarios = $pdo->query("
     <div class="create-panel">
         <h2>Nouveau scénario</h2>
         <form method="POST">
-                <?= Csrf::field() ?>
             <input type="hidden" name="action" value="create">
-            <div class="form-row-5">
+            <div class="form-grid-2">
                 <div class="form-group">
                     <label>Nom *</label>
                     <input type="text" name="nom_scenario" placeholder="ex : DomEscape Lab 02" maxlength="150" required>
@@ -155,18 +100,10 @@ $scenarios = $pdo->query("
                     <label>Thème</label>
                     <input type="text" name="theme" placeholder="Cybersécurité" maxlength="100">
                 </div>
-                <div class="form-group">
-                    <label>Joueurs min</label>
-                    <input type="number" name="nb_joueurs_min" placeholder="—" min="1" max="99">
-                </div>
-                <div class="form-group">
-                    <label>Joueurs max</label>
-                    <input type="number" name="nb_joueurs_max" placeholder="—" min="1" max="99">
-                </div>
-                <div class="form-group">
-                    <label>Durée max (s)</label>
-                    <input type="number" name="duree_max_secondes" placeholder="illimitée" min="60" max="86400">
-                </div>
+            </div>
+            <div class="form-group" style="margin-bottom:16px;">
+                <label>Durée max (s)</label>
+                <input type="number" name="duree_max_secondes" placeholder="illimitée" min="60" max="86400">
             </div>
             <div class="form-group" style="margin-bottom:16px;">
                 <label>Description</label>
@@ -232,7 +169,6 @@ $scenarios = $pdo->query("
                                 <i data-lucide="pencil" style="width:11px;height:11px;"></i> Éditer
                             </a>
                             <form method="POST" style="display:inline;">
-                <?= Csrf::field() ?>
                                 <input type="hidden" name="action" value="toggle">
                                 <input type="hidden" name="id_scenario" value="<?= (int)$s['id_scenario'] ?>">
                                 <button type="submit" class="btn btn-action <?= $s['actif'] ? 'btn-toggle-on' : 'btn-toggle-off' ?>">
@@ -240,7 +176,6 @@ $scenarios = $pdo->query("
                                 </button>
                             </form>
                             <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer ce scénario et toutes ses étapes ?');">
-                <?= Csrf::field() ?>
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id_scenario" value="<?= (int)$s['id_scenario'] ?>">
                                 <button type="submit" class="btn btn-action btn-delete">

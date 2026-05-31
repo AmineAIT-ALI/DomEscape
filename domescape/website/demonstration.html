@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DomEscape — Démonstration</title>
+  <meta name="description" content="Démonstration DomEscape : scénario Protocol Omega, capteurs Z-Wave réels, LCD PiFace, Wall Plug, supervision temps réel." />
+  <link rel="stylesheet" href="assets/css/domescape.css" />
+  <link rel="icon" href="../assets/favicon.ico">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="../assets/logo-icon.svg" alt="DomEscape" style="height:28px;width:auto;display:block;">
+      DomEscape
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="plateforme.html">Plateforme</a>
+      <a href="demonstration.html">Démonstration</a>
+    </div>
+    <div class="nav-cta">
+      <a href="../public/connexion.php" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="../public/inscription.php" class="btn btn-primary btn-sm">Créer un compte</a>
+    </div>
+  </div>
+</nav>
+
+<div class="grid-bg" style="position:relative;">
+  <div class="page-hero">
+    <div class="section-label animate-fade-up">DÉMONSTRATION</div>
+    <h1 class="page-hero-title animate-fade-up delay-1">
+      Tout est réel.<br>
+      <span style="color:var(--green);">Rien n'est simulé.</span>
+    </h1>
+    <p class="page-hero-sub animate-fade-up delay-2">
+      Six équipements Z-Wave, un Raspberry Pi, deux scénarios complets. Découvrez DomEscape en conditions réelles.
+    </p>
+  </div>
+  <!-- Fondu bas -->
+  <div style="position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:2;"></div>
+</div>
+
+<div class="section-bridge" data-reveal>
+  <div class="bridge-rule"></div>
+  <div class="bridge-text">6 équipements · 1 réseau Z-Wave</div>
+  <div class="bridge-rule bridge-rule-r"></div>
+</div>
+
+<section class="section grid-bg" style="padding-top:48px;">
+  <div class="section-header center">
+    <div class="section-label" data-reveal>ÉQUIPEMENTS</div>
+    <h2 class="section-title" data-reveal data-delay="1">Six équipements Z-Wave réels.</h2>
+    <p class="section-sub" data-reveal data-delay="2">Chaque équipement est un nœud du réseau Z-Wave connecté à Domoticz via le Z-Stick.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="card glow-card" data-reveal data-delay="1">
+      <div class="card-icon green"><i data-lucide="hand"></i></div>
+      <div class="card-title">Fibaro Button</div>
+      <p class="card-text">Trois types d'appuis détectés : simple, double et triple. Chaque type déclenche un événement différent dans le moteur de scénarios.</p>
+      <div style="margin-top:14px; font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted);">idx 9 · 27 · 30</div>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="2">
+      <div class="card-icon blue"><i data-lucide="door-open"></i></div>
+      <div class="card-title">Capteur de porte</div>
+      <p class="card-text">Détecte en temps réel l'ouverture et la fermeture de la porte. Déclenche l'événement DOOR_OPEN ou DOOR_CLOSE dans le pipeline.</p>
+      <div style="margin-top:14px; font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted);">idx 25</div>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="3">
+      <div class="card-icon purple"><i data-lucide="eye"></i></div>
+      <div class="card-title">Multisensor</div>
+      <p class="card-text">Détecte les mouvements dans la pièce (MOTION_DETECTED) et collecte en continu la température et l'humidité du laboratoire.</p>
+      <div style="margin-top:14px; font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted);">idx 7 · 8</div>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="1">
+      <div class="card-icon orange"><i data-lucide="monitor"></i></div>
+      <div class="card-title">Écran LCD PiFace</div>
+      <p class="card-text">Affiche des messages dynamiques au joueur à chaque étape du scénario — "AI CORE OFFLINE", "ACCESS GRANTED", "CONTAINMENT OK".</p>
+      <div style="margin-top:14px; font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted);">Service Python · port 5000</div>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="2">
+      <div class="card-icon green"><i data-lucide="plug"></i></div>
+      <div class="card-title">Wall Plug</div>
+      <p class="card-text">Prise connectée contrôlée en temps réel par le moteur. Allumage, extinction ou clignotement selon les étapes validées.</p>
+      <div style="margin-top:14px; font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted);">idx 13</div>
+    </div>
+    <div class="card glow-card" data-reveal data-delay="3">
+      <div class="card-icon blue"><i data-lucide="cpu"></i></div>
+      <div class="card-title">Raspberry Pi</div>
+      <p class="card-text">Centralise Apache, MariaDB, PHP, Domoticz, le service LCD et le cron de télémétrie. Déployé en réseau local, sans cloud.</p>
+      <div style="margin-top:14px; font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted);">192.168.4.1</div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="section">
+    <div class="section-header center animate-fade-up">
+      <div class="section-label">CAS D'USAGE</div>
+      <h2 class="section-title">Un moteur. Des contextes infinis.</h2>
+      <p class="section-sub">La même infrastructure, la même logique, des expériences différentes selon la configuration du scénario.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="card glow-card animate-fade-up delay-1" style="border-color:rgba(0,255,136,0.2);">
+        <div class="card-icon green"><i data-lucide="key"></i></div>
+        <div class="card-title">Jeu d'évasion</div>
+        <p class="card-text">Des capteurs Z-Wave valident une séquence d'énigmes physiques. Chaque action déclenche une réaction en temps réel. Le scénario est entièrement configurable en base de données.</p>
+        <div style="margin-top:16px;"><span class="tag tag-green" style="font-size:.72rem;">Démonstration disponible</span></div>
+      </div>
+      <div class="card glow-card animate-fade-up delay-2">
+        <div class="card-icon blue"><i data-lucide="graduation-cap"></i></div>
+        <div class="card-title">Formation</div>
+        <p class="card-text">Des séquences d'actions physiques validées par capteurs. Progression tracée par session. Certification automatisée sans superviseur manuel.</p>
+      </div>
+      <div class="card glow-card animate-fade-up delay-3">
+        <div class="card-icon purple"><i data-lucide="star"></i></div>
+        <div class="card-title">Expériences interactives</div>
+        <p class="card-text">Musées, théâtre, installations artistiques. Tout espace équipé de capteurs peut devenir un environnement narratif programmable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header center animate-fade-up">
+    <div class="section-label">PÉRIMÈTRE</div>
+    <h2 class="section-title">Ce que fait le projet.</h2>
+    <p class="section-sub">De la vision initiale au déploiement sur Raspberry Pi, chaque composant est fonctionnel.</p>
+  </div>
+
+  <div class="grid-2 animate-fade-up delay-1">
+    <div class="card" style="display:flex; gap:16px; align-items:flex-start; padding:24px;">
+      <div class="card-icon green" style="flex-shrink:0; margin-bottom:0;"><i data-lucide="network"></i></div>
+      <div>
+        <div class="card-title" style="margin-bottom:6px;">Architecture complète</div>
+        <p class="card-text">Pipeline bout en bout : capteur Z-Wave → Domoticz → dzVents → PHP → MariaDB → actionneur.</p>
+      </div>
+    </div>
+    <div class="card" style="display:flex; gap:16px; align-items:flex-start; padding:24px;">
+      <div class="card-icon green" style="flex-shrink:0; margin-bottom:0;"><i data-lucide="monitor"></i></div>
+      <div>
+        <div class="card-title" style="margin-bottom:6px;">Game Master</div>
+        <p class="card-text">Supervision en temps réel : progression, télémétrie capteurs, validation d'étapes, envoi d'indices.</p>
+      </div>
+    </div>
+    <div class="card" style="display:flex; gap:16px; align-items:flex-start; padding:24px;">
+      <div class="card-icon green" style="flex-shrink:0; margin-bottom:0;"><i data-lucide="activity"></i></div>
+      <div>
+        <div class="card-title" style="margin-bottom:6px;">Données & Observabilité</div>
+        <p class="card-text">Télémétrie capteurs, log des événements, traçabilité des actions. Chaque interaction laisse une trace en base.</p>
+      </div>
+    </div>
+    <div class="card" style="display:flex; gap:16px; align-items:flex-start; padding:24px;">
+      <div class="card-icon green" style="flex-shrink:0; margin-bottom:0;"><i data-lucide="play-circle"></i></div>
+      <div>
+        <div class="card-title" style="margin-bottom:6px;">Protocol Omega</div>
+        <p class="card-text">Cinq étapes, six capteurs Z-Wave, deux actionneurs. Triple appui, ouverture de porte, détection de mouvement, double appui.</p>
+      </div>
+    </div>
+    <div class="card" style="display:flex; gap:16px; align-items:flex-start; padding:24px;">
+      <div class="card-icon green" style="flex-shrink:0; margin-bottom:0;"><i data-lucide="thermometer"></i></div>
+      <div>
+        <div class="card-title" style="margin-bottom:6px;">Télémétrie environnementale</div>
+        <p class="card-text">Température et humidité collectées automatiquement toutes les 5 minutes via cron. Affichées en direct sur le Game Master.</p>
+      </div>
+    </div>
+    <div class="card" style="display:flex; gap:16px; align-items:flex-start; padding:24px;">
+      <div class="card-icon green" style="flex-shrink:0; margin-bottom:0;"><i data-lucide="book-open"></i></div>
+      <div>
+        <div class="card-title" style="margin-bottom:6px;">Modules techniques</div>
+        <p class="card-text">EventManager, GameEngine, ActionManager : modules découplés à responsabilité unique, déployés sur Raspberry Pi.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--surface); border-top:1px solid var(--border);">
+  <div class="section">
+    <div class="animate-fade-up" style="border:1px solid var(--border-glow); border-radius:var(--radius-lg); padding:64px 48px; text-align:center; background:var(--card); position:relative; overflow:hidden;">
+      <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:600px; height:200px; background:radial-gradient(ellipse, rgba(0,255,136,0.06) 0%, transparent 70%); pointer-events:none;"></div>
+      <h2 class="section-title" style="margin-bottom:16px;">Prêt à tester la plateforme ?</h2>
+      <p style="color:var(--text-dim); max-width:520px; margin:0 auto 40px; line-height:1.7;">
+        DomEscape tourne sur Raspberry Pi avec six équipements Z-Wave réels. Tout est réel.
+      </p>
+      <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+        <a href="../public/inscription.php" class="btn btn-primary btn-lg">Créer un compte →</a>
+        <a href="../public/connexion.php" class="btn btn-outline btn-lg">Se connecter</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-logo">
+    <img src="../assets/logo-full.svg" alt="DomEscape" style="height:36px;width:auto;opacity:.8;">
+  </div>
+  <div class="footer-links">
+    <a href="index.html">Accueil</a>
+    <a href="plateforme.html">Plateforme</a>
+    <a href="demonstration.html">Démonstration</a>
+    <a href="../public/connexion.php">Connexion</a>
+    <a href="../public/inscription.php">Créer un compte</a>
+  </div>
+</footer>
+
+<script src="../assets/vendor/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+<script src="assets/js/domescape.js"></script>
+</body>
+</html>

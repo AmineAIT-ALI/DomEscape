@@ -3,9 +3,9 @@
 // =============================================================
 // send_hint.php — Envoyer l'indice de l'étape courante
 //
-// Appelé par le Game Master. Incrémente nb_indices sur la session
-// et retourne le texte de l'indice de l'étape courante.
-// Rôle requis : SUPERVISEUR
+// Appelé par le Game Master. Incrémente nb_indices sur la session,
+// déclenche les actions on_hint configurées et retourne le texte de l'indice.
+// Rôle requis : administrateur (is_admin)
 // =============================================================
 
 header('Content-Type: application/json');
@@ -15,7 +15,7 @@ require_once __DIR__ . '/../core/GameEngine.php';
 require_once __DIR__ . '/../config/database.php';
 
 Auth::init();
-if (!Auth::check() || !Auth::hasRole(ROLE_SUPERVISEUR)) {
+if (!Auth::check() || !Auth::isAdmin()) {
     http_response_code(403);
     echo json_encode(['status' => 'error', 'message' => 'Accès refusé.']);
     exit;
@@ -46,6 +46,9 @@ if ($indice === '') {
 // Incrémenter le compteur d'indices
 $pdo->prepare('UPDATE session SET nb_indices = nb_indices + 1 WHERE id_session = ?')
     ->execute([$session['id_session']]);
+
+// Déclencher les actions on_hint configurées pour cette étape
+ActionManager::executeForEtape((int)$session['id_etape_courante'], 'on_hint', (int)$session['id_session']);
 
 echo json_encode([
     'status'     => 'ok',

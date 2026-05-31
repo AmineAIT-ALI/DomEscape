@@ -1,23 +1,10 @@
 <?php
 // ============================================================
-// DomEscape — Configuration de l'authentification
+// DomEscape — Configuration de l'authentification (Core Edition)
+// Auth simplifiée : is_admin sur utilisateur (plus de RBAC)
 // ============================================================
 
-define('AUTH_LOGIN_URL',     '/domescape/public/connexion.php');
-define('AUTH_DASHBOARD_URL', '/domescape/public/tableau-de-bord.php');
-define('AUTH_SESSION_NAME',  'domescape_auth');
-
-// Durée de la session PHP (secondes) — 4 heures
-define('AUTH_SESSION_LIFETIME', 14400);
-
-// Rôles disponibles (dans l'ordre hiérarchique croissant)
-define('ROLE_PARTICIPANT',    'participant');
-define('ROLE_SUPERVISEUR',    'superviseur');
-define('ROLE_ADMINISTRATEUR', 'administrateur');
-
-// Hiérarchie : chaque rôle hérite des droits des rôles inférieurs
-const ROLE_HIERARCHY = [
-    ROLE_ADMINISTRATEUR => [ROLE_SUPERVISEUR, ROLE_PARTICIPANT],
-    ROLE_SUPERVISEUR    => [ROLE_PARTICIPANT],
-    ROLE_PARTICIPANT    => [],
-];
+define('AUTH_LOGIN_URL',        '/domescape/public/connexion.php');
+define('AUTH_DASHBOARD_URL',    '/domescape/public/index.php');
+define('AUTH_SESSION_NAME',     'domescape_auth');
+define('AUTH_SESSION_LIFETIME', 14400); // 4 heures

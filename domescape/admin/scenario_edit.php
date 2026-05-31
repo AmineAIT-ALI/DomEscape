@@ -1,10 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../core/RoleGuard.php';
-require_once __DIR__ . '/../core/Csrf.php';
 require_once __DIR__ . '/../config/database.php';
 
-RoleGuard::requireRole(ROLE_ADMINISTRATEUR);
+RoleGuard::requireAdmin();
 
 $pdo = getDB();
 
@@ -28,7 +27,6 @@ $success = '';
 
 // --- Actions POST ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    Csrf::verify();
     $action = $_POST['action'] ?? '';
 
     // Mettre à jour scénario
@@ -37,15 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $desc        = trim($_POST['description']         ?? '');
         $theme       = trim($_POST['theme']               ?? '');
         $actif       = isset($_POST['actif']) ? 1 : 0;
-        $jouMin      = $_POST['nb_joueurs_min']      !== '' ? (int)$_POST['nb_joueurs_min']      : null;
-        $jouMax      = $_POST['nb_joueurs_max']      !== '' ? (int)$_POST['nb_joueurs_max']      : null;
         $dureeMax    = $_POST['duree_max_secondes']  !== '' ? (int)$_POST['duree_max_secondes']  : null;
 
         if ($nom === '') {
             $error = 'Le nom est requis.';
         } else {
-            $pdo->prepare("UPDATE scenario SET nom_scenario=?, description=?, theme=?, actif=?, nb_joueurs_min=?, nb_joueurs_max=?, duree_max_secondes=? WHERE id_scenario=?")
-                ->execute([$nom, $desc ?: null, $theme ?: null, $actif, $jouMin, $jouMax, $dureeMax, $id]);
+            $pdo->prepare("UPDATE scenario SET nom_scenario=?, description=?, theme=?, actif=?, duree_max_secondes=? WHERE id_scenario=?")
+                ->execute([$nom, $desc ?: null, $theme ?: null, $actif, $dureeMax, $id]);
             $success = 'Scénario mis à jour.';
             $stmt = $pdo->prepare("SELECT * FROM scenario WHERE id_scenario = ? LIMIT 1");
             $stmt->execute([$id]);
@@ -213,62 +209,6 @@ if ($editEtape) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Éditer scénario — DomEscape Admin</title>
-    <style>
-        body { background: #080810; color: #e0e0e0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
-        a { color: #00ff88; }
-
-        .admin-wrap { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
-
-        .admin-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
-        .admin-header h1 { font-size: 1.1rem; font-weight: 700; margin: 0; color: #e0e0e0; }
-        .admin-header p  { font-size: .72rem; color: #444; margin: 4px 0 0; }
-
-        .section-label { font-size: .65rem; letter-spacing: .12em; color: #444; text-transform: uppercase; margin-bottom: 14px; margin-top: 36px; }
-
-        .panel { background: #0f0f18; border: 1px solid #111; border-radius: 6px; padding: 24px; margin-bottom: 12px; }
-        .panel-table { padding: 0; overflow: hidden; }
-
-        .form-group { margin-bottom: 16px; }
-        .form-group label { font-size: .68rem; color: #555; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
-        .form-input {
-            width: 100%; background: #080810; border: 1px solid #1a1a2e; color: #e0e0e0;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: .82rem; padding: 8px 12px;
-            border-radius: 4px; outline: none; transition: border-color .15s;
-        }
-        .form-input:focus { border-color: #00ff88; }
-        textarea.form-input { resize: vertical; min-height: 70px; }
-
-        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-        .btn-save { font-size: .8rem; padding: 9px 20px; }
-        .btn-outline { font-size: .78rem; padding: 8px 16px; }
-        .btn-action { font-size: .7rem; padding: 4px 10px; }
-        .btn-edit-sm { color: #60a5fa; border-color: rgba(96,165,250,.3); }
-        .btn-edit-sm:hover { background: rgba(96,165,250,.08); color: #60a5fa; }
-        .btn-del-sm  { color: #ff4444; border-color: rgba(255,68,68,.2); }
-        .btn-del-sm:hover { background: rgba(255,68,68,.07); }
-
-        table { width: 100%; border-collapse: collapse; font-size: .78rem; }
-        th { font-size: .6rem; letter-spacing: .08em; color: #444; text-transform: uppercase; padding: 9px 14px; text-align: left; font-weight: normal; border-bottom: 1px solid #0a0a14; }
-        td { padding: 11px 14px; border-bottom: 1px solid #0a0a14; vertical-align: middle; }
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: rgba(255,255,255,.02); }
-
-        .finale-badge { font-size: .65rem; color: #00ff88; border: 1px solid rgba(0,255,136,.3); background: rgba(0,255,136,.06); padding: 2px 7px; border-radius: 3px; }
-        .has-hint { color: #fbbf24; font-size: .7rem; display: inline-flex; align-items: center; gap: 4px; }
-
-        .alert-error   { background: rgba(255,68,68,.07); border: 1px solid rgba(255,68,68,.25); color: #ff6666; padding: 10px 14px; border-radius: 4px; font-size: .8rem; margin-bottom: 20px; }
-        .alert-success { background: rgba(0,255,136,.06); border: 1px solid rgba(0,255,136,.2); color: #00ff88; padding: 10px 14px; border-radius: 4px; font-size: .8rem; margin-bottom: 20px; }
-
-        .cb-row { display: flex; align-items: center; gap: 8px; font-size: .82rem; }
-        .cb-row input[type=checkbox] { accent-color: #00ff88; width: 15px; height: 15px; cursor: pointer; }
-        .cb-row label { color: #888; cursor: pointer; }
-
-        .edit-section { background: rgba(96,165,250,.04); border: 1px solid rgba(96,165,250,.2); border-radius: 6px; padding: 24px; margin-bottom: 12px; }
-        .edit-section-title { font-size: .72rem; color: #60a5fa; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; }
-
-        @media (max-width: 700px) { .form-grid-2 { grid-template-columns: 1fr; } }
-    </style>
     <link rel="stylesheet" href="/domescape/assets/css/components.css">
 </head>
 <body>
@@ -289,14 +229,13 @@ if ($editEtape) {
         <div class="alert-error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
     <?php if ($success): ?>
-        <div class="alert-success"><?= $success ?></div>
+        <div class="alert-success"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
 
     <!-- Métadonnées scénario -->
     <div class="section-label" style="margin-top:0;">Informations du scénario</div>
     <div class="panel">
         <form method="POST">
-                <?= Csrf::field() ?>
             <input type="hidden" name="action" value="update_scenario">
             <div class="form-grid-2">
                 <div class="form-group">
@@ -313,20 +252,6 @@ if ($editEtape) {
             <div class="form-group">
                 <label>Description</label>
                 <textarea name="description" class="form-input"><?= htmlspecialchars($scenario['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
-            </div>
-            <div class="form-grid-2" style="margin-top:4px;">
-                <div class="form-group">
-                    <label>Joueurs min</label>
-                    <input type="number" name="nb_joueurs_min" class="form-input" min="1" max="99"
-                           value="<?= $scenario['nb_joueurs_min'] !== null ? (int)$scenario['nb_joueurs_min'] : '' ?>"
-                           placeholder="—">
-                </div>
-                <div class="form-group">
-                    <label>Joueurs max</label>
-                    <input type="number" name="nb_joueurs_max" class="form-input" min="1" max="99"
-                           value="<?= $scenario['nb_joueurs_max'] !== null ? (int)$scenario['nb_joueurs_max'] : '' ?>"
-                           placeholder="—">
-                </div>
             </div>
             <div class="form-group">
                 <label>Durée limite (secondes) — laisser vide = illimitée</label>
@@ -402,7 +327,6 @@ if ($editEtape) {
                                 <i data-lucide="pencil" style="width:10px;height:10px;"></i> Éditer
                             </a>
                             <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cette étape ?');">
-                <?= Csrf::field() ?>
                                 <input type="hidden" name="action" value="delete_etape">
                                 <input type="hidden" name="id_etape" value="<?= (int)$e['id_etape'] ?>">
                                 <button type="submit" class="btn btn-action btn-del-sm">
@@ -428,7 +352,6 @@ if ($editEtape) {
             Édition : <?= htmlspecialchars($editEtape['titre_etape'], ENT_QUOTES, 'UTF-8') ?>
         </div>
         <form method="POST">
-                <?= Csrf::field() ?>
             <input type="hidden" name="action" value="update_etape">
             <input type="hidden" name="id_etape" value="<?= (int)$editEtape['id_etape'] ?>">
             <div class="form-grid-2">
@@ -460,7 +383,7 @@ if ($editEtape) {
                 </div>
             </div>
             <div class="form-group">
-                <label>Indice (envoyé sur demande du Game Master)</label>
+                <label>Indice (envoyé sur demande du superviseur)</label>
                 <textarea name="indice" class="form-input" style="min-height:55px;"><?= htmlspecialchars($editEtape['indice'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
             </div>
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:8px;">
@@ -494,7 +417,6 @@ if ($editEtape) {
     <div class="section-label" style="margin-top:20px;">Événement attendu pour valider l'étape</div>
     <div class="panel" style="padding:0;">
         <form method="POST">
-            <?= Csrf::field() ?>
             <input type="hidden" name="action" value="save_attend">
             <input type="hidden" name="id_etape" value="<?= (int)$editEtape['id_etape'] ?>">
             <div style="overflow-x:auto;">
@@ -554,7 +476,6 @@ if ($editEtape) {
     <div class="section-label" style="margin-top:20px;">Actions déclenchées par l'étape</div>
     <div class="panel" style="padding:0;">
         <form method="POST">
-            <?= Csrf::field() ?>
             <input type="hidden" name="action" value="save_declenche">
             <input type="hidden" name="id_etape" value="<?= (int)$editEtape['id_etape'] ?>">
             <div style="overflow-x:auto;">
@@ -577,10 +498,10 @@ if ($editEtape) {
                 <tr class="dec-row">
                     <td style="padding:10px 14px;">
                         <select name="dec_moment[]" class="form-input" style="padding:6px 10px;width:auto;">
-                            <option value="on_enter"  <?= $mom === 'on_enter'  ? 'selected' : '' ?>>On enter</option>
-                            <option value="on_success"<?= $mom === 'on_success'? 'selected' : '' ?>>On success</option>
-                            <option value="on_failure"<?= $mom === 'on_failure'? 'selected' : '' ?>>On failure</option>
-                            <option value="on_hint"   <?= $mom === 'on_hint'   ? 'selected' : '' ?>>On hint</option>
+                            <option value="on_enter"  <?= $mom === 'on_enter'  ? 'selected' : '' ?>>À l'entrée</option>
+                            <option value="on_success"<?= $mom === 'on_success'? 'selected' : '' ?>>Au succès</option>
+                            <option value="on_failure"<?= $mom === 'on_failure'? 'selected' : '' ?>>En cas d'échec</option>
+                            <option value="on_hint"   <?= $mom === 'on_hint'   ? 'selected' : '' ?>>Sur indice</option>
                         </select>
                     </td>
                     <td style="padding:10px 14px;">
@@ -624,7 +545,6 @@ if ($editEtape) {
     <div class="section-label">Ajouter une étape</div>
     <div class="panel">
         <form method="POST">
-                <?= Csrf::field() ?>
             <input type="hidden" name="action" value="add_etape">
             <div class="form-grid-2">
                 <div class="form-group">
@@ -654,7 +574,7 @@ if ($editEtape) {
                 </div>
             </div>
             <div class="form-group">
-                <label>Indice (envoyé sur demande du Game Master)</label>
+                <label>Indice (envoyé sur demande du superviseur)</label>
                 <textarea name="indice" class="form-input" style="min-height:55px;"
                           placeholder="Regardez derrière le tableau…"></textarea>
             </div>
@@ -729,10 +649,10 @@ function addDecRow() {
     tr.innerHTML = `
         <td style="padding:10px 14px;">
             <select name="dec_moment[]" class="form-input" style="padding:6px 10px;width:auto;">
-                <option value="on_enter">On enter</option>
-                <option value="on_success" selected>On success</option>
-                <option value="on_failure">On failure</option>
-                <option value="on_hint">On hint</option>
+                <option value="on_enter">À l'entrée</option>
+                <option value="on_success" selected>Au succès</option>
+                <option value="on_failure">En cas d'échec</option>
+                <option value="on_hint">Sur indice</option>
             </select>
         </td>
         <td style="padding:10px 14px;">${makeSelect('dec_actionneur[]', ACTIONNEURS)}</td>

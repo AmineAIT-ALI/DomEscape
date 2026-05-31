@@ -1,6 +1,7 @@
 <?php
 // ============================================================
-// DomEscape — Couche d'authentification
+// DomEscape — Couche d'authentification (Core Edition)
+// Auth simplifiée : is_admin remplace le RBAC role/utilisateur_role
 // ============================================================
 
 require_once __DIR__ . '/../config/auth.php';
@@ -16,9 +17,7 @@ class Auth
     // ----------------------------------------------------------
     public static function init(): void
     {
-        if (self::$started) {
-            return;
-        }
+        if (self::$started) return;
 
         ini_set('session.cookie_httponly', '1');
         ini_set('session.use_strict_mode', '1');
@@ -50,32 +49,23 @@ class Auth
     }
 
     // ----------------------------------------------------------
-    // Connexion — retourne true ou un message d'erreur string
+    // Connexion
     // ----------------------------------------------------------
     public static function login(string $email, string $password)
     {
         $repo = new UserRepository();
         $user = $repo->findByEmail(trim($email));
 
-        if ($user === null) {
-            return 'Identifiants invalides.';
-        }
+        if ($user === null)                                          return 'Identifiants invalides.';
+        if (!$user['actif'])                                         return 'Ce compte est désactivé.';
+        if (!password_verify($password, $user['mot_de_passe']))      return 'Identifiants invalides.';
 
-        if (!$user['actif']) {
-            return 'Ce compte est désactivé.';
-        }
-
-        if (!password_verify($password, $user['mot_de_passe'])) {
-            return 'Identifiants invalides.';
-        }
-
-        // Regénérer l'ID de session pour prévenir la fixation
         session_regenerate_id(true);
 
-        $_SESSION['user_id']    = $user['id'];
-        $_SESSION['user_nom']   = $user['nom'];
-        $_SESSION['user_email'] = $user['email'];
-        $_SESSION['user_roles'] = $repo->getRoles($user['id']);
+        $_SESSION['user_id']       = $user['id'];
+        $_SESSION['user_nom']      = $user['nom'];
+        $_SESSION['user_email']    = $user['email'];
+        $_SESSION['user_is_admin'] = (bool) $user['is_admin'];
 
         $repo->updateLastLogin($user['id']);
 
@@ -92,13 +82,10 @@ class Auth
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(
-                session_name(),
-                '',
+                session_name(), '',
                 time() - 42000,
-                $params['path'],
-                $params['domain'],
-                $params['secure'],
-                $params['httponly']
+                $params['path'], $params['domain'],
+                $params['secure'], $params['httponly']
             );
         }
 
@@ -115,49 +102,18 @@ class Auth
 
     public static function user(): ?array
     {
-        if (!self::check()) {
-            return null;
-        }
+        if (!self::check()) return null;
 
         return [
-            'id'    => $_SESSION['user_id'],
-            'nom'   => $_SESSION['user_nom'],
-            'email' => $_SESSION['user_email'],
+            'id'       => $_SESSION['user_id'],
+            'nom'      => $_SESSION['user_nom'],
+            'email'    => $_SESSION['user_email'],
+            'is_admin' => $_SESSION['user_is_admin'] ?? false,
         ];
     }
 
-    public static function roles(): array
+    public static function isAdmin(): bool
     {
-        return $_SESSION['user_roles'] ?? [];
-    }
-
-    // ----------------------------------------------------------
-    // Contrôle de rôle avec héritage hiérarchique
-    // ----------------------------------------------------------
-    public static function hasRole(string $role): bool
-    {
-        $effectiveRoles = self::buildHierarchy(self::roles());
-        return in_array($role, $effectiveRoles, true);
-    }
-
-    /**
-     * À partir d'une liste de rôles assignés, retourne l'ensemble
-     * des rôles effectifs en appliquant la hiérarchie.
-     */
-    public static function buildHierarchy(array $assignedRoles): array
-    {
-        $all = $assignedRoles;
-
-        foreach ($assignedRoles as $role) {
-            if (isset(ROLE_HIERARCHY[$role])) {
-                foreach (ROLE_HIERARCHY[$role] as $inherited) {
-                    if (!in_array($inherited, $all, true)) {
-                        $all[] = $inherited;
-                    }
-                }
-            }
-        }
-
-        return $all;
+        return (bool) ($_SESSION['user_is_admin'] ?? false);
     }
 }

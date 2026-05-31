@@ -1,6 +1,7 @@
 <?php
 // ============================================================
-// DomEscape — Guards d'accès
+// DomEscape — Guards d'accès (Core Edition)
+// Deux niveaux : connecté (requireLogin) / admin (requireAdmin)
 // ============================================================
 
 require_once __DIR__ . '/Auth.php';
@@ -8,8 +9,7 @@ require_once __DIR__ . '/Auth.php';
 class RoleGuard
 {
     /**
-     * Redirige vers la page de connexion si l'utilisateur
-     * n'est pas authentifié. À appeler en tête de page.
+     * Redirige vers la page de connexion si l'utilisateur n'est pas authentifié.
      */
     public static function requireLogin(): void
     {
@@ -23,14 +23,14 @@ class RoleGuard
     }
 
     /**
-     * Exige un rôle minimum (avec héritage hiérarchique).
+     * Exige le statut administrateur (is_admin = TRUE).
      * Appelle requireLogin() en premier.
      */
-    public static function requireRole(string $role): void
+    public static function requireAdmin(): void
     {
         self::requireLogin();
 
-        if (!Auth::hasRole($role)) {
+        if (!Auth::isAdmin()) {
             self::denyAccess();
         }
     }
@@ -63,25 +63,11 @@ class RoleGuard
     <div class="deny-code">403</div>
     <div class="deny-title">Accès refusé</div>
     <p class="deny-sub">Vous n'avez pas les droits nécessaires pour accéder à cette page.</p>
-    <a href="/domescape/public/tableau-de-bord.php" class="btn btn-outline btn-back">← Retour au tableau de bord</a>
+    <a href="/domescape/public/index.php" class="btn btn-outline btn-back">← Retour</a>
   </div>
 </body>
 </html>
         <?php
         exit;
     }
-}
-
-// ----------------------------------------------------------
-// Fonctions globales de commodité (compatibles avec l'existant)
-// ----------------------------------------------------------
-
-function requireLogin(): void
-{
-    RoleGuard::requireLogin();
-}
-
-function requireRole(string $role): void
-{
-    RoleGuard::requireRole($role);
 }

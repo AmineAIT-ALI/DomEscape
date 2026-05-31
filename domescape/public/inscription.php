@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../core/Auth.php';
-require_once __DIR__ . '/../core/Csrf.php';
 require_once __DIR__ . '/../core/UserRepository.php';
 
 Auth::init();
@@ -14,7 +13,6 @@ $error   = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    Csrf::verify();
     $nom      = trim($_POST['nom']      ?? '');
     $email    = trim($_POST['email']    ?? '');
     $password = $_POST['password']      ?? '';
@@ -34,16 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($repo->emailExists($email)) {
             $error = 'Cette adresse e-mail est déjà utilisée.';
         } else {
-            $id = $repo->create($nom, $email, $password);
-
-            // Assigner le rôle "participant" par défaut
-            $roles = $repo->getAllRoles();
-            foreach ($roles as $r) {
-                if ($r['nom'] === ROLE_PARTICIPANT) {
-                    $repo->assignRole($id, (int) $r['id']);
-                    break;
-                }
-            }
+            $repo->create($nom, $email, $password);
 
             // Connexion automatique
             Auth::login($email, $password);
@@ -59,169 +48,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Créer un compte — DomEscape</title>
-  <style>
-    :root {
-      --accent: #00ff88; --accent-dark: #00cc6a;
-      --bg-base: #080810; --bg-card: #0f0f18; --bg-input: #0d0d16;
-      --border: #1a1a2e; --border-dim: #111;
-      --text: #e0e0e0; --muted: #555; --dim: #333;
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    body {
-        margin: 0;
-        background: #080810;
-        color: #e0e0e0;
-        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .auth-nav {
-        height: 52px;
-        display: flex;
-        align-items: center;
-        padding: 0 24px;
-        border-bottom: 1px solid #111;
-        flex-shrink: 0;
-    }
-    .auth-nav-brand {
-        color: #00ff88;
-        font-weight: 700;
-        font-size: .88rem;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 7px;
-    }
-    .auth-nav-dot {
-        width: 7px; height: 7px;
-        background: #00ff88;
-        border-radius: 50%;
-        box-shadow: 0 0 6px #00ff88;
-    }
-    .auth-nav-back {
-        margin-left: auto;
-        color: #555;
-        font-size: .75rem;
-        text-decoration: none;
-        transition: color .15s;
-    }
-    .auth-nav-back:hover { color: #e0e0e0; }
-
-    .auth-wrap {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 48px 16px;
-    }
-    .auth-card { width: 100%; max-width: 420px; }
-
-    .auth-head { text-align: center; margin-bottom: 36px; }
-    .auth-head-icon {
-        width: 44px; height: 44px;
-        border: 1px solid #1a1a2e;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 16px;
-        font-size: 1.1rem;
-        color: #00ff88;
-    }
-    .auth-head h1 {
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin: 0 0 6px;
-        color: #e0e0e0;
-    }
-    .auth-head p { font-size: .78rem; color: #555; margin: 0; }
-
-    .auth-form { display: flex; flex-direction: column; gap: 14px; }
-    .form-field {}
-    .form-field label {
-        display: block;
-        font-size: .72rem;
-        color: #666;
-        margin-bottom: 6px;
-        letter-spacing: .03em;
-    }
-    .form-field input {
-        width: 100%;
-        padding: 10px 12px;
-        background: #0d0d16;
-        border: 1px solid #1a1a2e;
-        border-radius: 4px;
-        color: #e0e0e0;
-        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-        font-size: .875rem;
-        outline: none;
-        transition: border-color .15s;
-    }
-    .form-field input:focus { border-color: #00ff88; }
-    .form-hint { font-size: .68rem; color: #444; margin-top: 5px; }
-
-    /* Password strength bar */
-    .pw-strength { margin-top: 6px; }
-    .pw-bar {
-        height: 3px;
-        background: #111;
-        border-radius: 2px;
-        overflow: hidden;
-    }
-    .pw-bar-fill {
-        height: 100%;
-        border-radius: 2px;
-        transition: width .3s, background .3s;
-        width: 0%;
-    }
-    .pw-label { font-size: .65rem; color: #444; margin-top: 4px; }
-
-    .error-box {
-        background: rgba(255,68,68,.06);
-        border: 1px solid rgba(255,68,68,.25);
-        color: #ff6666;
-        padding: 10px 14px;
-        border-radius: 4px;
-        font-size: .78rem;
-    }
-
-    .btn-submit { font-size: .875rem; padding: 11px; margin-top: 6px; }
-
-    /* Role chip */
-    .role-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(0,255,136,.06);
-        border: 1px solid rgba(0,255,136,.2);
-        color: #00ff88;
-        font-size: .72rem;
-        padding: 5px 12px;
-        border-radius: 3px;
-        margin-bottom: 20px;
-    }
-    .role-chip-dot { width: 6px; height: 6px; background: #00ff88; border-radius: 50%; }
-
-    .auth-divider { border: none; border-top: 1px solid #111; margin: 24px 0; }
-
-    .auth-footer {
-        text-align: center;
-        margin-top: 24px;
-        font-size: .75rem;
-        color: #444;
-    }
-    .auth-footer a { color: #00ff88; text-decoration: none; }
-    .auth-footer a:hover { text-decoration: underline; }
-  </style>
     <link rel="stylesheet" href="/domescape/assets/css/components.css">
+    <link rel="stylesheet" href="/domescape/assets/css/auth.css">
 </head>
 <body>
 
 <nav class="auth-nav">
   <a href="/domescape/website/index.html" class="auth-nav-brand">
-    <span class="auth-nav-dot"></span>DomEscape
+    <img src="/domescape/assets/logo-icon.svg" alt="DomEscape" style="height:26px;width:auto;">
+    DomEscape
   </a>
   <a href="/domescape/public/connexion.php" class="auth-nav-back">Déjà inscrit ? Se connecter</a>
 </nav>
@@ -243,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <form method="post" action="" class="auth-form">
-                <?= Csrf::field() ?>
 
       <?php if ($error !== ''): ?>
         <div class="error-box"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>

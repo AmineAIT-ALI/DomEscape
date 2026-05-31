@@ -11,7 +11,7 @@ require_once __DIR__ . '/ActionManager.php';
 // Tables : session, etape, etape_attend, evenement_session
 //
 // Valeurs de statut_session :
-//   en_attente | en_cours | gagnee | perdue | abandonnee
+//   en_cours | gagnee | perdue | abandonnee
 // =============================================================
 
 class GameEngine
@@ -41,7 +41,6 @@ class GameEngine
             $session = $stmt->fetch() ?: null;
 
             if ($session === null) {
-                self::logEvenement($event, null, false, null);
                 error_log('[GameEngine] Aucune session active — événement ignoré.');
                 $pdo->commit();
                 return;
@@ -214,25 +213,14 @@ class GameEngine
 
     private static function getEtapeSuivante(array $etape, int $numeroActuel): ?array
     {
-        $pdo = getDB();
-        if (!empty($etape['id_scenario_version'])) {
-            $stmt = $pdo->prepare("
-                SELECT * FROM etape
-                WHERE id_scenario_version = ? AND numero_etape > ?
-                ORDER BY numero_etape ASC
-                LIMIT 1
-            ");
-            $stmt->execute([$etape['id_scenario_version'], $numeroActuel]);
-        } else {
-            // Fallback : ancienne logique par id_scenario
-            $stmt = $pdo->prepare("
-                SELECT * FROM etape
-                WHERE id_scenario = ? AND numero_etape > ?
-                ORDER BY numero_etape ASC
-                LIMIT 1
-            ");
-            $stmt->execute([$etape['id_scenario'], $numeroActuel]);
-        }
+        $pdo  = getDB();
+        $stmt = $pdo->prepare("
+            SELECT * FROM etape
+            WHERE id_scenario = ? AND numero_etape > ?
+            ORDER BY numero_etape ASC
+            LIMIT 1
+        ");
+        $stmt->execute([$etape['id_scenario'], $numeroActuel]);
         return $stmt->fetch() ?: null;
     }
 
@@ -249,114 +237,38 @@ class GameEngine
     }
 
     /**
-     * Démarre une nouvelle session pour un scénario et une équipe.
-     * Exécute les actions on_enter de la première étape.
+     * Démarre une nouvelle session immédiatement (statut en_cours).
+     * Déclenche on_enter de la première étape.
      */
-    /**
-     * Démarre une nouvelle session.
-     * Si $minJoueurs > 1, la session est créée en_attente (lobby) et
-     * passera en_cours automatiquement quand le seuil sera atteint via tryLaunchSession().
-     */
-    public static function startSession(int $idScenario, int $idEquipe, ?int $idScenarioVersion = null, ?int $idUtilisateurCreateur = null, int $minJoueurs = 1): int
+    public static function startSession(int $idScenario, string $nomEquipe): int
     {
         $pdo = getDB();
 
-        // Première étape — via version si disponible, sinon fallback id_scenario
-        if ($idScenarioVersion !== null) {
-            $stmt = $pdo->prepare("
-                SELECT * FROM etape
-                WHERE id_scenario_version = ?
-                ORDER BY numero_etape ASC
-                LIMIT 1
-            ");
-            $stmt->execute([$idScenarioVersion]);
-        } else {
-            $stmt = $pdo->prepare("
-                SELECT * FROM etape
-                WHERE id_scenario = ?
-                ORDER BY numero_etape ASC
-                LIMIT 1
-            ");
-            $stmt->execute([$idScenario]);
-        }
+        $stmt = $pdo->prepare("
+            SELECT * FROM etape
+            WHERE id_scenario = ?
+            ORDER BY numero_etape ASC
+            LIMIT 1
+        ");
+        $stmt->execute([$idScenario]);
         $premiereEtape = $stmt->fetch();
 
         if (!$premiereEtape) {
             throw new RuntimeException("Aucune étape trouvée pour le scénario $idScenario.");
         }
 
-        // Si min > 1 : lobby (en_attente), date_debut fixée au lancement réel
-        $statutInitial = ($minJoueurs > 1) ? 'en_attente' : 'en_cours';
-        $dateDebut     = ($minJoueurs > 1) ? null : date('Y-m-d H:i:s');
-
         $pdo->prepare("
-            INSERT INTO session
-                (id_scenario, id_scenario_version, id_equipe, id_utilisateur_createur,
-                 statut_session, date_debut, id_etape_courante)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ")->execute([$idScenario, $idScenarioVersion, $idEquipe, $idUtilisateurCreateur, $statutInitial, $dateDebut, $premiereEtape['id_etape']]);
+            INSERT INTO session (id_scenario, nom_equipe, statut_session, id_etape_courante)
+            VALUES (?, ?, 'en_cours', ?)
+        ")->execute([$idScenario, $nomEquipe, $premiereEtape['id_etape']]);
 
         $idSession = (int)$pdo->lastInsertId();
 
-        // on_enter déclenché seulement au démarrage réel
-        if ($statutInitial === 'en_cours') {
-            ActionManager::executeForEtape($premiereEtape['id_etape'], 'on_enter', $idSession);
-        }
+        ActionManager::executeForEtape($premiereEtape['id_etape'], 'on_enter', $idSession);
 
-        error_log("[GameEngine] Session $idSession créée ($statutInitial) — scénario $idScenario, version $idScenarioVersion, équipe $idEquipe.");
+        error_log("[GameEngine] Session $idSession démarrée — scénario $idScenario, équipe '$nomEquipe'.");
 
         return $idSession;
-    }
-
-    /**
-     * Vérifie si une session en_attente peut passer en_cours.
-     * Déclenche on_enter de la première étape si le seuil est atteint.
-     * Retourne true si la session a été lancée.
-     */
-    public static function tryLaunchSession(int $idSession): bool
-    {
-        $pdo = getDB();
-
-        $stmt = $pdo->prepare("
-            SELECT s.id_session, s.statut_session, s.id_etape_courante, sc.nb_joueurs_min
-            FROM session s
-            JOIN scenario sc ON s.id_scenario = sc.id_scenario
-            WHERE s.id_session = ?
-            LIMIT 1
-        ");
-        $stmt->execute([$idSession]);
-        $session = $stmt->fetch();
-
-        if (!$session || $session['statut_session'] !== 'en_attente') {
-            return false;
-        }
-
-        $minJoueurs = max(1, (int)($session['nb_joueurs_min'] ?? 1));
-
-        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM session_utilisateur WHERE id_session = ?");
-        $stmtCount->execute([$idSession]);
-        $nbActuels = (int)$stmtCount->fetchColumn();
-
-        if ($nbActuels < $minJoueurs) {
-            return false;
-        }
-
-        // Transition vers en_cours
-        $pdo->prepare("
-            UPDATE session
-            SET statut_session = 'en_cours',
-                date_debut     = NOW()
-            WHERE id_session = ?
-        ")->execute([$idSession]);
-
-        // Déclencher on_enter de la première étape
-        if ($session['id_etape_courante']) {
-            ActionManager::executeForEtape((int)$session['id_etape_courante'], 'on_enter', $idSession);
-        }
-
-        error_log("[GameEngine] Session $idSession lancée ($nbActuels/$minJoueurs joueurs).");
-
-        return true;
     }
 
     /**
@@ -379,7 +291,7 @@ class GameEngine
     // ----------------------------------------------------------
     private static function logEvenement(
         array $event,
-        ?int  $idSession,
+        int   $idSession,
         bool  $evenementAttendu,
         ?int  $idEtape
     ): void {
@@ -388,14 +300,13 @@ class GameEngine
             INSERT INTO evenement_session
                 (id_session, id_capteur, id_type_evenement, valeur_brute,
                  evenement_attendu, valide, id_etape, date_evenement)
-            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+            VALUES (?, ?, ?, ?, ?, 1, ?, NOW())
         ")->execute([
             $idSession,
-            $event['capteur']['id_capteur']               ?? null,
-            $event['evenement_type']['id_type_evenement']  ?? null,
+            $event['capteur']['id_capteur']              ?? null,
+            $event['evenement_type']['id_type_evenement'] ?? null,
             json_encode($event['raw']),
-            $evenementAttendu ? 1 : 0,   // correspondait à l'attendu de l'étape ?
-            $idSession !== null ? 1 : 0, // session active au moment de l'événement ?
+            $evenementAttendu ? 1 : 0,
             $idEtape,
         ]);
     }
