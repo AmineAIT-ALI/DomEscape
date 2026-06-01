@@ -1,7 +1,5 @@
 <?php
-// =============================================================
 // abandon_game.php — Abandonner sa propre session en cours
-// =============================================================
 
 header('Content-Type: application/json');
 

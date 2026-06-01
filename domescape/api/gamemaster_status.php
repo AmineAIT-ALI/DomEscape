@@ -1,11 +1,9 @@
 <?php
 
-// =============================================================
+
 // gamemaster_status.php — État session + événements BDD
-//
-// Étend session_status avec les 15 derniers événements
-// et les 5 dernières actions de la session active.
-// =============================================================
+// Étend session_status avec les 15 derniers événements et les 5 dernières actions de la session active.
+
 
 header('Content-Type: application/json');
 

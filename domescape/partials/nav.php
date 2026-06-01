@@ -1,9 +1,7 @@
 <?php
-// ============================================================
 // DomEscape — Navigation principale partagée
 // Deux états : visiteur non connecté / utilisateur connecté
 // Requiert Auth::init() appelé en amont (via RoleGuard)
-// ============================================================
 
 $_nav_user    = Auth::user();
 $_nav_isAdmin = Auth::isAdmin();

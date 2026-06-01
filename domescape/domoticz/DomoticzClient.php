@@ -2,10 +2,8 @@
 
 require_once __DIR__ . '/../config/app.php';
 
-// =============================================================
 // DomoticzClient
 // Encapsule tous les appels à l'API JSON de Domoticz.
-// =============================================================
 
 class DomoticzClient
 {
@@ -17,9 +15,7 @@ class DomoticzClient
         $this->baseUrl = DOMOTICZ_URL . '/json.htm';
     }
 
-    // ----------------------------------------------------------
     // Lecture
-    // ----------------------------------------------------------
 
     
     // Retourne les données d'un device Domoticz par son idx ou null si introuvable.
@@ -41,9 +37,7 @@ class DomoticzClient
         return $data['result'] ?? [];
     }
 
-    // ----------------------------------------------------------
     // Commandes actionneurs
-    // ----------------------------------------------------------
 
     
     // Envoie une commande switchlight à Domoticz. Retourne true si Domoticz répond OK.
@@ -77,9 +71,7 @@ class DomoticzClient
         return ($data['status'] ?? '') === 'OK';
     }
 
-    // ----------------------------------------------------------
     // Interne
-    // ----------------------------------------------------------
 
     // Exécute un appel GET authentifié vers l'API JSON Domoticz et retourne le tableau décodé.
     // Retourne un tableau vide si Domoticz est inaccessible.

@@ -1,12 +1,8 @@
 <?php
 
-// =============================================================
 // send_hint.php — Envoyer l'indice de l'étape courante
-//
-// Appelé par le Game Master. Incrémente nb_indices sur la session,
-// déclenche les actions on_hint configurées et retourne le texte de l'indice.
+// Appelé par le Game Master. Incrémente nb_indices sur la session, déclenche les actions on_hint configurées et retourne le texte de l'indice.
 // Rôle requis : administrateur (is_admin)
-// =============================================================
 
 header('Content-Type: application/json');
 

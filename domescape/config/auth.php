@@ -1,8 +1,7 @@
 <?php
-// ============================================================
-// DomEscape — Configuration de l'authentification (Core Edition)
-// Auth simplifiée : is_admin sur utilisateur (plus de RBAC)
-// ============================================================
+
+// Configuration de l'authentification
+// Auth simplifiée : is_admin sur utilisateur
 
 define('AUTH_LOGIN_URL',        '/domescape/public/connexion.php');
 define('AUTH_DASHBOARD_URL',    '/domescape/public/index.php');

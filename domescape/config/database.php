@@ -1,9 +1,7 @@
 <?php
 
-// =============================================================
-// DomEscape — Configuration base de données
+// Configuration base de données
 // Les credentials DB_USER et DB_PASS viennent de config/secrets.php
-// =============================================================
 
 require_once __DIR__ . '/secrets.php';
 

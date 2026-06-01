@@ -9,7 +9,6 @@ $pdo     = getDB();
 $error   = '';
 $success = '';
 
-// --- Actions POST ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 

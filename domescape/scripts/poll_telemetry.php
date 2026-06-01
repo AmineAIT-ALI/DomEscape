@@ -1,12 +1,10 @@
 #!/usr/bin/php
 <?php
-// =============================================================
 // poll_telemetry.php — Polling température/humidité Domoticz
 //
 // Interroge l'API Domoticz (idx=8) via curl et insère dans mesure_capteur.
 //
 // Cron : */5 * * * * php /var/www/html/domescape/scripts/poll_telemetry.php
-// =============================================================
 
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/database.php';

@@ -1,8 +1,5 @@
 <?php
 
-// =============================================================
-// handle_event.php — Webhook Domoticz
-//
 // Appelé par dzVents à chaque événement capteur.
 // Méthode : POST
 // Paramètres attendus :
@@ -10,7 +7,6 @@
 //   idx    : identifiant du device dans Domoticz
 //   nvalue : valeur numérique de l'état
 //   svalue : valeur textuelle de l'état
-// =============================================================
 
 header('Content-Type: application/json');
 

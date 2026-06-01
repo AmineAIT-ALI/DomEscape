@@ -4,20 +4,15 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../domoticz/DomoticzClient.php';
 
-// =============================================================
-// ActionManager — Exécution des actions de feedback
-//
+// ActionManager : Exécution des actions de feedback
 // Lit les etape_declenche depuis la BDD et les exécute dans l'ordre.
-//
 // Tables : etape_declenche, actionneur, action_type
-//
 // Codes d'actions supportés (action_type.code_action) :
 //   LCD_MESSAGE  → envoie un message au service LCD Python
 //   PLUG_ON      → active une prise via Domoticz
 //   PLUG_OFF     → désactive une prise via Domoticz
 //   PLUG_FESTIF  → séquence de clignotement festif (feux d'artifice)
 //   LOG_ONLY     → journalise sans action physique
-// =============================================================
 
 class ActionManager
 {
@@ -150,9 +145,7 @@ class ActionManager
         error_log("[ActionManager] Séquence festive terminée — idx=$idx prise allumée.");
     }
 
-    // ----------------------------------------------------------
     // LCD — appel HTTP vers le service Python Flask
-    // ----------------------------------------------------------
     private static function sendLcdMessage(string $message): void
     {
         $url = LCD_SERVICE_URL . '/lcd?msg=' . urlencode($message);
@@ -171,9 +164,7 @@ class ActionManager
         }
     }
 
-    // ----------------------------------------------------------
     // Singleton DomoticzClient
-    // ----------------------------------------------------------
     private static function getDomoticz(): DomoticzClient
     {
         if (self::$domoticz === null) {

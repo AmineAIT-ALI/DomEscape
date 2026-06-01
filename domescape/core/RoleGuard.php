@@ -1,8 +1,6 @@
 <?php
-// ============================================================
 // DomEscape — Guards d'accès (Core Edition)
 // Deux niveaux : connecté (requireLogin) / admin (requireAdmin)
-// ============================================================
 
 require_once __DIR__ . '/Auth.php';
 

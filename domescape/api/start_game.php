@@ -1,15 +1,9 @@
 <?php
 
-// =============================================================
-// start_game.php — Créer une nouvelle session (Core Edition)
-//
+// start_game.php — Créer une nouvelle session
 // POST :
 //   id_scenario : id du scénario
 //   nom_equipe  : nom de l'équipe / du joueur
-//
-// Règle mono-salle : bloqué si une session en_cours existe déjà.
-// La session démarre immédiatement — plus de lobby ni d'en_attente.
-// =============================================================
 
 header('Content-Type: application/json');
 

@@ -1,8 +1,6 @@
 <?php
 
-// =============================================================
-// reset_game.php — Réinitialiser la session active (Game Master)
-// =============================================================
+//Réinitialiser la session active (Game Master)
 
 header('Content-Type: application/json');
 

@@ -1,8 +1,6 @@
 <?php
-// ============================================================
 // DomEscape — Couche d'authentification (Core Edition)
 // Auth simplifiée : is_admin remplace le RBAC role/utilisateur_role
-// ============================================================
 
 require_once __DIR__ . '/../config/auth.php';
 require_once __DIR__ . '/../config/database.php';
@@ -12,9 +10,7 @@ class Auth
 {
     private static bool $started = false;
 
-    // ----------------------------------------------------------
     // Initialisation — à appeler en tête de chaque page protégée
-    // ----------------------------------------------------------
     public static function init(): void
     {
         if (self::$started) return;
@@ -48,9 +44,7 @@ class Auth
         $_SESSION['_last_activity'] = time();
     }
 
-    // ----------------------------------------------------------
     // Connexion
-    // ----------------------------------------------------------
     public static function login(string $email, string $password)
     {
         $repo = new UserRepository();
@@ -72,9 +66,7 @@ class Auth
         return true;
     }
 
-    // ----------------------------------------------------------
     // Déconnexion
-    // ----------------------------------------------------------
     public static function logout(): void
     {
         $_SESSION = [];
@@ -92,9 +84,7 @@ class Auth
         session_destroy();
     }
 
-    // ----------------------------------------------------------
     // Vérifications
-    // ----------------------------------------------------------
     // Retourne true si un utilisateur est connecté dans la session courante.
     public static function check(): bool
     {

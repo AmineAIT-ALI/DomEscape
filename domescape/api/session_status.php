@@ -1,11 +1,8 @@
 <?php
 
-// =============================================================
 // session_status.php — État de la session en cours
-//
 // Appelé par le frontend toutes les secondes (polling JS).
 // Retourne l'état complet de la partie active.
-// =============================================================
 
 header('Content-Type: application/json');
 

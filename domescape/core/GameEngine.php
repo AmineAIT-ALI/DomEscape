@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/ActionManager.php';
 
-// =============================================================
 // GameEngine — Cœur du moteur de scénarios
 //
 // Stateless : tout l'état est lu/écrit en base de données.
@@ -12,7 +11,6 @@ require_once __DIR__ . '/ActionManager.php';
 //
 // Valeurs de statut_session :
 //   en_cours | gagnee | perdue | abandonnee
-// =============================================================
 
 class GameEngine
 {
@@ -93,9 +91,7 @@ class GameEngine
         }
     }
 
-    // ----------------------------------------------------------
     // Succès : étape validée
-    // ----------------------------------------------------------
     private static function onSucces(array $session, array $etape): void
     {
         $pdo = getDB();
@@ -144,9 +140,7 @@ class GameEngine
         }
     }
 
-    // ----------------------------------------------------------
     // Échec : mauvaise action
-    // ----------------------------------------------------------
     private static function onEchec(array $session, array $etape): void
     {
         $pdo = getDB();
@@ -162,9 +156,7 @@ class GameEngine
         error_log("[GameEngine] Session {$session['id_session']} — erreur sur étape {$etape['id_etape']}.");
     }
 
-    // ----------------------------------------------------------
     // Vérification de correspondance événement / attendu
-    // ----------------------------------------------------------
     private static function matchesAttend(array $event, ?array $attendu): bool
     {
         if ($attendu === null) return false;
@@ -182,9 +174,7 @@ class GameEngine
         return true;
     }
 
-    // ----------------------------------------------------------
     // Helpers BDD
-    // ----------------------------------------------------------
 
     
     // Retourne la session en cours ou null si aucune partie active.
@@ -284,9 +274,7 @@ class GameEngine
         ");
     }
 
-    // ----------------------------------------------------------
     // Historique des événements
-    // ----------------------------------------------------------
     private static function logEvenement(
         array $event,
         int   $idSession,

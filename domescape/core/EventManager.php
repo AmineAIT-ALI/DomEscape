@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/../config/database.php';
 
-// =============================================================
 // EventManager
 //
 // Responsabilités :
@@ -12,7 +11,6 @@ require_once __DIR__ . '/../config/database.php';
 //   4. Retourner un tableau structuré utilisable par le GameEngine
 //
 // Tables : capteur, evenement_type
-// =============================================================
 
 class EventManager
 {
@@ -68,7 +66,6 @@ class EventManager
         ];
     }
 
-    // ----------------------------------------------------------
     // Mapping type_capteur + nvalue/svalue → code normalisé
     //
     // door_sensor (idx 25 — Alert Z-Wave Access Control 6)
@@ -85,7 +82,6 @@ class EventManager
     //   V1 : mapping simplifié — tout nvalue>0 → BUTTON_PRESS
     //   nvalue=0 = release/off → ignoré
     //   Double/Triple/Hold à préciser après test hardware réel
-    // ----------------------------------------------------------
     private static function mapToCodeEvenement(string $typeCapteur, int $nvalue, string $svalue): ?string
     {
         switch ($typeCapteur) {
@@ -133,9 +129,7 @@ class EventManager
         }
     }
 
-    // ----------------------------------------------------------
     // Helpers BDD
-    // ----------------------------------------------------------
 
     // Retourne la ligne capteur dont le domoticz_idx correspond, null si inconnu ou inactif.
     private static function findCapteurByIdx(int $idx): ?array
@@ -155,12 +149,10 @@ class EventManager
         return $stmt->fetch() ?: null;
     }
 
-    // ----------------------------------------------------------
     // Debounce Z-Wave
     // Retourne true si le même (idx, nvalue) a déjà été reçu
     // dans la fenêtre DEBOUNCE_US. Sinon, enregistre le timestamp
     // et retourne false.
-    // ----------------------------------------------------------
     private static function isDuplicate(int $idx, int $nvalue): bool
     {
         $dir  = __DIR__ . '/../logs';

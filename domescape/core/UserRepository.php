@@ -1,7 +1,5 @@
 <?php
-// ============================================================
 // DomEscape — Accès aux données utilisateurs (Core Edition)
-// ============================================================
 
 require_once __DIR__ . '/../config/database.php';
 
@@ -14,9 +12,7 @@ class UserRepository
         $this->db = getDB();
     }
 
-    // ----------------------------------------------------------
     // Recherche
-    // ----------------------------------------------------------
 
     // Retourne l'utilisateur correspondant à l'email ou null si introuvable.
     public function findByEmail(string $email): ?array
@@ -56,9 +52,7 @@ class UserRepository
         )->fetchAll();
     }
 
-    // ----------------------------------------------------------
     // Écriture
-    // ----------------------------------------------------------
 
     // Crée un utilisateur avec le mot de passe hashé en bcrypt (coût 12). Retourne l'id généré.
     public function create(string $nom, string $email, string $password, bool $isAdmin = false): int
