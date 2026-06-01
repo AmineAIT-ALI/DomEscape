@@ -18,6 +18,7 @@ class UserRepository
     // Recherche
     // ----------------------------------------------------------
 
+    // Retourne l'utilisateur correspondant à l'email ou null si introuvable.
     public function findByEmail(string $email): ?array
     {
         $stmt = $this->db->prepare(
@@ -27,6 +28,7 @@ class UserRepository
         return $stmt->fetch() ?: null;
     }
 
+    // Retourne l'utilisateur par son id ou null si introuvable.
     public function findById(int $id): ?array
     {
         $stmt = $this->db->prepare(
@@ -36,6 +38,7 @@ class UserRepository
         return $stmt->fetch() ?: null;
     }
 
+    // Retourne true si l'adresse email est déjà enregistrée en base.
     public function emailExists(string $email): bool
     {
         $stmt = $this->db->prepare('SELECT 1 FROM utilisateur WHERE email = ? LIMIT 1');
@@ -43,6 +46,7 @@ class UserRepository
         return (bool) $stmt->fetchColumn();
     }
 
+    // Retourne tous les utilisateurs triés par date de création décroissante.
     public function listAll(): array
     {
         return $this->db->query(
@@ -56,6 +60,7 @@ class UserRepository
     // Écriture
     // ----------------------------------------------------------
 
+    // Crée un utilisateur avec le mot de passe hashé en bcrypt (coût 12). Retourne l'id généré.
     public function create(string $nom, string $email, string $password, bool $isAdmin = false): int
     {
         $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
@@ -65,6 +70,7 @@ class UserRepository
         return (int) $this->db->lastInsertId();
     }
 
+    // Met à jour les champs autorisés d'un utilisateur. Les clés non autorisées sont ignorées silencieusement.
     public function update(int $id, array $fields): void
     {
         $allowed = ['nom', 'email', 'actif', 'mot_de_passe', 'is_admin'];
@@ -86,6 +92,7 @@ class UserRepository
         )->execute($values);
     }
 
+    // Met à jour la date de dernière connexion à maintenant.
     public function updateLastLogin(int $id): void
     {
         $this->db->prepare(

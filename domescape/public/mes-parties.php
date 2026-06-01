@@ -51,7 +51,6 @@ if ($statsQ['avg_duree']) {
         </div>
     </div>
 
-    <!-- Stats rapides -->
     <div class="stats-grid" style="margin-bottom:32px;">
         <div class="stat-card">
             <div class="stat-card-value" style="color:#e0e0e0;"><?= (int)$statsQ['total'] ?></div>
@@ -71,7 +70,6 @@ if ($statsQ['avg_duree']) {
         </div>
     </div>
 
-    <!-- Tableau sessions -->
     <div class="section-label">Sessions</div>
     <div class="panel panel-table">
         <div class="panel-head">

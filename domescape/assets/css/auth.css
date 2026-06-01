@@ -1,4 +1,3 @@
-/* DomEscape — Pages d'authentification (connexion / inscription) */
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: #050508; color: #f0f0f8; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
 
@@ -30,18 +29,15 @@ body { margin: 0; background: #050508; color: #f0f0f8; font-family: system-ui, -
 .auth-footer a:hover { text-decoration: underline; }
 .auth-divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 24px 0; }
 
-/* Hints (connexion) */
 .auth-hints { display: flex; flex-direction: column; gap: 6px; }
 .auth-hint { display: flex; align-items: center; gap: 10px; font-size: .73rem; color: #6b6b8a; padding: 7px 10px; border-radius: 4px; border: 1px solid transparent; transition: border-color .15s, color .15s; }
 .auth-hint:hover { border-color: rgba(255,255,255,0.07); color: #9898b8; }
 .auth-hint-icon { color: #00ff88; opacity: .7; display: flex; align-items: center; }
 
-/* Barre de force du mot de passe (inscription) */
 .pw-strength { margin-top: 6px; }
 .pw-bar { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
 .pw-bar-fill { height: 100%; border-radius: 2px; transition: width .3s, background .3s; width: 0%; }
 .pw-label { font-size: .65rem; color: #6b6b8a; margin-top: 4px; }
 
-/* Puce de rôle (inscription) */
 .role-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,255,136,.06); border: 1px solid rgba(0,255,136,.2); color: #00ff88; font-size: .72rem; padding: 5px 12px; border-radius: 3px; margin-bottom: 20px; }
 .role-chip-dot { width: 6px; height: 6px; background: #00ff88; border-radius: 50%; }

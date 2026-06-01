@@ -11,9 +11,8 @@ define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'domescape');
 define('DB_CHARSET', 'utf8mb4');
 
-/**
- * Retourne une connexion PDO partagée (singleton).
- */
+
+// Retourne une instance PDO partagée (singleton). Appelle _renderDbError et stoppe si la connexion échoue.
 function getDB(): PDO
 {
     static $pdo = null;
@@ -37,9 +36,8 @@ function getDB(): PDO
     return $pdo;
 }
 
-/**
- * Affiche une erreur DB propre (HTML ou JSON selon le contexte) et exit.
- */
+
+// Affiche une page d'erreur 503 adaptée au contexte (JSON pour les APIs, HTML pour les pages).
 function _renderDbError(): void
 {
     $isApi = strpos($_SERVER['REQUEST_URI'] ?? '', '/api/') !== false;

@@ -16,12 +16,10 @@ require_once __DIR__ . '/ActionManager.php';
 
 class GameEngine
 {
-    /**
-     * Point d'entrée principal.
-     * Appelé par handle_event.php après normalisation de l'événement.
-     *
-     * $event : tableau retourné par EventManager::fromWebhook()
-     */
+    
+    // Point d'entrée principal du moteur. Reçoit un événement normalisé par EventManager,
+    // valide l'étape courante et déclenche les actions associées via ActionManager.
+    // Toute l'exécution est protégée par une transaction avec rollback en cas d'erreur.
     public static function process(array $event): void
     {
         $pdo = getDB();
@@ -188,9 +186,8 @@ class GameEngine
     // Helpers BDD
     // ----------------------------------------------------------
 
-    /**
-     * Retourne l'unique session en cours (statut_session = 'en_cours').
-     */
+    
+    // Retourne la session en cours ou null si aucune partie active.
     public static function getActiveSession(): ?array
     {
         $pdo  = getDB();
@@ -203,6 +200,7 @@ class GameEngine
         return $stmt->fetch() ?: null;
     }
 
+    // Retourne une étape par son id_etape ou null si introuvable.
     private static function getEtape(int $id): ?array
     {
         $pdo  = getDB();
@@ -211,6 +209,7 @@ class GameEngine
         return $stmt->fetch() ?: null;
     }
 
+    // Retourne la prochaine étape du scénario (numero_etape > actuel) ou null si c'était la dernière.
     private static function getEtapeSuivante(array $etape, int $numeroActuel): ?array
     {
         $pdo  = getDB();
@@ -224,6 +223,7 @@ class GameEngine
         return $stmt->fetch() ?: null;
     }
 
+    // Retourne la condition obligatoire attendue pour valider l'étape ou null si non configurée.
     private static function getEtapeAttend(int $idEtape): ?array
     {
         $pdo  = getDB();
@@ -236,10 +236,9 @@ class GameEngine
         return $stmt->fetch() ?: null;
     }
 
-    /**
-     * Démarre une nouvelle session immédiatement (statut en_cours).
-     * Déclenche on_enter de la première étape.
-     */
+    
+    // Crée une session en cours sur la première étape du scénario et déclenche son on_enter.
+    // Retourne l'id_session généré. Lève une exception si le scénario n'a aucune étape.
     public static function startSession(int $idScenario, string $nomEquipe): int
     {
         $pdo = getDB();
@@ -271,9 +270,8 @@ class GameEngine
         return $idSession;
     }
 
-    /**
-     * Réinitialise la session active (Game Master).
-     */
+    
+    // Clôture toutes les sessions en cours en les passant au statut abandonnée.
     public static function resetActiveSession(): void
     {
         $pdo = getDB();
@@ -311,6 +309,7 @@ class GameEngine
         ]);
     }
 
+    // Calcule la durée en secondes entre deux timestamps. Retourne 0 si debut est null.
     private static function calculerDuree(?string $debut, string $fin): int
     {
         if ($debut === null) return 0;

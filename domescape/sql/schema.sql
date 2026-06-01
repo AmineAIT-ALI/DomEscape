@@ -263,6 +263,7 @@ INSERT INTO action_type (code_action, libelle_action, description) VALUES
 ('PLUG_ON',     'Activer prise',    'Active un Wall Plug via Domoticz'),
 ('PLUG_OFF',    'Désactiver prise', 'Désactive un Wall Plug via Domoticz'),
 ('LCD_MESSAGE', 'Message LCD',      'Affiche un message sur l\'écran LCD PiFace'),
+('PLUG_FESTIF', 'Effet festif',     'Séquence de clignotement festif sur le Wall Plug — feux d\'artifice'),
 ('LOG_ONLY',    'Log uniquement',   'Enregistre sans effet physique');
 
 -- Capteurs — idx validés sur hardware réel
@@ -356,84 +357,82 @@ INSERT INTO etape_declenche (id_etape, id_actionneur, id_type_action, ordre_acti
 (4, 2, 3, 1, 'Code invalide !',    'on_failure');
 
 -- =============================================================
--- Scénario 2 — Protocol Omega — AI Containment
+-- Scénario 2 : Protocole Omega : Confinement IA
 -- =============================================================
 
 INSERT INTO scenario (nom_scenario, description, theme, duree_max_secondes) VALUES
-('Protocol Omega — AI Containment',
+('Protocole Omega : Confinement IA',
  'Une IA instable a pris le contrôle du laboratoire. Activez les 5 protocoles de confinement pour reprendre le système.',
  'Confinement IA',
  3600);
 
--- Étapes (id_scenario=2, id_etape 5–9)
+-- Étapes (id_scenario=2, id_etape 5 à 9)
 INSERT INTO etape (id_scenario, numero_etape, titre_etape, description_etape, message_succes, message_echec, indice, points, finale) VALUES
-(2, 1, 'AI Core Initialization',
+(2, 1, 'Initialisation du noyau',
     'Activez le noyau IA. Triple appui sur le bouton de démarrage.',
     'Noyau IA en ligne.',
     'Action incorrecte. Réessayez.',
     'Trois appuis rapides sur le bouton.',
     100, FALSE),
-(2, 2, 'Power Grid Recovery',
+(2, 2, 'Restauration du secteur',
     'Le réseau électrique est hors ligne. Rétablissez l''alimentation.',
     'Réseau électrique rétabli.',
     'Action incorrecte.',
     'Appuyez sur le bouton principal.',
     150, FALSE),
-(2, 3, 'Security Gate',
+(2, 3, 'Porte de sécurité',
     'La porte de sécurité bloque l''accès à la zone de contrôle. Franchissez-la.',
     'Accès autorisé. Zone déverrouillée.',
     'Accès refusé.',
     'Franchissez la porte de sécurité.',
     200, FALSE),
-(2, 4, 'Biometric Scan',
+(2, 4, 'Scan biométrique',
     'Le scanner biométrique est actif. Traversez la zone de détection.',
     'Identification validée.',
     'Hors zone. Réessayez.',
     'Passez devant le capteur central.',
     200, FALSE),
-(2, 5, 'Omega Containment',
+(2, 5, 'Confinement Omega',
     'Protocole final. Confirmez le confinement par double appui.',
     'Confinement Omega activé. Mission accomplie.',
     'Double confirmation requise.',
     'Un double appui est nécessaire.',
     300, TRUE);
 
--- Événements attendus (scénario 2, étapes 5–9)
+-- Événements attendus (scénario 2, étapes 5 à 9)
 -- id_type_evenement : 1=BUTTON_PRESS  2=BUTTON_DOUBLE_PRESS  3=DOOR_OPEN  5=MOTION_DETECTED  7=BUTTON_TRIPLE_PRESS
 -- id_capteur        : 1=Button  2=Porte  3=Multisensor  4=Button Double  6=Button Triple
 INSERT INTO etape_attend (id_etape, id_capteur, id_type_evenement) VALUES
-(5, 6, 7),   -- AI Core Init    → BUTTON_TRIPLE_PRESS sur Button Triple
-(6, 1, 1),   -- Power Grid      → BUTTON_PRESS        sur Button
-(7, 2, 3),   -- Security Gate   → DOOR_OPEN           sur Porte
-(8, 3, 5),   -- Biometric Scan  → MOTION_DETECTED     sur Multisensor
-(9, 4, 2);   -- Omega Contain.  → BUTTON_DOUBLE_PRESS sur Button Double
+(5, 6, 7),   -- Initialisation du noyau   : BUTTON_TRIPLE_PRESS sur Button Triple
+(6, 1, 1),   -- Restauration du secteur   : BUTTON_PRESS        sur Button
+(7, 2, 3),   -- Porte de sécurité         : DOOR_OPEN           sur Porte
+(8, 3, 5),   -- Scan biométrique          : MOTION_DETECTED     sur Multisensor
+(9, 4, 2);   -- Confinement Omega         : BUTTON_DOUBLE_PRESS sur Button Double
 
 -- Actions déclenchées (scénario 2)
 INSERT INTO etape_declenche (id_etape, id_actionneur, id_type_action, ordre_action, valeur_action, moment_declenchement) VALUES
--- Étape 5 — AI Core Initialization
-(5, 2, 3, 1, 'AI CORE OFFLINE',  'on_enter'),
-(5, 2, 3, 1, 'AI CORE ONLINE',   'on_success'),
+-- Étape 5 : Initialisation du noyau
+(5, 2, 3, 1, 'NOYAU INACTIF',    'on_enter'),
+(5, 2, 3, 1, 'NOYAU ACTIF',      'on_success'),
 (5, 1, 1, 2, NULL,               'on_success'),
-(5, 2, 3, 1, 'CORE ERROR',       'on_failure'),
--- Étape 6 — Power Grid Recovery
-(6, 2, 3, 1, 'MAIN POWER LOST',  'on_enter'),
-(6, 2, 3, 1, 'POWER RESTORED',   'on_success'),
+(5, 2, 3, 1, 'ERREUR NOYAU',     'on_failure'),
+-- Étape 6 : Restauration du secteur
+(6, 2, 3, 1, 'SECTEUR COUPE',    'on_enter'),
+(6, 2, 3, 1, 'SECTEUR RETABLI',  'on_success'),
 (6, 1, 1, 2, NULL,               'on_success'),
-(6, 2, 3, 1, 'POWER FAILURE',    'on_failure'),
--- Étape 7 — Security Gate
-(7, 2, 3, 1, 'SECURITY LOCKED',  'on_enter'),
-(7, 2, 3, 1, 'ACCESS GRANTED',   'on_success'),
-(7, 2, 3, 1, 'ACCESS DENIED',    'on_failure'),
--- Étape 8 — Biometric Scan
-(8, 2, 3, 1, 'BIOMETRIC SCAN',   'on_enter'),
-(8, 2, 3, 1, 'SCAN COMPLETE',    'on_success'),
+(6, 2, 3, 1, 'PANNE SECTEUR',    'on_failure'),
+-- Étape 7 : Porte de sécurité
+(7, 2, 3, 1, 'PORTE BLOQUEE',    'on_enter'),
+(7, 2, 3, 1, 'ACCES AUTORISE',   'on_success'),
+(7, 2, 3, 1, 'ACCES REFUSE',     'on_failure'),
+-- Étape 8 : Scan biométrique
+(8, 2, 3, 1, 'SCAN BIOMETRIQUE', 'on_enter'),
+(8, 2, 3, 1, 'SCAN VALIDE',      'on_success'),
 (8, 1, 2, 2, NULL,               'on_success'),
 (8, 1, 1, 3, NULL,               'on_success'),
-(8, 2, 3, 1, 'SCAN FAILED',      'on_failure'),
--- Étape 9 — Omega Containment (finale)
-(9, 2, 3, 1, 'DOUBLE CONFIRM',   'on_enter'),
-(9, 2, 3, 1, 'CONTAINMENT OK',   'on_success'),
-(9, 1, 2, 2, NULL,               'on_success'),
-(9, 1, 1, 3, NULL,               'on_success'),
-(9, 1, 2, 4, NULL,               'on_success'),
-(9, 2, 3, 1, 'OMEGA FAILED',     'on_failure');
+(8, 2, 3, 1, 'SCAN ECHOUE',      'on_failure'),
+-- Étape 9 : Confinement Omega (finale)
+(9, 2, 3, 1, 'DOUBLE APPUI',     'on_enter'),
+(9, 2, 3, 1, 'CONFINEMENT OK',   'on_success'),
+(9, 1, 4, 2, NULL,               'on_success'),
+(9, 2, 3, 1, 'ECHEC OMEGA',      'on_failure');

@@ -1,7 +1,7 @@
 # DomEscape — Mode d'emploi, Démonstration & Tests
 
 > Plateforme d'escape game événementielle sur Raspberry Pi  
-> Scénario de démonstration : **Protocol Omega**
+> Scénario de démonstration : **Protocole Omega**
 
 ---
 
@@ -9,7 +9,7 @@
 
 1. [Prérequis](#1-prérequis)
 2. [Mode d'emploi](#2-mode-demploi)
-3. [Script de démonstration — Protocol Omega](#3-script-de-démonstration--protocol-omega)
+3. [Script de démonstration — Protocole Omega](#3-script-de-démonstration--protocol-omega)
 4. [Tests réalisés](#4-tests-réalisés)
 
 ---
@@ -89,7 +89,7 @@ Page `index.php` — accessible après connexion.
 ### 2.4 Lancer une partie (Admin)
 
 1. Se connecter en tant qu'administrateur
-2. Depuis le tableau de bord, choisir le scénario **Protocol Omega**
+2. Depuis le tableau de bord, choisir le scénario **Protocole Omega**
 3. Saisir le nom de l'équipe
 4. Cliquer sur **Lancer la partie**
 5. La session démarre immédiatement — le LCD affiche le message d'introduction
@@ -143,7 +143,7 @@ Cliquer sur **Déconnexion** dans la barre de navigation → redirection vers la
 
 ---
 
-## 3. Script de démonstration — Protocol Omega
+## 3. Script de démonstration — Protocole Omega
 
 **Durée estimée : 5 à 10 minutes**  
 **Participants : 1 démonstrateur + 1 joueur (ou le même)**
@@ -161,7 +161,7 @@ Cliquer sur **Déconnexion** dans la barre de navigation → redirection vers la
 
 ### Étape 0 — Lancement de la session
 
-**Action :** Administrateur → tableau de bord → sélectionner **Protocol Omega** → saisir un nom d'équipe → **Lancer la partie**
+**Action :** Administrateur → tableau de bord → sélectionner **Protocole Omega** → saisir un nom d'équipe → **Lancer la partie**
 
 **Ce qui se passe :**
 - La session s'ouvre en base de données

@@ -17,10 +17,8 @@ RoleGuard::requireAdmin();
 
 <div class="layout">
 
-    <!-- Colonne gauche : session + timeline -->
     <div style="display:flex;flex-direction:column;gap:16px;">
 
-        <!-- Session -->
         <div class="panel">
             <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;">
                 <span>Session active</span>
@@ -58,7 +56,6 @@ RoleGuard::requireAdmin();
             </div>
         </div>
 
-        <!-- Événements BDD -->
         <div class="panel">
             <div class="panel-title">
                 Événements capteurs &nbsp;<span id="evtCount"></span>
@@ -68,7 +65,6 @@ RoleGuard::requireAdmin();
             </div>
         </div>
 
-        <!-- Actions exécutées -->
         <div class="panel">
             <div class="panel-title">Dernières actions physiques</div>
             <div id="actionList">
@@ -78,7 +74,6 @@ RoleGuard::requireAdmin();
 
     </div>
 
-    <!-- Colonne droite : contrôles -->
     <div style="display:flex;flex-direction:column;gap:16px;">
 
         <div class="panel">

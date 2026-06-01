@@ -16,26 +16,12 @@ require_once __DIR__ . '/../config/database.php';
 
 class EventManager
 {
-    /**
-     * Construit un événement normalisé depuis le payload du webhook.
-     *
-     * Payload attendu (POST Domoticz) :
-     *   idx    => int    (identifiant du device dans Domoticz)
-     *   nvalue => int    (valeur numérique de l'état)
-     *   svalue => string (valeur textuelle de l'état)
-     *
-     * Retourne :
-     *   [
-     *     'capteur'       => array (ligne BDD capteur),
-     *     'code_evenement'=> string (ex: 'DOOR_OPEN'),
-     *     'evenement_type'=> array (ligne BDD evenement_type),
-     *     'raw'           => array (payload original),
-     *   ]
-     * Retourne null si l'événement ne peut pas être identifié.
-     */
+    
     // Délai minimum entre deux événements identiques (microsecondes)
     private const DEBOUNCE_US = 500_000; // 500 ms
 
+    // Normalise un payload webhook brut en événement structuré utilisable par GameEngine.
+    // Retourne null si l'événement est inconnu, dupliqué ou non mappable.
     public static function fromWebhook(array $payload): ?array
     {
         $idx    = (int)($payload['idx']    ?? 0);
@@ -151,6 +137,7 @@ class EventManager
     // Helpers BDD
     // ----------------------------------------------------------
 
+    // Retourne la ligne capteur dont le domoticz_idx correspond, null si inconnu ou inactif.
     private static function findCapteurByIdx(int $idx): ?array
     {
         $pdo  = getDB();
@@ -159,6 +146,7 @@ class EventManager
         return $stmt->fetch() ?: null;
     }
 
+    // Retourne la ligne evenement_type correspondant au code normalisé, null si absent de la BDD.
     private static function findEvenementType(string $code): ?array
     {
         $pdo  = getDB();

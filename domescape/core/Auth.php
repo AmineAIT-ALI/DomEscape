@@ -95,11 +95,13 @@ class Auth
     // ----------------------------------------------------------
     // Vérifications
     // ----------------------------------------------------------
+    // Retourne true si un utilisateur est connecté dans la session courante.
     public static function check(): bool
     {
         return isset($_SESSION['user_id']);
     }
 
+    // Retourne les données de l'utilisateur connecté ou null si aucune session active.
     public static function user(): ?array
     {
         if (!self::check()) return null;
@@ -112,6 +114,7 @@ class Auth
         ];
     }
 
+    // Retourne true si l'utilisateur connecté a le droit administrateur.
     public static function isAdmin(): bool
     {
         return (bool) ($_SESSION['user_is_admin'] ?? false);

@@ -3,7 +3,6 @@
  * Palette alignée avec website/assets/css/domescape.css
  */
 
-/* ── Variables globales ── */
 :root {
   --accent:      #00ff88;
   --accent-dark: #00e67a;
@@ -23,11 +22,9 @@
   --yellow:      #fbbf24;
 }
 
-/* ── Layout utilitaires ── */
 .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
 .py-4      { padding-top: 32px; padding-bottom: 32px; }
 
-/* ── Boutons ── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -95,7 +92,6 @@
 .btn-sm { font-size: .75rem; padding: 6px 13px; border-radius: 6px; }
 .btn-lg { font-size: .88rem; padding: 11px 24px; }
 
-/* ── Badges statut session ── */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -118,7 +114,6 @@
 .sb-perdue    { color: var(--red);     border-color: rgba(248,113,113,.18); background: rgba(248,113,113,.05); }
 .sb-abandonnee{ color: var(--red);     border-color: rgba(248,113,113,.18); background: rgba(248,113,113,.05); }
 
-/* ── Cartes ── */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -127,7 +122,6 @@
 }
 .card:hover { border-color: rgba(255,255,255,0.12); }
 
-/* ── Label de section ── */
 .section-label {
   font-size: .68rem;
   font-weight: 600;
@@ -137,10 +131,8 @@
   margin-bottom: 14px;
 }
 
-/* ── Animations ── */
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
 
-/* ── Pulse dot ── */
 .pulse-dot {
   width: 8px; height: 8px;
   background: var(--accent);
@@ -153,7 +145,6 @@
   50%       { box-shadow: 0 0 0 5px rgba(0,255,136,0); }
 }
 
-/* ── Alertes ── */
 .alert-error {
   background: rgba(248,113,113,.06);
   border: 1px solid rgba(248,113,113,.18);
@@ -173,50 +164,42 @@
   margin-bottom: 20px;
 }
 
-/* ── Layout admin / page ── */
 .admin-wrap   { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
 .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
 .admin-header h1 { font-size: 1.1rem; font-weight: 600; margin: 0; color: var(--text); letter-spacing: -0.02em; }
 .admin-header p  { font-size: .72rem; color: var(--muted); margin: 4px 0 0; }
 .page-wrap    { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
 
-/* ── Panel ── */
 .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
 .panel-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border-dim); }
 .panel-head h2 { font-size: .8rem; font-weight: 600; margin: 0; color: #cbd5e1; letter-spacing: -0.01em; }
 
-/* ── Tableau partagé ── */
 .data-table { width: 100%; border-collapse: collapse; font-size: .78rem; }
 .data-table th { font-size: .62rem; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; padding: 11px 16px; text-align: left; font-weight: 500; border-bottom: 1px solid var(--border-dim); }
 .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-dim); vertical-align: middle; color: var(--text); }
 .data-table tbody tr:last-child td { border-bottom: none; }
 .data-table tbody tr:hover td { background: rgba(255,255,255,.02); }
 
-/* ── Base globale ── */
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: #050508; color: #f0f0f8; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased; }
 a { color: var(--accent); }
 
-/* ── Tables (sélecteurs natifs) ── */
 table { width: 100%; border-collapse: collapse; font-size: .78rem; }
 th { font-size: .62rem; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; padding: 11px 16px; text-align: left; font-weight: 500; border-bottom: 1px solid var(--border-dim); }
 td { padding: 12px 16px; border-bottom: 1px solid var(--border-dim); vertical-align: middle; }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: rgba(255,255,255,.02); }
 
-/* ── Panel (variantes) ── */
 .panel { padding: 20px; }
 .panel-table { padding: 0; overflow: hidden; }
 .panel-title { font-size: .68rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-weight: 600; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-dim); }
 .panel-title span { color: var(--accent); }
 
-/* ── Badge statut inline ── */
 .sb { display: inline-flex; align-items: center; gap: 4px; font-size: .65rem; padding: 2px 8px; border-radius: 3px; border: 1px solid; }
 .active-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
 .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .active-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .68rem; }
 
-/* ── Formulaires admin ── */
 .form-group { margin-bottom: 16px; }
 .form-group label { font-size: .68rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; font-weight: 500; display: block; margin-bottom: 6px; }
 .form-input,
@@ -239,7 +222,6 @@ textarea.form-input { resize: vertical; min-height: 70px; }
 .cb-row label { color: var(--dim); cursor: pointer; }
 @media (max-width: 700px) { .form-row, .form-grid-2 { grid-template-columns: 1fr; } }
 
-/* ── Panneaux spéciaux ── */
 .create-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
 .create-panel h2 { font-size: .85rem; font-weight: 600; color: var(--text); margin: 0 0 20px; letter-spacing: -0.01em; }
 .edit-section { background: rgba(96,165,250,.03); border: 1px solid rgba(96,165,250,.12); border-radius: 12px; padding: 24px; margin-bottom: 12px; }
@@ -247,7 +229,6 @@ textarea.form-input { resize: vertical; min-height: 70px; }
 .finale-badge { font-size: .65rem; color: var(--accent); border: 1px solid rgba(0,255,136,.18); background: rgba(0,255,136,.05); padding: 2px 7px; border-radius: 4px; }
 .has-hint { color: var(--yellow); font-size: .7rem; display: inline-flex; align-items: center; gap: 4px; }
 
-/* ── Boutons actions tableau ── */
 .btn-create, .btn-save { font-size: .8rem; padding: 9px 20px; }
 .btn-action   { padding: 5px 11px; font-size: .72rem; }
 .btn-edit     { color: var(--blue); border-color: rgba(96,165,250,.3); }
@@ -263,7 +244,6 @@ textarea.form-input { resize: vertical; min-height: 70px; }
 .btn-toggle-off { color: var(--muted); border-color: rgba(255,255,255,0.1); }
 .btn-toggle-off:hover { background: rgba(255,255,255,.04); color: var(--text); }
 
-/* ── Dashboard stats ── */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 36px; }
 .stat-card  { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 16px; }
 .stat-card-value { font-size: 1.5rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; line-height: 1; }
@@ -274,7 +254,6 @@ textarea.form-input { resize: vertical; min-height: 70px; }
 .quick-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; }
 .qa-btn { font-size: .78rem; padding: 9px 16px; }
 
-/* ── Gamemaster ── */
 .layout { display: grid; grid-template-columns: 1fr 320px; gap: 16px; padding: 20px; max-width: 1200px; margin: 0 auto; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
 .badge-running { background: rgba(0,255,136,.08); color: var(--accent); border: 1px solid rgba(0,255,136,.3); }
@@ -320,7 +299,6 @@ textarea.form-input { resize: vertical; min-height: 70px; }
 .btn-ctrl.green:hover  { border-color: rgba(0,255,136,.4);   color: var(--accent); background: rgba(0,255,136,.06); }
 .btn-ctrl-prefix { color: var(--dim); margin-right: 8px; opacity: .5; }
 
-/* ── Page Jouer (index.php) ── */
 .play-header   { padding: 40px 0 32px; border-bottom: 1px solid var(--border-dim); }
 .play-header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text); margin: 0 0 6px; }
 .play-header p  { font-size: .8rem; color: var(--muted); margin: 0; }
@@ -361,7 +339,6 @@ textarea.form-input { resize: vertical; min-height: 70px; }
 .btn-modal-start  { font-size: .8rem; padding: 8px 18px; }
 .error-inline { display: none; background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.3); color: var(--red); padding: 8px 12px; border-radius: 4px; font-size: .78rem; margin-top: 12px; }
 
-/* ── Page Joueur (player.php) ── */
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; background: rgba(5,5,8,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .topbar-brand { font-size: .82rem; font-weight: 600; color: var(--text); letter-spacing: -0.01em; text-decoration: none; display: flex; align-items: center; gap: 8px; }
 .topbar-team  { font-size: .75rem; color: var(--muted); }
@@ -423,7 +400,6 @@ textarea.form-input { resize: vertical; min-height: 70px; }
 .btn-quit { display: inline-block; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--muted); font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: .78rem; padding: 10px 28px; border-radius: 8px; text-decoration: none; transition: border-color .15s, color .15s; }
 .btn-quit:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
 
-/* ── Navigation principale (partials/nav.php) ─────────────────────── */
 .dn-nav { background: rgba(5,5,8,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.07); height: 56px; display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 1000; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
 .dn-nav-inner { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1200px; margin: 0 auto; }
 .dn-brand { color: #00ff88; font-weight: 700; font-size: .95rem; text-decoration: none; letter-spacing: .04em; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }

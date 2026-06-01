@@ -92,7 +92,6 @@ $recentActions = $pdo->query("
 
 <div class="admin-wrap">
 
-    <!-- Header -->
     <div class="admin-header">
         <div>
             <h1>Administration</h1>
@@ -106,7 +105,6 @@ $recentActions = $pdo->query("
         <?php endif; ?>
     </div>
 
-    <!-- KPI — Sessions & plateforme -->
     <div class="section-label">Sessions</div>
     <div class="stats-grid">
         <div class="stat-card">
@@ -136,7 +134,6 @@ $recentActions = $pdo->query("
         </div>
     </div>
 
-    <!-- KPI — Activité capteurs & actionneurs -->
     <div class="section-label">Activité système</div>
     <div class="stats-grid">
         <div class="stat-card">
@@ -176,7 +173,6 @@ $recentActions = $pdo->query("
         <?php endif; ?>
     </div>
 
-    <!-- Quick actions -->
     <div class="section-label">Actions rapides</div>
     <div class="quick-actions">
         <a href="/domescape/admin/scenarios.php" class="btn btn-outline qa-btn">
@@ -187,7 +183,6 @@ $recentActions = $pdo->query("
         </a>
     </div>
 
-    <!-- Scénarios -->
     <div class="section-label">Scénarios configurés</div>
     <div class="panel panel-table">
         <div class="panel-head">
@@ -248,7 +243,6 @@ $recentActions = $pdo->query("
         <?php endif; ?>
     </div>
 
-    <!-- Sessions -->
     <div class="section-label">Dernières sessions</div>
     <div class="panel panel-table">
         <div class="panel-head">
@@ -318,7 +312,6 @@ $recentActions = $pdo->query("
         <?php endif; ?>
     </div>
 
-    <!-- Derniers événements capteurs -->
     <div class="section-label">Derniers événements capteurs</div>
     <div class="panel panel-table">
         <div class="panel-head">
@@ -363,7 +356,6 @@ $recentActions = $pdo->query("
         <?php endif; ?>
     </div>
 
-    <!-- Dernières actions physiques -->
     <div class="section-label">Dernières actions physiques</div>
     <div class="panel panel-table">
         <div class="panel-head">
@@ -402,7 +394,6 @@ $recentActions = $pdo->query("
         <?php endif; ?>
     </div>
 
-    <!-- Télémétrie -->
     <div class="section-label">Télémétrie laboratoire</div>
     <div class="panel">
         <div class="panel-title">Dernière mesure — <?= $telemetry ? htmlspecialchars($telemetry['nom_capteur'], ENT_QUOTES, 'UTF-8') : 'Capteur indisponible' ?></div>

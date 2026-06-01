@@ -17,13 +17,11 @@ function nav_active(string $path): string {
 <nav class="dn-nav">
   <div class="dn-nav-inner">
 
-    <!-- Logo -->
     <a href="/domescape/public/<?= $_nav_user ? 'index.php' : 'connexion.php' ?>" class="dn-brand">
       <img src="/domescape/assets/logo-icon.svg" alt="DomEscape">
       DomEscape
     </a>
 
-    <!-- Liens contextuels -->
     <div class="dn-links">
       <?php if ($_nav_user): ?>
 
@@ -45,7 +43,6 @@ function nav_active(string $path): string {
       <?php endif; ?>
     </div>
 
-    <!-- Partie droite -->
     <div class="dn-right">
       <?php if ($_nav_user): ?>
 

@@ -8,9 +8,8 @@ require_once __DIR__ . '/Auth.php';
 
 class RoleGuard
 {
-    /**
-     * Redirige vers la page de connexion si l'utilisateur n'est pas authentifié.
-     */
+    
+    // Redirige vers la page de connexion si l'utilisateur n'est pas authentifié.
     public static function requireLogin(): void
     {
         Auth::init();
@@ -22,10 +21,8 @@ class RoleGuard
         }
     }
 
-    /**
-     * Exige le statut administrateur (is_admin = TRUE).
-     * Appelle requireLogin() en premier.
-     */
+    
+    // Exige une session active et le droit admin. Affiche une page 403 sinon.
     public static function requireAdmin(): void
     {
         self::requireLogin();
@@ -35,9 +32,8 @@ class RoleGuard
         }
     }
 
-    /**
-     * Affiche une page 403 et arrête l'exécution.
-     */
+    
+    // Envoie un HTTP 403 et affiche la page d'accès refusé puis arrête l'exécution.
     public static function denyAccess(): void
     {
         http_response_code(403);

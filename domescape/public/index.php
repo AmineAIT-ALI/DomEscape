@@ -61,7 +61,6 @@ $activeSession = $stmtActive->fetch() ?: null;
         <?php endif; ?>
 
         <?php if ($activeSession): ?>
-            <!-- Session active → nouvelle partie impossible -->
 
         <?php elseif (empty($scenarios)): ?>
             <div class="empty-state">
@@ -111,7 +110,6 @@ $activeSession = $stmtActive->fetch() ?: null;
     </div>
 </div>
 
-<!-- Modal démarrage -->
 <div class="modal-overlay" id="startModal" onclick="closeModalOnOverlay(event)">
     <div class="modal-box">
         <div class="modal-head">

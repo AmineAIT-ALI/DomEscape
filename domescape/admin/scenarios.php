@@ -86,7 +86,6 @@ $scenarios = $pdo->query("
         <div class="alert-success"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
 
-    <!-- Créer un scénario -->
     <div class="create-panel">
         <h2>Nouveau scénario</h2>
         <form method="POST">
@@ -113,7 +112,6 @@ $scenarios = $pdo->query("
         </form>
     </div>
 
-    <!-- Liste -->
     <div class="section-label"><?= count($scenarios) ?> scénario<?= count($scenarios) != 1 ? 's' : '' ?></div>
     <div class="panel">
         <?php if (empty($scenarios)): ?>

@@ -11,6 +11,7 @@ class DomoticzClient
 {
     private string $baseUrl;
 
+    // Initialise l'URL de base de l'API JSON Domoticz depuis la configuration.
     public function __construct()
     {
         $this->baseUrl = DOMOTICZ_URL . '/json.htm';
@@ -20,9 +21,8 @@ class DomoticzClient
     // Lecture
     // ----------------------------------------------------------
 
-    /**
-     * Récupère l'état actuel d'un device par son idx.
-     */
+    
+    // Retourne les données d'un device Domoticz par son idx ou null si introuvable.
     public function getDevice(int $idx): ?array
     {
         $data = $this->get([
@@ -33,9 +33,8 @@ class DomoticzClient
         return $data['result'][0] ?? null;
     }
 
-    /**
-     * Récupère tous les devices actifs.
-     */
+    
+    // Retourne tous les devices actifs enregistrés dans Domoticz.
     public function getAllDevices(): array
     {
         $data = $this->get(['type' => 'devices', 'used' => 'true']);
@@ -46,10 +45,8 @@ class DomoticzClient
     // Commandes actionneurs
     // ----------------------------------------------------------
 
-    /**
-     * Allume ou éteint un switch (lampe, prise).
-     * $cmd : 'On' | 'Off' | 'Toggle'
-     */
+    
+    // Envoie une commande switchlight à Domoticz. Retourne true si Domoticz répond OK.
     public function switchLight(int $idx, string $cmd = 'On'): bool
     {
         $data = $this->get([
@@ -65,10 +62,8 @@ class DomoticzClient
     public function turnOn(int $idx): bool  { return $this->switchLight($idx, 'On'); }
     public function turnOff(int $idx): bool { return $this->switchLight($idx, 'Off'); }
 
-    /**
-     * Change la couleur d'une lampe RGB.
-     * $hex : '#FF0000'
-     */
+    
+    // Définit la couleur d'un actionneur compatible RGB par son code hexadécimal.
     public function setColor(int $idx, string $hex): bool
     {
         $data = $this->get([
@@ -86,6 +81,8 @@ class DomoticzClient
     // Interne
     // ----------------------------------------------------------
 
+    // Exécute un appel GET authentifié vers l'API JSON Domoticz et retourne le tableau décodé.
+    // Retourne un tableau vide si Domoticz est inaccessible.
     private function get(array $params): array
     {
         $url  = $this->baseUrl . '?' . http_build_query($params);

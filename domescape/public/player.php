@@ -12,7 +12,6 @@ RoleGuard::requireLogin();
 </head>
 <body style="display:flex;flex-direction:column">
 
-<!-- Top bar -->
 <div class="topbar">
     <a href="/domescape/public/index.php" class="topbar-brand">
         <img src="/domescape/assets/logo-icon.svg" alt="DomEscape" style="height:22px;width:auto;opacity:.9;">
@@ -24,12 +23,10 @@ RoleGuard::requireLogin();
     </div>
 </div>
 
-<!-- Network error -->
 <div class="net-error" id="networkError">
     Connexion perdue — nouvelle tentative en cours…
 </div>
 
-<!-- Main -->
 <div class="main" id="gameView">
 
     <div class="timer-display" id="timer">00:00</div>
@@ -65,7 +62,6 @@ RoleGuard::requireLogin();
 
 </div>
 
-<!-- Victoire -->
 <div class="end-screen win-screen" id="winScreen">
     <div class="end-icon">✓</div>
     <div class="end-title">ÉVASION RÉUSSIE</div>
@@ -77,7 +73,6 @@ RoleGuard::requireLogin();
     </div>
 </div>
 
-<!-- Défaite -->
 <div class="end-screen lose-screen" id="loseScreen">
     <div class="end-icon">✗</div>
     <div class="end-title">TEMPS ÉCOULÉ</div>
